@@ -521,7 +521,7 @@ export default function WasteApprove() {
                                     <tr key={index}
                                         onClick={async () => {
                                             const encryptedID = await encrypt(row.ID!.toString());
-                                            router.push(`./View/FullView?id=${encryptedID}`);
+                                            router.push(`./Apply/Act?id=${encryptedID}`);
                                         }}
                                         className="cursor-pointer"
                                     >
