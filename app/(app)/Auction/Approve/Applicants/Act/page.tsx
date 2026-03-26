@@ -7,7 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 
 
-export default function WasteApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+export default function AuctionApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const params = React.use(searchParams);
 
     function normalizeData<T extends Record<string, any>>(row: T) {

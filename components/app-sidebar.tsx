@@ -30,7 +30,7 @@ export default function AppSidebar() {
   ];
 
   const auctionSubmenu = [
-    { label: "APPROVE", href: "", enabled: false },
+    { label: "APPROVE", href: "/Auction/Approve", enabled: true },
     { label: "APPLY", href: "/Auction/Apply", enabled: true },
     { label: "VIEW", href: "", enabled: false },
     { label: "EDIT", href: "", enabled: false },
@@ -45,16 +45,15 @@ export default function AppSidebar() {
     label === "APPROVE"
       ? "/approved.png"
       : label === "EDIT"
-      ? "/edit.png"
-      : label === "VIEW"
-      ? "/view-list.png"
-      : "/form_generate.png";
+        ? "/edit.png"
+        : label === "VIEW"
+          ? "/view-list.png"
+          : "/form_generate.png";
 
   return (
     <aside
-      className={`shrink-0 border-r border-slate-200 bg-white transition-all duration-200 ${
-        collapsed ? "w-20" : "w-64"
-      }`}
+      className={`shrink-0 border-r border-slate-200 bg-white transition-all duration-200 ${collapsed ? "w-20" : "w-64"
+        }`}
     >
       <div className="flex h-full flex-col p-3">
         <div className="mb-4 flex items-center justify-between">
@@ -94,19 +93,17 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => setWasteOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${
-                collapsed
-                  ? "flex items-center justify-center px-2"
-                  : "flex items-center justify-between px-3"
-              }`}
+              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
+                ? "flex items-center justify-center px-2"
+                : "flex items-center justify-between px-3"
+                }`}
               title="WASTE"
             >
               <span className={collapsed ? "" : "tracking-wide"}>Generation</span>
               {!collapsed && (
                 <ChevronDown
-                  className={`h-4 w-4 transition-transform ${
-                    wasteOpen ? "rotate-0" : "-rotate-90"
-                  }`}
+                  className={`h-4 w-4 transition-transform ${wasteOpen ? "rotate-0" : "-rotate-90"
+                    }`}
                 />
               )}
             </button>
@@ -118,11 +115,10 @@ export default function AppSidebar() {
                     <Link
                       key={item.label}
                       href={item.href}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${
-                        collapsed
-                          ? "flex items-center justify-center px-2"
-                          : "flex items-center gap-2 px-3"
-                      }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
+                        ? "flex items-center justify-center px-2"
+                        : "flex items-center gap-2 px-3"
+                        }`}
                       title={item.label}
                     >
                       <Image
@@ -137,11 +133,10 @@ export default function AppSidebar() {
                   ) : (
                     <div
                       key={item.label}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${
-                        collapsed
-                          ? "flex items-center justify-center px-2"
-                          : "flex items-center gap-2 px-3"
-                      }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed
+                        ? "flex items-center justify-center px-2"
+                        : "flex items-center gap-2 px-3"
+                        }`}
                       title={`${item.label} (coming soon)`}
                     >
                       <Image
@@ -163,19 +158,17 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => setAuctionOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${
-                collapsed
-                  ? "flex items-center justify-center px-2"
-                  : "flex items-center justify-between px-3"
-              }`}
+              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
+                ? "flex items-center justify-center px-2"
+                : "flex items-center justify-between px-3"
+                }`}
               title="AUCTION"
             >
               <span className={collapsed ? "" : "tracking-wide"}>Auction</span>
               {!collapsed && (
                 <ChevronDown
-                  className={`h-4 w-4 transition-transform ${
-                    auctionOpen ? "rotate-0" : "-rotate-90"
-                  }`}
+                  className={`h-4 w-4 transition-transform ${auctionOpen ? "rotate-0" : "-rotate-90"
+                    }`}
                 />
               )}
             </button>
@@ -187,11 +180,10 @@ export default function AppSidebar() {
                     <Link
                       key={`auction-${item.label}`}
                       href={item.href}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${
-                        collapsed
-                          ? "flex items-center justify-center px-2"
-                          : "flex items-center gap-2 px-3"
-                      }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
+                        ? "flex items-center justify-center px-2"
+                        : "flex items-center gap-2 px-3"
+                        }`}
                       title={item.label}
                     >
                       <Image
@@ -206,11 +198,10 @@ export default function AppSidebar() {
                   ) : (
                     <div
                       key={`auction-${item.label}`}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${
-                        collapsed
-                          ? "flex items-center justify-center px-2"
-                          : "flex items-center gap-2 px-3"
-                      }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed
+                        ? "flex items-center justify-center px-2"
+                        : "flex items-center gap-2 px-3"
+                        }`}
                       title={`${item.label} (coming soon)`}
                     >
                       <Image
@@ -232,19 +223,17 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => setDisposalOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${
-                collapsed
-                  ? "flex items-center justify-center px-2"
-                  : "flex items-center justify-between px-3"
-              }`}
+              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
+                ? "flex items-center justify-center px-2"
+                : "flex items-center justify-between px-3"
+                }`}
               title="DISPOSAL"
             >
               <span className={collapsed ? "" : "tracking-wide"}>Disposal</span>
               {!collapsed && (
                 <ChevronDown
-                  className={`h-4 w-4 transition-transform ${
-                    disposalOpen ? "rotate-0" : "-rotate-90"
-                  }`}
+                  className={`h-4 w-4 transition-transform ${disposalOpen ? "rotate-0" : "-rotate-90"
+                    }`}
                 />
               )}
             </button>
@@ -255,11 +244,10 @@ export default function AppSidebar() {
                   <Link
                     key={`disposal-${item.label}`}
                     href={item.href}
-                    className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${
-                      collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                    }`}
+                    className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
+                      ? "flex items-center justify-center px-2"
+                      : "flex items-center gap-2 px-3"
+                      }`}
                     title={item.label}
                   >
                     <Image
@@ -276,19 +264,17 @@ export default function AppSidebar() {
                 <button
                   type="button"
                   onClick={() => setDisposalGenerateOpen((prev) => !prev)}
-                  className={`w-full rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${
-                    collapsed
-                      ? "flex items-center justify-center px-2"
-                      : "flex items-center justify-between px-3"
-                  }`}
+                  className={`w-full rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
+                    ? "flex items-center justify-center px-2"
+                    : "flex items-center justify-between px-3"
+                    }`}
                   title="GENERATE"
                 >
                   <span>GENERATE</span>
                   {!collapsed && (
                     <ChevronDown
-                      className={`h-4 w-4 transition-transform ${
-                        disposalGenerateOpen ? "rotate-0" : "-rotate-90"
-                      }`}
+                      className={`h-4 w-4 transition-transform ${disposalGenerateOpen ? "rotate-0" : "-rotate-90"
+                        }`}
                     />
                   )}
                 </button>
@@ -299,11 +285,10 @@ export default function AppSidebar() {
                       <Link
                         key={`disposal-gen-${item.label}`}
                         href={item.href}
-                        className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${
-                          collapsed
-                            ? "flex items-center justify-center px-2"
-                            : "flex items-center gap-2 px-3"
-                        }`}
+                        className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
+                          ? "flex items-center justify-center px-2"
+                          : "flex items-center gap-2 px-3"
+                          }`}
                         title={item.label}
                       >
                         <Image
@@ -326,19 +311,17 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => setReportOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${
-                collapsed
-                  ? "flex items-center justify-center px-2"
-                  : "flex items-center justify-between px-3"
-              }`}
+              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
+                ? "flex items-center justify-center px-2"
+                : "flex items-center justify-between px-3"
+                }`}
               title="REPORT"
             >
               <span className={collapsed ? "" : "tracking-wide"}>Report</span>
               {!collapsed && (
                 <ChevronDown
-                  className={`h-4 w-4 transition-transform ${
-                    reportOpen ? "rotate-0" : "-rotate-90"
-                  }`}
+                  className={`h-4 w-4 transition-transform ${reportOpen ? "rotate-0" : "-rotate-90"
+                    }`}
                 />
               )}
             </button>
@@ -350,11 +333,10 @@ export default function AppSidebar() {
                     <Link
                       key={`report-${item.label}`}
                       href={item.href}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${
-                        collapsed
-                          ? "flex items-center justify-center px-2"
-                          : "flex items-center gap-2 px-3"
-                      }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
+                        ? "flex items-center justify-center px-2"
+                        : "flex items-center gap-2 px-3"
+                        }`}
                       title={item.label}
                     >
                       <Image
@@ -369,11 +351,10 @@ export default function AppSidebar() {
                   ) : (
                     <div
                       key={`report-${item.label}`}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${
-                        collapsed
-                          ? "flex items-center justify-center px-2"
-                          : "flex items-center gap-2 px-3"
-                      }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed
+                        ? "flex items-center justify-center px-2"
+                        : "flex items-center gap-2 px-3"
+                        }`}
                       title={`${item.label} (coming soon)`}
                     >
                       <Image

@@ -57,7 +57,7 @@ const getDisplayHeader = (header: string): string => {
   return labelMap[key] ?? header;
 };
 
-export default function WasteApprove() {
+export default function AuctionApply() {
 
 
   function normalizeData<T extends Record<string, any>>(row: T) {
@@ -322,8 +322,9 @@ export default function WasteApprove() {
   return (
     <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900"> Approve Waste</h1>
+        <div className="w-full">
+          <h1 className="text-lg font-semibold text-slate-900"> Apply for Auction</h1>
+          <h1 className="text-sm text-center font-semibold text-slate-900"> Active Auctions List</h1>
 
         </div>
         <button
@@ -481,7 +482,7 @@ export default function WasteApprove() {
             </div> */}
 
       {loading && (
-        <p className="mt-4 text-sm text-slate-600">Loading waste records...</p>
+        <p className="mt-4 text-sm text-slate-600">Loading Auction records...</p>
       )}
 
       {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
