@@ -4,16 +4,16 @@ import { getConnection } from "@/lib/dbConnect";
 import { getServerSession } from "next-auth";
 import { AuthOptions } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
-
-
-
+ 
+ 
+ 
 export async function POST(req : Request){
     try{
         const body =await req.json();
         const session=await getServerSession(authOptions);
         const pool=await getConnection();
         const empCode=String(session?.user?.id??"").trim();
-
+ 
         if(!pool || !pool.connected){
            throw new Error("DB Not Connected")
         }
@@ -23,13 +23,13 @@ export async function POST(req : Request){
                 {success:false,message:"Session not found. Please sign in again." },
                 {status:401}
             );
-
+ 
         }
-
-        
+ 
+       
         const Date = String(body.Date ?? "").trim();
         const remarks = String(body.Remarks ?? "").trim();
-
+ 
         const result= await pool
             .request()
             .input("FLAG",sql.NVarChar(50),'InitiateDiposal')
@@ -37,13 +37,13 @@ export async function POST(req : Request){
             .input("EmpCode",sql.Int,empCode )
             .input("Remarks",sql.NVarChar(sql.MAX),remarks )
             .execute("PRO-WMS_SET");
-
-
+ 
+ 
             console.log(result.recordset[0].STATUS)
             const refNo=result.recordset[0].STATUS.split('-')[1];
-            
+           
             const wasteIdsCsv = Array.isArray(body.wasteIds) ? body.wasteIds.join(",") : "";
-
+ 
             const wasteResult=await pool
                 .request()
                 .input("FLAG",sql.NVarChar(50),'InsertAuctionWasteDetails')
@@ -52,7 +52,7 @@ export async function POST(req : Request){
                 .input("WID",sql.NVarChar(sql.MAX),wasteIdsCsv)
                 .input("EmpCode",sql.Int,empCode )
                 .execute("PRO-WMS_SET");
-            
+           
          return NextResponse.json({
                 success: true,
                 data: {
@@ -61,8 +61,9 @@ export async function POST(req : Request){
                    
                 },
                 });
-
+ 
     }catch(e : any){
         return NextResponse.json({ success:false,message:e.message},{status:500});
     }
     }
+ 
