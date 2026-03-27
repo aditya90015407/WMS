@@ -16,8 +16,8 @@ const toBase64 = (bytes: Uint8Array): string => {
 };
 
 export const encryptForLogin = async (value: string): Promise<string> => {
-  const keyBytes = hexToBytes(LOGIN_ENCRYPTION_KEY_HEX);
-  const iv = hexToBytes(LOGIN_ENCRYPTION_IV_HEX);
+  const keyBytes = new Uint8Array(hexToBytes(LOGIN_ENCRYPTION_KEY_HEX));
+  const iv = new Uint8Array(hexToBytes(LOGIN_ENCRYPTION_IV_HEX));
   const cryptoKey = await crypto.subtle.importKey(
     "raw",
     keyBytes,
