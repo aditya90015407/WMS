@@ -163,10 +163,10 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                 <div className="text-center text-orange-600 mb-5">
                     Participant's Details
                 </div>
-                <Link href="./">
+                {/* <Link href="./">
 
                     <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
-                </Link>
+                </Link> */}
             </div>
 
             <form onSubmit={handleSubmit} action="">

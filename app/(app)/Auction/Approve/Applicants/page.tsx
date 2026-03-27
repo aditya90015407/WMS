@@ -80,6 +80,7 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
 
     type AuctionParticipants = {
         ID: string
+        VID: string
         NAME: string
         EMAIL: string
         CrBy: string
@@ -326,7 +327,7 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
                                 <tr >
 
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >ID</th>
+                                    >VID</th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Name</th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
@@ -348,7 +349,7 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
                                     >
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.ID}
+                                        >{row.VID}
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"

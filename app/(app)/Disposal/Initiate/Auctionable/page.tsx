@@ -200,7 +200,7 @@ export default function AuctionablePage() {
       <h1 className="text-2xl font-semibold text-slate-900">Auctionable Disposal</h1>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
-        <div>
+        {/* <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">
             Auction Details (Batch Id)
           </label>
@@ -209,7 +209,7 @@ export default function AuctionablePage() {
             onChange={(e) => setBatchId(e.target.value)}
             className="w-full rounded border border-slate-300 px-3 py-2"
           />
-        </div>
+        </div> */}
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Auction Date</label>
