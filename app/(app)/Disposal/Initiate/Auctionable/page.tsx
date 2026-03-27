@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 type Option = { id: string; name: string };
 
 export default function AuctionablePage() {
-  const [batchId, setBatchId] = useState("");
+  // const [batchId, setBatchId] = useState("");
   const [auctionDate, setAuctionDate] = useState("");
 
   const [wasteCategory, setWasteCategory] = useState("");
@@ -49,15 +49,15 @@ export default function AuctionablePage() {
         id: String(row.id ?? row.ID ?? row.VID ?? row.VendorID ?? row.VENDORID ?? ""),
         name: String(
           row.name ??
-            row.NAME ??
-            row.VENDORNAME ??
-            row.VendorName ??
-            row.VENDOR ??
-            row["Vendor Name"] ??
-            row["VENDOR NAME"] ??
-            row.VENDNAME ??
-            row.VNAME ??
-            ""
+          row.NAME ??
+          row.VENDORNAME ??
+          row.VendorName ??
+          row.VENDOR ??
+          row["Vendor Name"] ??
+          row["VENDOR NAME"] ??
+          row.VENDNAME ??
+          row.VNAME ??
+          ""
         ).trim(),
       }));
     } catch (err) {
@@ -135,11 +135,11 @@ export default function AuctionablePage() {
     .filter((v) => selectedVendorIds.includes(v.id))
     .map((v) => v.name);
 
-  const onSubmit = async(e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (
-      !batchId ||
+      // !batchId ||
       !auctionDate ||
       !wasteCategory ||
       selectedWasteIds.length === 0 ||
@@ -149,49 +149,50 @@ export default function AuctionablePage() {
       return;
     }
 
-    try{
-     
-     const res=await fetch("/api/SetData/SetAuctionableDisposal",{
-      method : "POST",
-      headers : {"Content-Type" : "application/json"},
-      body : JSON.stringify(
-        {
-          Auctionable:1,
-          AuctionDate:auctionDate,
-          wasteCategoryId : wasteCategory,
-          wasteIds:selectedWasteIds,
-          Remarks:remarks,
-        }
-      ),
+    try {
 
-     });
+      const res = await fetch("/api/SetData/SetAuctionableDisposal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          {
+            Auctionable: 1,
+            AuctionDate: auctionDate,
+            wasteCategoryId: wasteCategory,
+            wasteIds: selectedWasteIds,
+            vendorIds: selectedVendorIds,
+            Remarks: remarks,
+          }
+        ),
 
-     const data=await res.json();
-     if(!res.ok || !data.success){
-      alert(data.message || "Save Failed");
-      return;
-     }
-     const a1 = data.data?.a1 ?? [];
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        alert(data.message || "Save Failed");
+        return;
+      }
+      const a1 = data.data?.a1 ?? [];
       const a2 = data.data?.a2 ?? [];
       const a3 = data.data?.a3 ?? [];
-  alert(data.message || "Saved Successfully");
- 
+      alert(data.message || "Saved Successfully");
+
     }
 
-    
-      // setBatchId("");
-      // setAuctionDate("");
-      // setWasteCategory("");
-      // setSelectedWasteIds([]);
-      //   setSelectedVendorIds([]);
-      //   setWaste("");
-      //   setVendor("");
-      //   setRemarks("");
-    catch(error){
 
-    console.error("Submit Failed",error);
-    alert("Something went wrong while saving");
-  }
+    // setBatchId("");
+    // setAuctionDate("");
+    // setWasteCategory("");
+    // setSelectedWasteIds([]);
+    //   setSelectedVendorIds([]);
+    //   setWaste("");
+    //   setVendor("");
+    //   setRemarks("");
+    catch (error) {
+
+      console.error("Submit Failed", error);
+      alert("Something went wrong while saving");
+    }
   };
 
   return (
@@ -199,7 +200,7 @@ export default function AuctionablePage() {
       <h1 className="text-2xl font-semibold text-slate-900">Auctionable Disposal</h1>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
-        <div>
+        {/* <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">
             Auction Details (Batch Id)
           </label>
@@ -208,7 +209,7 @@ export default function AuctionablePage() {
             onChange={(e) => setBatchId(e.target.value)}
             className="w-full rounded border border-slate-300 px-3 py-2"
           />
-        </div>
+        </div> */}
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Auction Date</label>
@@ -252,8 +253,8 @@ export default function AuctionablePage() {
             {selectedWasteNames.length > 0
               ? selectedWasteNames.join(", ")
               : loadingWaste
-              ? "Loading..."
-              : "Select Waste Items"}
+                ? "Loading..."
+                : "Select Waste Items"}
           </button>
 
           {wasteDropdownOpen && (
@@ -314,8 +315,8 @@ export default function AuctionablePage() {
             {selectedVendorNames.length > 0
               ? selectedVendorNames.join(", ")
               : loadingBase
-              ? "Loading..."
-              : "Select Vendor(s)"}
+                ? "Loading..."
+                : "Select Vendor(s)"}
           </button>
 
           {vendorDropdownOpen && (

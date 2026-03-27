@@ -7,7 +7,7 @@ type Option = { id: string; name: string };
 export default function NonAuctionablePage() {
   const [wasteCategory, setWasteCategory] = useState("");
   const [waste, setWaste] = useState("");
-  const[Date,setDate]=useState("");
+  const [Date, setDate] = useState("");
   const [loadingBase, setLoadingBase] = useState(false);
   const [loadingWaste, setLoadingWaste] = useState(false);
 
@@ -76,41 +76,40 @@ export default function NonAuctionablePage() {
     .filter((w) => selectedWasteIds.includes(w.id))
     .map((w) => w.name);
 
-        const onSubmit = async(e: React.FormEvent) => {
-          e.preventDefault();
-          
-          if(!Date){
-            alert("Please select the Date");
-            return
-          }
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-          if (!wasteCategory || selectedWasteIds.length === 0) {
-            alert("Please select waste category and at least one waste item.");
-            return;
-          }
-          
-          
-            const res=await fetch("api/SetData?SetNonAuctionableDisposal",{
-              method:"POST",
-              headers:{"Content-Type":"application/json"},
-              body:JSON.stringify({
-                Auctionable:0,
-                AuctionDate:Date,
-                wasteCategoryId : wasteCategory,
-                wasteIds:selectedWasteIds,
-                remarks,
-              }),
+    if (!Date) {
+      alert("Please select the Date");
+      return
+    }
 
-            });
+    if (!wasteCategory || selectedWasteIds.length === 0) {
+      alert("Please select waste category and at least one waste item.");
+      return;
+    }
 
-          const data=await res.json();
-          if(!res.ok || !data.success)
-          {
-            return alert(data.message || "Save Failed");
-          }
-        alert("Saved Successfully")
-          
-        };
+
+    const res = await fetch("api/SetData/SetNonAuctionableDisposal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        Auctionable: 0,
+        AuctionDate: Date,
+        wasteCategoryId: wasteCategory,
+        wasteIds: selectedWasteIds,
+        remarks,
+      }),
+
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      return alert(data.message || "Save Failed");
+    }
+    alert("Saved Successfully")
+
+  };
 
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -118,7 +117,7 @@ export default function NonAuctionablePage() {
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
 
-       <div>
+        <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Date</label>
           <input
             type="date"
@@ -160,8 +159,8 @@ export default function NonAuctionablePage() {
             {selectedWasteNames.length > 0
               ? selectedWasteNames.join(", ")
               : loadingWaste
-              ? "Loading..."
-              : "Select Waste Items"}
+                ? "Loading..."
+                : "Select Waste Items"}
           </button>
 
           {wasteDropdownOpen && (

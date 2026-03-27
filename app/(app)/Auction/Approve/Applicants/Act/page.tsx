@@ -7,7 +7,7 @@ import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 
 
-export default function WasteApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+export default function AuctionApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const params = React.use(searchParams);
 
     function normalizeData<T extends Record<string, any>>(row: T) {
@@ -163,10 +163,10 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                 <div className="text-center text-orange-600 mb-5">
                     Participant's Details
                 </div>
-                <Link href="./">
+                {/* <Link href="./">
 
                     <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
-                </Link>
+                </Link> */}
             </div>
 
             <form onSubmit={handleSubmit} action="">
