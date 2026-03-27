@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 type Option = { id: string; name: string };
 
 export default function AuctionablePage() {
-  const [batchId, setBatchId] = useState("");
+  // const [batchId, setBatchId] = useState("");
   const [auctionDate, setAuctionDate] = useState("");
 
   const [wasteCategory, setWasteCategory] = useState("");
@@ -139,7 +139,7 @@ export default function AuctionablePage() {
     e.preventDefault();
 
     if (
-      !batchId ||
+      // !batchId ||
       !auctionDate ||
       !wasteCategory ||
       selectedWasteIds.length === 0 ||
