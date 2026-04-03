@@ -124,6 +124,42 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
     }, [])
 
 
+
+    async function downloadAttachment(attachPath: any, attachName: any) {
+        const payload = {
+            AttachPath: attachPath
+        }
+        // console.log(payload)
+
+        const res = await fetch(`/api/DownloadAttachments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        })
+
+        if (!res.ok) {
+            toast.error("File Not Found")
+            return
+        }
+
+        const blob = await res.blob()
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
+
+        a.href = url
+        a.download = `${attachName}.zip`
+        document.body.appendChild(a)
+        a.click()
+
+        a.remove()
+        window.URL.revokeObjectURL(url)
+
+        // setDownloading(false)
+    }
+
+
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
 
@@ -218,23 +254,39 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                     </td>
                                     <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.CTO_AttachPath}
+                                    >
+                                        <img src="/downloadicon.png" alt="" className="h-5"
+                                            onClick={() => downloadAttachment(row.CTO_AttachPath, "CTO Attachment")}
+                                        />
+                                    </td>
+
+                                    <td
+                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                    >
+                                        <img src="/downloadicon.png" alt="" className="h-5"
+                                            onClick={() => downloadAttachment(row.OSPCB_HW_Auth_AttachPath, "OSPCB_HW_Auth_AttachPath")}
+                                        />
                                     </td>
                                     <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.OSPCB_HW_Auth_AttachPath}
+                                    >
+                                        <img src="/downloadicon.png" alt="" className="h-5"
+                                            onClick={() => downloadAttachment(row.SPCB_HW_Auth_AttachPath, "SPCB_HW_Auth_AttachPath")}
+                                        />
                                     </td>
                                     <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.SPCB_HW_Auth_AttachPath}
+                                    >
+                                        <img src="/downloadicon.png" alt="" className="h-5"
+                                            onClick={() => downloadAttachment(row.BlueBook_AttachPath, "BlueBook_AttachPath")}
+                                        />
                                     </td>
                                     <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.BlueBook_AttachPath}
-                                    </td>
-                                    <td
-                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.EPR_Cert_AttachPath}
+                                    >
+                                        <img src="/downloadicon.png" alt="" className="h-5"
+                                            onClick={() => downloadAttachment(row.EPR_Cert_AttachPath, "EPR_Cert_AttachPath")}
+                                        />
                                     </td>
                                     <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"

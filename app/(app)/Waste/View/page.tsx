@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Download } from "lucide-react";
+import { toForm3Entry } from "@/lib/form3-columns";
+import Form10Table, { type Form10Data } from "@/components/Form10Table";
 
 type ViewRow = Record<string, string | number | null>;
-type Option = {
-  id: string;
-  name: string;
-};
 
 type ApiResponse = {
   success?: boolean;
@@ -15,496 +14,603 @@ type ApiResponse = {
   error?: string;
 };
 
-type FilterState = {
+type FormEntry = {
+  code: string;
   date: string;
-  categoryId: string;
-  wasteId: string;
-  disposerId: string;
-  physicalStateId: string;
-  storageMethodId: string;
+  targetDate: string;
+  sapWasteCode: string;
+  wasteCategory: string;
+  disposalType: string;
+  wasteType: string;
+  waste: string;
+  quantity: string;
+  manifestDocumentNo: string;
+  storageMethod: string;
+  physicalState: string;
+  disposer: string;
+  receiver: string;
+  approvalStatus: string;
+  unitDesc: string;
+  dateOfIssuance: string;
+  referenceNo: string;
+  dispId: string;
+  deptId: string;
+  dept: string;
   receiverId: string;
+  wcid: string;
+  stsCode: string;
 };
 
-const VIEW_FLAG = "GWT-ALL";
+const PAGE_SIZE = 10;
 
 const toText = (value: unknown): string => {
   if (value === null || value === undefined) return "";
   return String(value);
 };
 
-const getDisplayHeader = (header: string): string => {
-  const key = header.trim().toUpperCase();
-  const labelMap: Record<string, string> = {
-    ID: "Code",
-    WC: "Waste Category",
-    WT: "Waste Type",
-    SM: "Storage Method",
-    PS: "Physical State",
-    WD: "Waste Disposer",
-    WR: "Waste Receiver",
-    WQ: "Waste Quantity",
-    GD: "Date of Entry",
-    TD: "Target Date",
-    //
-    WW: "Waste",
-    MAS: "Approval Stage",
-    MASD: "Approval Stage Desc"
-  };
-  return labelMap[key] ?? header;
+const esc = (value: string): string =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+
+const getDestinedDisplay = (entry: FormEntry): string => {
+  const disposerLabel = entry.disposer?.trim() || "";
+  const receiverLabel = entry.receiver?.trim() || "";
+
+  if (disposerLabel && receiverLabel) {
+    return `${disposerLabel} / Received From: ${receiverLabel}`;
+  }
+  if (receiverLabel) return `Received From: ${receiverLabel}`;
+  return disposerLabel;
+};
+
+const getApprovalRowClass = (status: string): string => {
+  const normalized = status.trim().toLowerCase();
+  if (normalized === "approval completed") return "bg-green-100";
+  if (normalized === "approval inprogress") return "bg-yellow-100";
+  if (normalized === "rejected") return "bg-red-100";
+  return "";
+};
+
+const toForm10Data = (entry: FormEntry): Form10Data => ({
+  senderNameAddress: entry.unitDesc || "",
+  senderPhone: "",
+  senderEmail: "",
+  senderAuthorizationNo: "",
+  manifestDocumentNo: entry.manifestDocumentNo || entry.code || "",
+
+  transporterNameAddress: entry.disposer || "",
+  transporterPhone: "",
+  transporterEmail: "",
+  vehicleType: "Truck",
+  transporterRegistrationNo: entry.dispId || "",
+  vehicleRegistrationNo: "",
+  receiverNameAddress: entry.receiver || "",
+  receiverPhone: "",
+  receiverEmail: "",
+  receiverAuthorizationNo: entry.receiverId || "",
+  wasteDescription: entry.waste || "",
+  totalQuantity: entry.quantity || "",
+  quantityUnit: "m3",
+  noOfContainers: "",
+  physicalForm: entry.physicalState || "",
+  specialHandlingInfo: "",
+  senderNameStamp: "",
+  senderSignature: "",
+  senderMonth: "",
+  senderDay: "",
+  senderYear: "",
+  transporterNameStamp: "",
+  transporterSignature: "",
+  transporterMonth: "",
+  transporterDay: "",
+  transporterYear: "",
+  receiverNameStamp: "",
+  receiverSignature: "",
+  receiverMonth: "",
+  receiverDay: "",
+  receiverYear: "",
+});
+
+const createForm3Html = (entry: FormEntry): string => {
+  const typeWithCategory = [entry.waste || entry.wasteType, entry.sapWasteCode]
+    .filter(Boolean)
+    .join(" / ");
+
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Form3_${esc(entry.code)}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; color: #111827; }
+    h1, h2, p { margin: 0; }
+    .center { text-align: center; }
+    .mt2 { margin-top: 8px; } .mt4 { margin-top: 16px; } .mt10 { margin-top: 40px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #cbd5e1; padding: 8px; font-size: 13px; text-align: left; vertical-align: top; }
+    th { background: #f1f5f9; }
+    .small { font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="center">
+    <h1>FORM 3</h1>
+    <p class="small"><i>[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</i></p>
+    <h2 class="mt2">FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES</h2>
+  </div>
+
+  <div class="mt4 small">
+    <p>1. Name and address of the facility : ${esc(entry.unitDesc)}</p>
+    <p class="mt2">2. Date of issuance of authorisation and its reference number : ${esc(
+    [entry.dateOfIssuance, entry.referenceNo].filter(Boolean).join(" ")
+  )}</p>
+    <p class="mt2">3. Description of hazardous and other wastes handled (Generated or Received)</p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Type of waste with category</th>
+        <th>Total quantity(MT)</th>
+        <th>Method of Storage</th>
+        <th>Destined to or received from</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>${esc(entry.date)}</td>
+        <td>${esc(typeWithCategory)}</td>
+        <td>${esc(entry.quantity)}</td>
+        <td>${esc(entry.storageMethod)}</td>
+        <td>${esc(getDestinedDisplay(entry))}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p class="mt4 small"><i>* Fill up above table separately for indigenous and imported waste.</i></p>
+
+  <div class="mt4 small">
+    <p>4. Date wise description of management of hazardous and other wastes including products sent and to whom in case of recyclers or pre-processor or utiliser:</p>
+    <p class="mt2">5. Date of environmental monitoring (as per authorisation or guidelines of Central Pollution Control Board):</p>
+  </div>
+
+  <div class="mt10 small" style="display:flex;justify-content:space-between;align-items:flex-end;">
+    <div>
+      <p>Date: ${esc(entry.date)}</p>
+      <p class="mt2">Place: </p>
+    </div>
+    <p><b>Signature of occupier</b></p>
+  </div>
+</body>
+</html>`;
+
+};
+
+const createForm10Html = (entry: FormEntry): string => {
+  const form = toForm10Data(entry);
+
+  return `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Form10_${esc(entry.code)}</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 0; color: #111827; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #334155; padding: 8px; font-size: 13px; vertical-align: top; }
+    .center { text-align: center; padding: 16px; }
+    .small { font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="center">
+    <h1>FORM 10</h1>
+    <p class="small"><i>[See rule 19 (1)]</i></p>
+    <h2>MANIFEST FOR HAZARDOUS AND OTHER WASTE</h2>
+  </div>
+  <table>
+    <tr><td style="width:40px;"><b>1.</b></td><td><b>Sender's name and mailing address (including Phone No. and e-mail)</b></td><td>${esc(form.senderNameAddress)}<br>${esc(form.senderPhone)}<br>${esc(form.senderEmail)}</td></tr>
+    <tr><td><b>2.</b></td><td><b>Sender's authorisation No.</b></td><td>${esc(form.senderAuthorizationNo)}</td></tr>
+    <tr><td><b>3.</b></td><td><b>Manifest Document No.</b></td><td>${esc(form.manifestDocumentNo)}</td></tr>
+    <tr><td><b>4.</b></td><td><b>Transporter's name and address (including Phone No. and e-mail)</b></td><td>${esc(form.transporterNameAddress)}<br>${esc(form.transporterPhone)}<br>${esc(form.transporterEmail)}</td></tr>
+    <tr><td><b>5.</b></td><td><b>Type of vehicle</b></td><td>${esc(form.vehicleType)}</td></tr>
+    <tr><td><b>6.</b></td><td><b>Transporter's registration No.</b></td><td>${esc(form.transporterRegistrationNo)}</td></tr>
+    <tr><td><b>7.</b></td><td><b>Vehicle registration No.</b></td><td>${esc(form.vehicleRegistrationNo)}</td></tr>
+    <tr><td><b>8.</b></td><td><b>Receiver's name and mailing address (including Phone No. and e-mail)</b></td><td>${esc(form.receiverNameAddress)}<br>${esc(form.receiverPhone)}<br>${esc(form.receiverEmail)}</td></tr>
+    <tr><td><b>9.</b></td><td><b>Receiver's authorisation No.</b></td><td>${esc(form.receiverAuthorizationNo)}</td></tr>
+    <tr><td><b>10.</b></td><td><b>Waste description</b></td><td>${esc(form.wasteDescription)}</td></tr>
+    <tr><td><b>11.</b></td><td><b>Total quantity<br>No. of Containers</b></td><td>${esc(form.totalQuantity)} ${esc(form.quantityUnit)}<br>${esc(form.noOfContainers)}</td></tr>
+    <tr><td><b>12.</b></td><td><b>Physical form</b></td><td>${esc(form.physicalForm)}</td></tr>
+    <tr><td><b>13.</b></td><td><b>Special handling instructions and additional information</b></td><td>${esc(form.specialHandlingInfo)}</td></tr>
+    <tr><td><b>14.</b></td><td><b>Sender's Certificate</b></td><td>I hereby declare that the contents of the consignment are fully and accurately described above by proper shipping name and are categorised, packed, marked, and labelled, and are in all respects in proper conditions for transport by road according to applicable national government regulations.</td></tr>
+    <tr><td></td><td colspan="2">Name and stamp: ${esc(form.senderNameStamp)} | Signature: ${esc(form.senderSignature)} | Month: ${esc(form.senderMonth)} | Day: ${esc(form.senderDay)} | Year: ${esc(form.senderYear)}</td></tr>
+    <tr><td><b>15.</b></td><td colspan="2"><b>Transporter acknowledgement of receipt of Wastes</b></td></tr>
+    <tr><td></td><td colspan="2">Name and stamp: ${esc(form.transporterNameStamp)} | Signature: ${esc(form.transporterSignature)} | Month: ${esc(form.transporterMonth)} | Day: ${esc(form.transporterDay)} | Year: ${esc(form.transporterYear)}</td></tr>
+    <tr><td><b>16.</b></td><td colspan="2"><b>Receiver's certification for receipt of hazardous and other waste</b></td></tr>
+    <tr><td></td><td colspan="2">Name and stamp: ${esc(form.receiverNameStamp)} | Signature: ${esc(form.receiverSignature)} | Month: ${esc(form.receiverMonth)} | Day: ${esc(form.receiverDay)} | Year: ${esc(form.receiverYear)}</td></tr>
+  </table>
+</body>
+</html>`;
 };
 
 export default function WasteViewPage() {
   const [rows, setRows] = useState<ViewRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
-  const [refreshSeed, setRefreshSeed] = useState(0);
+  const [selectedEntry, setSelectedEntry] = useState<FormEntry | null>(null);
+  const [selectedForm10Entry, setSelectedForm10Entry] = useState<FormEntry | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const pageSize = 10;
-  const [filters, setFilters] = useState<FilterState>({
-    date: "",
-    categoryId: "",
-    wasteId: "",
-    disposerId: "",
-    physicalStateId: "",
-    storageMethodId: "",
-    receiverId: "",
-  });
-  const [categories, setCategories] = useState<Option[]>([]);
-  const [availableWaste, setAvailableWaste] = useState<Option[]>([]);
-  const [disposers, setDisposers] = useState<Option[]>([]);
-  const [physicalStates, setPhysicalStates] = useState<Option[]>([]);
-  const [storageMethods, setStorageMethods] = useState<Option[]>([]);
-  const [receivers, setReceivers] = useState<Option[]>([]);
 
   useEffect(() => {
     const loadRows = async () => {
       setLoading(true);
       setError(null);
-
       try {
         const params = new URLSearchParams();
-        params.set("flag", VIEW_FLAG);
-        if (filters.categoryId) params.set("WCID", filters.categoryId);
-        if (filters.wasteId) params.set("WID", filters.wasteId);
-        if (filters.disposerId) params.set("DID", filters.disposerId);
-        if (filters.physicalStateId) params.set("PSID", filters.physicalStateId);
-        if (filters.storageMethodId) params.set("SMID", filters.storageMethodId);
-        if (filters.receiverId) params.set("AID", filters.receiverId);
-        if (filters.date) params.set("GenerationDate", filters.date);
-
+        params.set("flag", "GWT-ALL");
         const res = await fetch(`/api/auth/waste/view?${params.toString()}`, {
           method: "GET",
           cache: "no-store",
         });
-
         const payload = (await res.json()) as ApiResponse;
-        // console.log(payload)
-
-        if (!res.ok || !payload.success) {
+        if (!res.ok || !payload.success || !Array.isArray(payload.data)) {
           setRows([]);
-          setError(payload.message || payload.error || "Failed to load records");
+          setError(payload.message || payload.error || "Failed to load waste data");
           return;
         }
-
-        if (!Array.isArray(payload.data)) {
-          setRows([]);
-          setError("Invalid response data format");
-          return;
-        }
-
         setRows(payload.data);
       } catch {
         setRows([]);
-        setError("Request failed while loading waste records");
+        setError("Request failed while loading waste data");
       } finally {
         setLoading(false);
       }
     };
 
     void loadRows();
-  }, [refreshSeed, filters]);
-
-  useEffect(() => {
-    const loadBaseFilters = async () => {
-      try {
-        const [
-          categoryRes,
-          disposerRes,
-          physicalRes,
-          storageRes,
-          receiverRes,
-        ] = await Promise.all([
-          fetch("/api/auth/Waste/generate?type=drop-wc", {
-            method: "GET",
-            cache: "no-store",
-          }),
-          fetch("/api/auth/Waste/generate?type=drop-dispo", {
-            method: "GET",
-            cache: "no-store",
-          }),
-          fetch("/api/auth/Waste/generate?type=drop-phstate", {
-            method: "GET",
-            cache: "no-store",
-          }),
-          fetch("/api/auth/Waste/generate?type=drop-smethod", {
-            method: "GET",
-            cache: "no-store",
-          }),
-          fetch("/api/auth/Waste/generate?type=drop-rcvr", {
-            method: "GET",
-            cache: "no-store",
-          }),
-        ]);
-
-        const [categoryPayload, disposerPayload, physicalPayload, storagePayload, receiverPayload] =
-          (await Promise.all([
-            categoryRes.json(),
-            disposerRes.json(),
-            physicalRes.json(),
-            storageRes.json(),
-            receiverRes.json(),
-          ])) as Array<{ success?: boolean; data?: Option[] }>;
-
-        setCategories(
-          categoryPayload.success && Array.isArray(categoryPayload.data)
-            ? categoryPayload.data
-            : [],
-        );
-        setDisposers(
-          disposerPayload.success && Array.isArray(disposerPayload.data)
-            ? disposerPayload.data
-            : [],
-        );
-        setPhysicalStates(
-          physicalPayload.success && Array.isArray(physicalPayload.data)
-            ? physicalPayload.data
-            : [],
-        );
-        setStorageMethods(
-          storagePayload.success && Array.isArray(storagePayload.data)
-            ? storagePayload.data
-            : [],
-        );
-        setReceivers(
-          receiverPayload.success && Array.isArray(receiverPayload.data)
-            ? receiverPayload.data
-            : [],
-        );
-      } catch {
-        setCategories([]);
-        setDisposers([]);
-        setPhysicalStates([]);
-        setStorageMethods([]);
-        setReceivers([]);
-      }
-    };
-
-    void loadBaseFilters();
   }, []);
 
-  useEffect(() => {
-    const loadWaste = async () => {
-      if (!filters.categoryId) {
-        setAvailableWaste([]);
-        return;
-      }
+  const tableRows = useMemo<FormEntry[]>(() => {
+    const sortedRows = [...rows].sort((a, b) => {
+      const aCode = toText(a.ID ?? a.Code).trim();
+      const bCode = toText(b.ID ?? b.Code).trim();
+      const aNum = Number(aCode);
+      const bNum = Number(bCode);
+      if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
+      return aCode.localeCompare(bCode, undefined, { numeric: true, sensitivity: "base" });
+    });
 
-      try {
-        const res = await fetch(
-          `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(filters.categoryId)}`,
-          {
-            method: "GET",
-            cache: "no-store",
-          },
-        );
-        const payload = (await res.json()) as { success?: boolean; data?: Option[] };
-        if (payload.success && Array.isArray(payload.data)) {
-          setAvailableWaste(payload.data);
-          return;
-        }
-        setAvailableWaste([]);
-      } catch {
-        setAvailableWaste([]);
-      }
-    };
-
-    void loadWaste();
-  }, [filters.categoryId]);
-
-  const headers = useMemo(() => {
-    const keySet = new Set<string>();
-    for (const row of rows) {
-      Object.keys(row).forEach((k) => keySet.add(k));
-    }
-    return Array.from(keySet);
+    return sortedRows.map((row) => toForm3Entry(row as Record<string, unknown>) as FormEntry);
   }, [rows]);
 
   const filteredRows = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter((row) =>
-      Object.values(row).some((value) => toText(value).toLowerCase().includes(q)),
-    );
-  }, [rows, query]);
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return tableRows;
 
-  const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+    return tableRows.filter((item) =>
+      [
+        item.code,
+        item.date,
+        item.targetDate,
+        item.wasteCategory,
+        item.waste,
+        item.quantity,
+        item.storageMethod,
+        item.physicalState,
+        item.disposer,
+        item.receiver,
+        item.approvalStatus,
+        item.wcid,
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(query),
+    );
+  }, [tableRows, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
+
   const pagedRows = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return filteredRows.slice(start, start + pageSize);
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredRows.slice(start, start + PAGE_SIZE);
   }, [filteredRows, currentPage]);
 
   useEffect(() => {
     setPage(1);
-  }, [query, filters]);
+  }, [rows.length, searchTerm]);
+
+  const onDownload = (entry: FormEntry) => {
+    const html = createForm3Html(entry);
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `FORM3_${entry.code || "ENTRY"}.html`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  };
+
+  const onDownloadForm10 = (entry: FormEntry) => {
+    const html = createForm10Html(entry);
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `FORM10_${entry.code || "ENTRY"}.html`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  };
 
   return (
-    <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Waste View</h1>
-          {/* <p className="mt-1 text-sm text-slate-600">
-            Live records fetched from stored procedure.
-          </p> */}
-        </div>
-        <button
-          type="button"
-          onClick={() => setRefreshSeed((x) => x + 1)}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-        >
-          Refresh
-        </button>
+    <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-slate-900">WASTE DETAILS</h1>
       </div>
 
-      <div className="mt-4 grid grid-cols-1 gap-0 md:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700">Date</label>
-          <input
-            type="date"
-            value={filters.date}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, date: e.target.value }))
-            }
-            className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700">Category</label>
-          <select
-            value={filters.categoryId}
-            onChange={(e) =>
-              setFilters((prev) => ({
-                ...prev,
-                categoryId: e.target.value,
-                wasteId: "",
-              }))
-            }
-            className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-          >
-            <option value="">Select</option>
-            {categories.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700">Waste</label>
-          <select
-            value={filters.wasteId}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, wasteId: e.target.value }))
-            }
-            className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-            disabled={!filters.categoryId}
-          >
-            <option value="">Select</option>
-            {availableWaste.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700">Disposer</label>
-          <select
-            value={filters.disposerId}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, disposerId: e.target.value }))
-            }
-            className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-          >
-            <option value="">Select</option>
-            {disposers.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700">
-            Physical State
-          </label>
-          <select
-            value={filters.physicalStateId}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, physicalStateId: e.target.value }))
-            }
-            className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-          >
-            <option value="">Select</option>
-            {physicalStates.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700">
-            Method of Storage
-          </label>
-          <select
-            value={filters.storageMethodId}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, storageMethodId: e.target.value }))
-            }
-            className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-          >
-            <option value="">Select</option>
-            {storageMethods.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-xs font-semibold text-slate-700">Receiver</label>
-          <select
-            value={filters.receiverId}
-            onChange={(e) =>
-              setFilters((prev) => ({ ...prev, receiverId: e.target.value }))
-            }
-            className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-          >
-            <option value="">Select</option>
-            {receivers.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-      </div>
-
-      <div className="mt-2">
-        <label className="mb-1 block text-xs font-semibold text-slate-700">
-          Search
-        </label>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search in all columns..."
-          className="w-1/2 min-w-40 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-        />
-      </div>
-
-      {loading && (
-        <p className="mt-4 text-sm text-slate-600">Loading waste records...</p>
-      )}
-
+      {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
       {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
-      {!loading && !error && headers.length === 0 && (
-        <p className="mt-4 text-sm text-slate-600">No records found.</p>
-      )}
+      {!loading && !error && (
+        <div className="mt-4 space-y-3">
+          <input
+            id="waste-search"
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by code, date, waste, receiver..."
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-slate-500 sm:max-w-sm"
+          />
 
-      {!loading && !error && headers.length > 0 && (
-        <>
-          {/* <p className="mt-4 text-sm text-slate-600">
-            Showing {pagedRows.length} of {filteredRows.length} records
-          </p> */}
-          <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
-                <tr>
-                  {headers.map((header) => (
-                    <th
-                      key={header}
-                      className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-700"
-                    >
-                      {getDisplayHeader(header)}
-                    </th>
-                  ))}
+          <div className="overflow-x-auto rounded-xl border border-slate-300">
+            <table className="min-w-full border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-100">
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">ID</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Date</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Waste Category</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Waste</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Quantity</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Storage</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Physical State</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Disposer</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Receiver</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Approval Status</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Target Date</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Form 3</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Form 10</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {pagedRows.map((row, index) => (
-                  <tr key={`row-${(currentPage - 1) * pageSize + index}`}>
-                    {headers.map((header) => (
-                      <td
-                        key={`${index}-${header}`}
-                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                      >
-                        {toText(row[header]) || "-"}
-                      </td>
-                    ))}
+              <tbody>
+                {pagedRows.length === 0 && (
+                  <tr>
+                    <td colSpan={13} className="border border-slate-300 px-2 py-3 text-center text-slate-600">
+                      No records found for the current search.
+                    </td>
+                  </tr>
+                )}
+
+                {pagedRows.map((item, index) => (
+                  <tr
+                    key={`waste-entry-${(currentPage - 1) * PAGE_SIZE + index}`}
+                    className={getApprovalRowClass(item.approvalStatus)}
+                  >
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.code}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.date}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.wasteCategory}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.waste}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.quantity}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.storageMethod}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.physicalState}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.disposer}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.receiver}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.approvalStatus}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.targetDate}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">
+                      <div className="flex items-center gap-2">
+                        {item.wcid === "1" && item.stsCode === "3" ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedEntry(item)}
+                              className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+                            >
+                              View Form
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onDownload(item)}
+                              className="rounded-md border border-slate-300 p-1 hover:bg-slate-50"
+                              title="Download Form 3"
+                            >
+                              <Download className="h-4 w-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <div>Not Applicable</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">
+                      <div className="flex items-center gap-2">
+                        {item.wcid === "1" && item.stsCode === "3" ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedForm10Entry(item)}
+                              className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+                            >
+                              View Form
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onDownloadForm10(item)}
+                              className="rounded-md border border-slate-300 p-1 hover:bg-slate-50"
+                              title="Download Form 10"
+                            >
+                              <Download className="h-4 w-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <div>Not Applicable</div>
+                        )}
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700">
-            <button
-              type="button"
-              onClick={() => setPage(1)}
-              disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
-            >
-              First
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <span>
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              type="button"
-              onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
-            >
-              Next
-            </button>
-            <button
-              type="button"
-              onClick={() => setPage(totalPages)}
-              disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
-            >
-              Last
-            </button>
+        </div>
+      )}
+
+      {!loading && !error && filteredRows.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
+          <p>
+            Showing {pagedRows.length} of {filteredRows.length} records
+            {searchTerm.trim() ? " (filtered)" : ""} (Code Ascending)
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <button type="button" onClick={() => setPage(1)} disabled={currentPage === 1} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">First</button>
+            <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={currentPage === 1} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">Prev</button>
+            <span>Page {currentPage} of {totalPages}</span>
+            <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">Next</button>
+            <button type="button" onClick={() => setPage(totalPages)} disabled={currentPage === totalPages} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">Last</button>
           </div>
-        </>
+        </div>
+      )}
+
+      {selectedForm10Entry && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-2 md:p-4">
+          <div className="max-h-[96vh] w-full max-w-6xl overflow-y-auto rounded-xl bg-white p-3 shadow-2xl md:p-6">
+            <div className="mb-4 flex items-start justify-between">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Form 10 - {selectedForm10Entry.code || "Entry"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedForm10Entry(null)}
+                className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+              >
+                Close
+              </button>
+            </div>
+            <Form10Table form={toForm10Data(selectedForm10Entry)} />
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => onDownloadForm10(selectedForm10Entry)}
+                className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
+              >
+                <Download className="h-4 w-4" />
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedEntry && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-2 md:p-4">
+          <div className="max-h-[96vh] w-full max-w-5xl overflow-y-auto rounded-xl bg-white p-3 shadow-2xl md:p-6">
+            <div className="flex items-start justify-between">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Waste Form - {selectedEntry.code || "Entry"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSelectedEntry(null)}
+                className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+              >
+                Close
+              </button>
+            </div>
+            <div className="mt-4 text-center">
+              <h1 className="text-xl font-bold text-slate-900">FORM 3</h1>
+              <p className="text-xs italic text-slate-700">
+                [See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]
+              </p>
+              <h2 className="mt-2 text-sm font-semibold text-slate-900">
+                FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES
+              </h2>
+            </div>
+            <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
+              <p>1. Name and address of the facility : {selectedEntry.unitDesc}</p>
+              <p>
+                2. Date of issuance of authorisation and its reference number :{" "}
+                {[selectedEntry.dateOfIssuance, selectedEntry.referenceNo].filter(Boolean).join(" ")}
+              </p>
+              <p>3. Description of hazardous and other wastes handled (Generated or Received)</p>
+            </div>
+            <div className="mt-3 overflow-x-auto rounded-lg border border-slate-300">
+              <table className="min-w-[760px] border-collapse text-xs sm:min-w-full sm:text-sm">
+                <thead>
+                  <tr className="bg-slate-100">
+                    <th className="border border-slate-300 px-2 py-2 text-left">Date</th>
+                    <th className="border border-slate-300 px-2 py-2 text-left">Type of waste with category</th>
+                    <th className="border border-slate-300 px-2 py-2 text-left">Total quantity(MT)</th>
+                    <th className="border border-slate-300 px-2 py-2 text-left">Method of Storage</th>
+                    <th className="border border-slate-300 px-2 py-2 text-left">Destined to or received from</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-slate-300 px-2 py-2">{selectedEntry.date}</td>
+                    <td className="border border-slate-300 px-2 py-2">
+                      {[selectedEntry.waste || selectedEntry.wasteType, selectedEntry.sapWasteCode]
+                        .filter(Boolean)
+                        .join(" / ")}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-2">{selectedEntry.quantity}</td>
+                    <td className="border border-slate-300 px-2 py-2">{selectedEntry.storageMethod}</td>
+                    <td className="border border-slate-300 px-2 py-2">{getDestinedDisplay(selectedEntry)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p className="mt-4 text-xs italic text-slate-700 sm:text-sm">
+              * Fill up above table separately for indigenous and imported waste.
+            </p>
+
+            <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
+              <p>
+                4. Date wise description of management of hazardous and other wastes including products sent and to whom in case of
+                recyclers or pre-processor or utiliser:
+              </p>
+              <p>5. Date of environmental monitoring (as per authorisation or guidelines of Central Pollution Control Board):</p>
+            </div>
+
+            <div className="mt-8 flex flex-col gap-3 text-xs text-slate-900 sm:flex-row sm:items-end sm:justify-between sm:text-sm">
+              <div>
+                <p>Date: {selectedEntry.date || "...................."}</p>
+                <p className="mt-2">Place: ....................</p>
+              </div>
+              <p className="font-semibold">Signature of occupier</p>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                type="button"
+                onClick={() => onDownload(selectedEntry)}
+                className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
+              >
+                <Download className="h-4 w-4" />
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </section>
   );

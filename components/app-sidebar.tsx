@@ -11,7 +11,7 @@ export default function AppSidebar() {
   const [reportOpen, setReportOpen] = useState(true);
   const [auctionOpen, setAuctionOpen] = useState(true);
   const [disposalOpen, setDisposalOpen] = useState(true);
-  const [disposalGenerateOpen, setDisposalGenerateOpen] = useState(false);
+  const [masterOpen, setMasterOpen] = useState(true);
 
   const wasteSubmenu = [
     { label: "APPROVE", href: "/Waste/Approve", enabled: true },
@@ -20,25 +20,27 @@ export default function AppSidebar() {
     { label: "EDIT", href: "/Waste/Edit", enabled: true },
   ];
 
-  const disposalSubmenu = [
-    { label: "INITIATE", href: "/Disposal/Initiate", enabled: true },
+
+
+  const masterSubmenu = [
+    { label: "AddVendor", href: "/Master/AddVendor", enabled: true }
   ];
 
-  const disposalGenerateSubmenu = [
-    { label: "HAZARDOUS", href: "/Disposal/Generate/Hazardous", enabled: true },
-    { label: "NON HAZARDOUS", href: "/Disposal/Generate/NonHazardous", enabled: true },
+
+  const disposalSubmenu = [
+    { label: "INITIATE", href: "/Disposal/Initiate", enabled: true },
   ];
 
   const auctionSubmenu = [
     { label: "APPROVE", href: "/Auction/Approve", enabled: true },
     { label: "APPLY", href: "/Auction/Apply", enabled: true },
-    { label: "VIEW", href: "", enabled: false },
-    { label: "EDIT", href: "", enabled: false },
+    { label: "SELECT", href: "/Auction/Select", enabled: true },
+    // { label: "EDIT", href: "", enabled: false },
   ];
 
   const reportSubmenu = [
-    { label: "FORM 3", href: "/Form/Form-3", enabled: true },
-    { label: "FORM 10", href: "/Form/Form-10", enabled: true },
+    { label: "FORM 3", href: "/Form/Form-3", enabled: false },
+    { label: "FORM 10", href: "/Form/Form-10", enabled: false },
   ];
 
   const menuIcon = (label: string) =>
@@ -52,8 +54,7 @@ export default function AppSidebar() {
 
   return (
     <aside
-      className={`shrink-0 border-r border-slate-200 bg-white transition-all duration-200 ${collapsed ? "w-20" : "w-64"
-        }`}
+      className={`shrink-0 border-r border-slate-200 bg-white transition-all duration-200 ${collapsed ? "w-20" : "w-64"}`}
     >
       <div className="flex h-full flex-col p-3">
         <div className="mb-4 flex items-center justify-between">
@@ -63,11 +64,7 @@ export default function AppSidebar() {
             className="rounded-md p-1 text-slate-600 hover:bg-slate-100"
             aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
-            {collapsed ? (
-              <ChevronRight className="h-4 w-4" />
-            ) : (
-              <ChevronLeft className="h-4 w-4" />
-            )}
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </button>
         </div>
 
@@ -80,10 +77,7 @@ export default function AppSidebar() {
             DB
           </Link>
         ) : (
-          <Link
-            href="/Home"
-            className="block rounded-md px-2 py-1 text-sm font-bold tracking-wide text-slate-800 hover:bg-slate-100"
-          >
+          <Link href="/Home" className="block rounded-md px-2 py-1 text-sm font-bold tracking-wide text-slate-800 hover:bg-slate-100">
             Dashboard
           </Link>
         )}
@@ -93,19 +87,11 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => setWasteOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
-                ? "flex items-center justify-center px-2"
-                : "flex items-center justify-between px-3"
-                }`}
+              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center justify-between px-3"}`}
               title="WASTE"
             >
               <span className={collapsed ? "" : "tracking-wide"}>Generation</span>
-              {!collapsed && (
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${wasteOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                />
-              )}
+              {!collapsed && <ChevronDown className={`h-4 w-4 transition-transform ${wasteOpen ? "rotate-0" : "-rotate-90"}`} />}
             </button>
 
             {wasteOpen && (
@@ -115,37 +101,19 @@ export default function AppSidebar() {
                     <Link
                       key={item.label}
                       href={item.href}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center gap-2 px-3"}`}
                       title={item.label}
                     >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4"
-                      />
+                      <Image src={menuIcon(item.label)} alt={item.label} width={16} height={16} className="h-4 w-4" />
                       {!collapsed && item.label}
                     </Link>
                   ) : (
                     <div
                       key={item.label}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center gap-2 px-3"}`}
                       title={`${item.label} (coming soon)`}
                     >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4 opacity-70"
-                      />
+                      <Image src={menuIcon(item.label)} alt={item.label} width={16} height={16} className="h-4 w-4 opacity-70" />
                       {!collapsed && item.label}
                     </div>
                   ),
@@ -158,19 +126,11 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => setAuctionOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
-                ? "flex items-center justify-center px-2"
-                : "flex items-center justify-between px-3"
-                }`}
+              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center justify-between px-3"}`}
               title="AUCTION"
             >
               <span className={collapsed ? "" : "tracking-wide"}>Auction</span>
-              {!collapsed && (
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${auctionOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                />
-              )}
+              {!collapsed && <ChevronDown className={`h-4 w-4 transition-transform ${auctionOpen ? "rotate-0" : "-rotate-90"}`} />}
             </button>
 
             {auctionOpen && (
@@ -180,37 +140,19 @@ export default function AppSidebar() {
                     <Link
                       key={`auction-${item.label}`}
                       href={item.href}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center gap-2 px-3"}`}
                       title={item.label}
                     >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4"
-                      />
+                      <Image src={menuIcon(item.label)} alt={item.label} width={16} height={16} className="h-4 w-4" />
                       {!collapsed && item.label}
                     </Link>
                   ) : (
                     <div
                       key={`auction-${item.label}`}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center gap-2 px-3"}`}
                       title={`${item.label} (coming soon)`}
                     >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4 opacity-70"
-                      />
+                      <Image src={menuIcon(item.label)} alt={item.label} width={16} height={16} className="h-4 w-4 opacity-70" />
                       {!collapsed && item.label}
                     </div>
                   ),
@@ -223,19 +165,11 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => setDisposalOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
-                ? "flex items-center justify-center px-2"
-                : "flex items-center justify-between px-3"
-                }`}
+              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center justify-between px-3"}`}
               title="DISPOSAL"
             >
               <span className={collapsed ? "" : "tracking-wide"}>Disposal</span>
-              {!collapsed && (
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${disposalOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                />
-              )}
+              {!collapsed && <ChevronDown className={`h-4 w-4 transition-transform ${disposalOpen ? "rotate-0" : "-rotate-90"}`} />}
             </button>
 
             {disposalOpen && (
@@ -244,65 +178,23 @@ export default function AppSidebar() {
                   <Link
                     key={`disposal-${item.label}`}
                     href={item.href}
-                    className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                      ? "flex items-center justify-center px-2"
-                      : "flex items-center gap-2 px-3"
-                      }`}
+                    className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center gap-2 px-3"}`}
                     title={item.label}
                   >
-                    <Image
-                      src="/form_generate.png"
-                      alt={item.label}
-                      width={16}
-                      height={16}
-                      className="h-4 w-4"
-                    />
+                    <Image src="/form_generate.png" alt={item.label} width={16} height={16} className="h-4 w-4" />
                     {!collapsed && item.label}
                   </Link>
                 ))}
 
-                <button
-                  type="button"
-                  onClick={() => setDisposalGenerateOpen((prev) => !prev)}
-                  className={`w-full rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                    ? "flex items-center justify-center px-2"
-                    : "flex items-center justify-between px-3"
-                    }`}
+                {/* NEW: Generate button that opens auction list */}
+                <Link
+                  href="/Disposal/Generate"
+                  className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center gap-2 px-3"}`}
                   title="GENERATE"
                 >
-                  <span>GENERATE</span>
-                  {!collapsed && (
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform ${disposalGenerateOpen ? "rotate-0" : "-rotate-90"
-                        }`}
-                    />
-                  )}
-                </button>
-
-                {disposalGenerateOpen && (
-                  <div className={collapsed ? "space-y-1" : "space-y-1 pl-3"}>
-                    {disposalGenerateSubmenu.map((item) => (
-                      <Link
-                        key={`disposal-gen-${item.label}`}
-                        href={item.href}
-                        className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                          ? "flex items-center justify-center px-2"
-                          : "flex items-center gap-2 px-3"
-                          }`}
-                        title={item.label}
-                      >
-                        <Image
-                          src="/form_generate.png"
-                          alt={item.label}
-                          width={16}
-                          height={16}
-                          className="h-4 w-4"
-                        />
-                        {!collapsed && item.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                  <Image src="/form_generate.png" alt="GENERATE" width={16} height={16} className="h-4 w-4" />
+                  {!collapsed && "GENERATE"}
+                </Link>
               </div>
             )}
           </div>
@@ -311,19 +203,11 @@ export default function AppSidebar() {
             <button
               type="button"
               onClick={() => setReportOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
-                ? "flex items-center justify-center px-2"
-                : "flex items-center justify-between px-3"
-                }`}
+              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center justify-between px-3"}`}
               title="REPORT"
             >
               <span className={collapsed ? "" : "tracking-wide"}>Report</span>
-              {!collapsed && (
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${reportOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                />
-              )}
+              {!collapsed && <ChevronDown className={`h-4 w-4 transition-transform ${reportOpen ? "rotate-0" : "-rotate-90"}`} />}
             </button>
 
             {reportOpen && (
@@ -333,43 +217,57 @@ export default function AppSidebar() {
                     <Link
                       key={`report-${item.label}`}
                       href={item.href}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center gap-2 px-3"}`}
                       title={item.label}
                     >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4"
-                      />
+                      <Image src={menuIcon(item.label)} alt={item.label} width={16} height={16} className="h-4 w-4" />
                       {!collapsed && item.label}
                     </Link>
                   ) : (
                     <div
                       key={`report-${item.label}`}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center gap-2 px-3"}`}
                       title={`${item.label} (coming soon)`}
                     >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4 opacity-70"
-                      />
+                      <Image src={menuIcon(item.label)} alt={item.label} width={16} height={16} className="h-4 w-4 opacity-70" />
                       {!collapsed && item.label}
                     </div>
                   ),
                 )}
               </div>
             )}
+
+
+
+
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => setMasterOpen((prev) => !prev)}
+                className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center justify-between px-3"}`}
+                title="DISPOSAL"
+              >
+                <span className={collapsed ? "" : "tracking-wide"}>Master</span>
+                {!collapsed && <ChevronDown className={`h-4 w-4 transition-transform ${disposalOpen ? "rotate-0" : "-rotate-90"}`} />}
+              </button>
+
+              {disposalOpen && (
+                <div className={collapsed ? "mt-1 space-y-1" : "mt-1 space-y-1 pl-3"}>
+                  {masterSubmenu.map((item) => (
+                    <Link
+                      key={`disposal-${item.label}`}
+                      href={item.href}
+                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed ? "flex items-center justify-center px-2" : "flex items-center gap-2 px-3"}`}
+                      title={item.label}
+                    >
+                      <Image src="/form_generate.png" alt={item.label} width={16} height={16} className="h-4 w-4" />
+                      {!collapsed && item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+
           </div>
         </nav>
       </div>

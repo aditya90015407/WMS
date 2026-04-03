@@ -2,7 +2,7 @@ import { getConnection } from "@/lib/dbConnect";
 import { NextRequest, NextResponse } from "next/server";
 import sql from "mssql";
 import decrypt from "@/components/Decrypt";
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const pool = await getConnection();
         if (!pool || !pool.connected) {

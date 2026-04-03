@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
  
-type DisposalType = "auctionable" | "non-auctionable" | "";
+type DisposalType = "auctionable" | "non-auctionable" | "Internal" |"";
  
 export default function DisposalInitiatePage() {
   const router = useRouter();
@@ -17,6 +17,12 @@ export default function DisposalInitiatePage() {
  
     if (type === "non-auctionable") {
       router.push("/Disposal/Initiate/NonAuctionable");
+      return;
+    }
+
+    if(type==="Internal")
+    {
+       router.push("/Disposal/Initiate/Internal");
       return;
     }
   };
@@ -46,6 +52,23 @@ export default function DisposalInitiatePage() {
             </p>
           </div>
         </label>
+
+        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
+          <input
+            type="radio"
+            name="disposalType"
+            value="Internal"
+            checked={type === "Internal"}
+            onChange={() => setType("Internal")}
+            className="h-4 w-4"
+          />
+          <div>
+            <p className="text-sm font-semibold text-slate-900">Internal</p>
+            <p className="text-xs text-slate-600">
+              Continue to filling Internal Disposal application form .
+            </p>
+          </div>
+        </label>
  
         <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
           <input
@@ -63,6 +86,7 @@ export default function DisposalInitiatePage() {
             </p>
           </div>
         </label>
+        
       </div>
  
       <div className="mt-6">

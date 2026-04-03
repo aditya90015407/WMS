@@ -20,29 +20,33 @@ export async function POST(req: Request) {
         }
 
         const realId = await decrypt(IDDID);
-        const realVID = String(VID); // do NOT decrypt
+        const realVID = String(VID); 
 
         const result = await pool
             .request()
             .input("FLAG", sql.VarChar, "Insert-Auction-Participants-Header")
+            .input("VID", sql.VarChar, realVID)
+            .input("IDDID", sql.Int, Number(realId))
             .input("Name", sql.VarChar, Name)
             .input("Email", sql.VarChar, Email)
-            .input("IDDID", sql.Int, Number(realId))
-            .input("VID", sql.VarChar, realVID)
             .input("EmpCode", sql.VarChar, EmpCode)
             .execute("PRO-WMS_SET");
 
         const row = result.recordset?.[0];
+       
+        
         const status = row?.STATUS ?? "";
         const match = status.match(/Ref No\.\s*-(\d+)/);
         const apidFromStatus = match ? match[1] : undefined;
-        console.log(apidFromStatus)
+        // console.log("recordset:", result.recordset);
+
         return NextResponse.json({
             success: true,
             message: row?.STATUS ?? "Inserted successfully",
             data: {
                 APID: row?.APID ?? apidFromStatus,
                 STATUS: row?.status,
+                StsCode: row?.StsCode,
             },
         });
     } catch (err: any) {
