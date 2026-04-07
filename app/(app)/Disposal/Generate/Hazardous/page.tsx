@@ -32,11 +32,11 @@ type RowDef = {
 
 const rows: RowDef[] = [
   { key: "wasteIds", field: "Waste ID/Batch ID", type: "multi-select", hint: "Comma separated IDs" },
-{
-  key: "senderNameAddress",
-  field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
-  type: "select",
-},
+  {
+    key: "senderNameAddress",
+    field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
+    type: "select",
+  },
 
 
   // {
@@ -57,7 +57,7 @@ const rows: RowDef[] = [
     key: "vehicleType",
     field: "Type of Vehicle",
     type: "select",
-   options: ["1|Truck", "2|Tanker", "3|Special Vehicle"]
+    options: ["1|Truck", "2|Tanker", "3|Special Vehicle"]
 
   },
   { key: "transporterRegNo", field: "Transporter Registration no.", type: "text", hint: "Enter registration number" },
@@ -72,7 +72,7 @@ const rows: RowDef[] = [
     key: "physicalForm",
     field: "Physical Form",
     type: "select",
-   options: ["1|Solid", "2|Semisolid", "3|Sludge", "4|Oily", "5|Tarry", "6|Slurry", "7|Liquid"]
+    options: ["1|Solid", "2|Semisolid", "3|Sludge", "4|Oily", "5|Tarry", "6|Slurry", "7|Liquid"]
 
   },
   { key: "specialHandling", field: "Special handling Instruction", type: "textarea", hint: "Enter handling notes (if applicable)" },
@@ -91,7 +91,7 @@ type Option = { id: string; name: string };
 export default function DisposalGeneratePage() {
   const router = useRouter();
 
-  
+
   const [values, setValues] = useState<Record<string, string | string[] | boolean | File | null>>({
     manifestNo: "",
     senderNameAddress: "",
@@ -104,60 +104,60 @@ export default function DisposalGeneratePage() {
   const params = useSearchParams();
   const iddid = params.get("id") ?? "";
 
-useEffect(() => {
-  const loadUnits = async () => {
-    try {
-      const res = await fetch("/api/GetData/GetUnit", {
-        method: "GET",
-        cache: "no-store",
-      });
+  useEffect(() => {
+    const loadUnits = async () => {
+      try {
+        const res = await fetch("/api/GetData/GetUnit", {
+          method: "GET",
+          cache: "no-store",
+        });
 
-      const data = await res.json();
-      console.log("GetUnit response:", data);
+        const data = await res.json();
+        console.log("GetUnit response:", data);
 
-      if (!res.ok || !Array.isArray(data)) {
+        if (!res.ok || !Array.isArray(data)) {
+          setUnitOptions([]);
+          return;
+        }
+
+        const options = data
+          .map(
+            (item: {
+              ID?: number | string;
+              UID?: number | string;
+              UnitID?: number | string;
+              NAME?: string;
+              Name?: string;
+              Unit?: string;
+              UnitDesc?: string;
+            }) => ({
+              id: String(item?.ID ?? item?.UID ?? item?.UnitID ?? "").trim(),
+              name: String(
+                item?.UnitDesc ?? item?.NAME ?? item?.Name ?? item?.Unit ?? "",
+              ).trim(),
+            }),
+          )
+          .filter((item) => item.id && item.name);
+
+
+        setUnitOptions(options);
+
+        if (options.length > 0) {
+          setValues((prev) => ({
+            ...prev,
+            senderNameAddress: typeof prev.senderNameAddress === "string" && prev.senderNameAddress
+              ? prev.senderNameAddress
+              : options[0].id,
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to load unit options", error);
         setUnitOptions([]);
-        return;
       }
+    };
 
-      const options = data
-        .map(
-          (item: {
-            ID?: number | string;
-            UID?: number | string;
-            UnitID?: number | string;
-            NAME?: string;
-            Name?: string;
-            Unit?: string;
-            UnitDesc?: string;
-          }) => ({
-            id: String(item?.ID ?? item?.UID ?? item?.UnitID ?? "").trim(),
-            name: String(
-              item?.UnitDesc ?? item?.NAME ?? item?.Name ?? item?.Unit ?? "",
-            ).trim(),
-          }),
-        )
-        .filter((item) => item.id && item.name);
-
-
-      setUnitOptions(options);
-
-      if (options.length > 0) {
-        setValues((prev) => ({
-          ...prev,
-          senderNameAddress: typeof prev.senderNameAddress === "string" && prev.senderNameAddress
-            ? prev.senderNameAddress
-            : options[0].id,
-        }));
-      }
-    } catch (error) {
-      console.error("Failed to load unit options", error);
-      setUnitOptions([]);
-    }
-  };
-
-  void loadUnits();
-}, []);
+    void loadUnits();
+  }, []);
 
   useEffect(() => {
     console.log("Hazardous manifestNo state:", values.manifestNo);
@@ -183,10 +183,10 @@ useEffect(() => {
         const row = Array.isArray(data.data) ? data.data[0] : data.data;
         const manifestNo = String(
           row?.ManifestDocumentNo ??
-            row?.manifestDocumentNo ??
-            row?.ManifestNo ??
-            row?.IDDID ??
-            "",
+          row?.manifestDocumentNo ??
+          row?.ManifestNo ??
+          row?.IDDID ??
+          "",
         );
 
         console.log("Hazardous manifest row:", row);
@@ -197,7 +197,7 @@ useEffect(() => {
           wasteIds: [String(iddid)],
           senderNameAddress: String(row?.UID ?? prev.senderNameAddress ?? ""),
           manifestNo,
-          
+
           transporterNameAddress: `${row?.TransporterName ?? ""} ${row?.TransporterAddress ?? ""}`.trim(),
           transporterPhoneEmail: `${row?.TransporterPhone ?? ""}, ${row?.TransporterEmail ?? ""}`.trim(),
           transporterRegNo: String(row?.TransporterRegNo ?? ""),
@@ -208,8 +208,8 @@ useEffect(() => {
           // wasteDescription: String(row?.WasteCategory ?? ""),
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
-          Waste: String(row?.Waste ??  ""),
-          totalQty: String(row?.TotalQty ??  ""),
+          Waste: String(row?.Waste ?? ""),
+          totalQty: String(row?.TotalQty ?? ""),
 
 
         }));
@@ -226,53 +226,79 @@ useEffect(() => {
     setValues((prev) => ({ ...prev, [key]: value }));
   };
 
-const onSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const formData = new FormData();
-  formData.append("IDDID", iddid);
-  formData.append("UID", String(values.senderNameAddress ?? ""));
-  formData.append("TransporterName", String(values.transporterNameAddress ?? "").split(",")[0] ?? "");
-  formData.append("TransporterAddress", String(values.transporterNameAddress ?? ""));
-  formData.append("TransporterPhone", String(values.transporterPhoneEmail ?? "").split(",")[0] ?? "");
-  formData.append("TransporterEmail", String(values.transporterPhoneEmail ?? "").split(",")[1] ?? "");
-  formData.append("VTID", String(values.vehicleType ?? ""));
-  formData.append("TransporterRegNo", String(values.transporterRegNo ?? ""));
-  formData.append("VehicleRegNo", String(values.vehicleRegNo ?? ""));
-  formData.append("ReceiverName", String(values.receiverName ?? ""));
-  formData.append("ReceiverAddress", String(values.receiverAddress ?? ""));
-  formData.append("ReceiverAuthNo", String(values.receiverAuthNo ?? ""));
-  formData.append("TotalQty", String(Number(values.totalQty ?? 0)));
-  formData.append("Waste", String(values.Waste ?? ""));
-  formData.append("NoOfContainers", String(values.containers ?? ""));
-  formData.append("PSID", String(values.physicalForm ?? ""));
-  formData.append("SpecialHandlingInstructions", String(values.specialHandling ?? ""));
-  formData.append("EmpCode", "YOUR_EMP_CODE");
-  formData.append("DateOfDisposal", today);
+    const formData = new FormData();
+    formData.append("IDDID", iddid);
+    formData.append("UID", String(values.senderNameAddress ?? ""));
+    formData.append("TransporterName", String(values.transporterNameAddress ?? "").split(",")[0] ?? "");
+    formData.append("TransporterAddress", String(values.transporterNameAddress ?? ""));
+    formData.append("TransporterPhone", String(values.transporterPhoneEmail ?? "").split(",")[0] ?? "");
+    formData.append("TransporterEmail", String(values.transporterPhoneEmail ?? "").split(",")[1] ?? "");
+    formData.append("VTID", String(values.vehicleType ?? ""));
+    formData.append("TransporterRegNo", String(values.transporterRegNo ?? ""));
+    formData.append("VehicleRegNo", String(values.vehicleRegNo ?? ""));
+    formData.append("ReceiverName", String(values.receiverName ?? ""));
+    formData.append("ReceiverAddress", String(values.receiverAddress ?? ""));
+    formData.append("ReceiverAuthNo", String(values.receiverAuthNo ?? ""));
+    formData.append("TotalQty", String(Number(values.totalQty ?? 0)));
+    formData.append("Waste", String(values.Waste ?? ""));
+    formData.append("NoOfContainers", String(values.containers ?? ""));
+    formData.append("PSID", String(values.physicalForm ?? ""));
+    formData.append("SpecialHandlingInstructions", String(values.specialHandling ?? ""));
+    formData.append("EmpCode", "YOUR_EMP_CODE");
+    formData.append("DateOfDisposal", today);
 
-  if (values.salePoSoDoc instanceof File) {
-    formData.append("salePoSoDoc", values.salePoSoDoc);
-  }
-  if (values.finalPartyDoc instanceof File) {
-    formData.append("finalPartyDoc", values.finalPartyDoc);
-  }
+    if (values.salePoSoDoc instanceof File) {
+      formData.append("salePoSoDoc", values.salePoSoDoc);
+    }
+    if (values.finalPartyDoc instanceof File) {
+      formData.append("finalPartyDoc", values.finalPartyDoc);
+    }
 
-  const res = await fetch("/api/SetData/SetFinalDisposalDetails", {
-    method: "POST",
-    body: formData,
-  });
+    const res = await fetch("/api/SetData/SetFinalDisposalDetails", {
+      method: "POST",
+      body: formData,
+    });
 
-  const result = await res.json();
-  if (!res.ok || !result.success) {
-    alert(result.message || "Save failed");
-    return;
-  }
+    const result = await res.json();
+    console.log(result);
+    const statusText = String(result?.data?.[0]?.STATUS ?? "").trim();
+    const fddid = statusText.split("-").pop()?.trim() ?? "";
 
-  router.push(`/Form/Form-10?id=${iddid}`);
+    // const fddid = result.fddid;
+    // console.log(statusText);
+    // console.log(fddid);
+    // console.log(result);
+    if (!res.ok || !result.success) {
+      alert(result.message || "Save failed");
+      return;
+    }
+
+    if (values.salePoSoDoc instanceof File) {
+      const attachmentFormData = new FormData();
+      attachmentFormData.append("FDDID", fddid);
+      attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+
+      const attachmentRes = await fetch("/api/SetData/SetFinalDisposalDetailsAttachments", {
+        method: "POST",
+        // headers: { "Content-Type": "application/json" },
+        body: attachmentFormData,
+      });
+
+      const attachmentResult = await attachmentRes.json();
+      if (!attachmentRes.ok || !attachmentResult.success) {
+        alert(attachmentResult.message || "Attachment save failed");
+        return;
+      }
+    }
+
+    router.push(`/Form/Form-10?id=${iddid}`);
 
 
 
-};
+  };
 
 
   const renderInput = (row: RowDef) => {
@@ -281,7 +307,7 @@ const onSubmit = async (e: React.FormEvent) => {
     if (row.type === "text") {
       return (
         <input
-                
+
 
           value={(v as string) ?? ""}
           placeholder={row.hint ?? ""}
@@ -294,8 +320,8 @@ const onSubmit = async (e: React.FormEvent) => {
     if (row.type === "textarea") {
       return (
         <textarea
-        id={row.key}
-        name={row.key}
+          id={row.key}
+          name={row.key}
 
           rows={2}
           value={(v as string) ?? ""}
@@ -309,7 +335,7 @@ const onSubmit = async (e: React.FormEvent) => {
     if (row.type === "number") {
       return (
         <input
-        
+
 
           type="number"
           value={(v as string) ?? ""}
@@ -323,7 +349,7 @@ const onSubmit = async (e: React.FormEvent) => {
     if (row.type === "phone-email") {
       return (
         <input
-       
+
 
           value={(v as string) ?? ""}
           placeholder={row.hint ?? "Phone, Email"}
@@ -333,49 +359,49 @@ const onSubmit = async (e: React.FormEvent) => {
       );
     }
 
-if (row.type === "select") {
-  const options = row.key === "senderNameAddress" ? unitOptions : (row.options ?? []);
-  const currentValue = (v as string) ?? "";
+    if (row.type === "select") {
+      const options = row.key === "senderNameAddress" ? unitOptions : (row.options ?? []);
+      const currentValue = (v as string) ?? "";
 
-  return (
-    <select
-      id={row.key}
-      name={row.key}
-      className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-      onChange={(e) => updateValue(row.key, e.target.value)}
-      value={currentValue || ""}
-    >
-      <option value="" disabled>
-        Select
-      </option>
-      {row.key === "senderNameAddress"
-        ? (options as Option[]).map((op, index) => (
-            <option key={`${row.key}-${op.id}-${index}`} value={op.id}>
-              {op.name}
-            </option>
-          ))
-        : (options as string[]).map((op, index) => {
-            const hasPipe = op.includes("|");
-            const value = hasPipe ? op.split("|")[0].trim() : op.trim();
-            const label = hasPipe ? op.split("|")[1].trim() : op.trim();
-
-            return (
-              <option key={`${row.key}-${value}-${index}`} value={value}>
-                {label}
+      return (
+        <select
+          id={row.key}
+          name={row.key}
+          className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+          onChange={(e) => updateValue(row.key, e.target.value)}
+          value={currentValue || ""}
+        >
+          <option value="" disabled>
+            Select
+          </option>
+          {row.key === "senderNameAddress"
+            ? (options as Option[]).map((op, index) => (
+              <option key={`${row.key}-${op.id}-${index}`} value={op.id}>
+                {op.name}
               </option>
-            );
-          })}
+            ))
+            : (options as string[]).map((op, index) => {
+              const hasPipe = op.includes("|");
+              const value = hasPipe ? op.split("|")[0].trim() : op.trim();
+              const label = hasPipe ? op.split("|")[1].trim() : op.trim();
 
-    </select>
-  );
-}
+              return (
+                <option key={`${row.key}-${value}-${index}`} value={value}>
+                  {label}
+                </option>
+              );
+            })}
+
+        </select>
+      );
+    }
 
 
     if (row.type === "multi-select") {
       const arr = Array.isArray(v) ? v : [];
       return (
         <input
-        
+
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
           placeholder={row.hint ?? "Comma separated IDs"}
           value={arr.join(", ")}
@@ -396,8 +422,8 @@ if (row.type === "select") {
       return (
         <label className="inline-flex items-center gap-2 text-sm">
           <input
-          id={row.key}
-          name={row.key}
+            id={row.key}
+            name={row.key}
 
             type="checkbox"
             checked={Boolean(v)}
@@ -408,17 +434,17 @@ if (row.type === "select") {
       );
     }
 
-   if (row.type === "file") {
-  return (
-    <input
-  
-      type="file"
-      accept=".pdf,.jpeg,.jpg,.png"
-      className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-      onChange={(e) => updateValue(row.key, e.target.files?.[0] ?? null)}
-    />
-  );
-}
+    if (row.type === "file") {
+      return (
+        <input
+
+          type="file"
+          accept=".pdf,.jpeg,.jpg,.png"
+          className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+          onChange={(e) => updateValue(row.key, e.target.files?.[0] ?? null)}
+        />
+      );
+    }
 
     if (row.type === "auto") {
       return (
@@ -435,7 +461,7 @@ if (row.type === "select") {
       return (
         <div className="grid grid-cols-2 gap-2">
           <input
-          
+
             placeholder="Signature"
             className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
             onChange={(e) => updateValue(`${row.key}_sign`, e.target.value)}

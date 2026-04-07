@@ -47,17 +47,17 @@ export async function POST(req: Request) {
       .input("DateOfDisposal", sql.Date, String(form.get("DateOfDisposal") ?? ""))
       .execute("PRO-WMS_SET");
 
-    const rows = result.recordset[0];
-    const fddid = rows?.FDDID;
-    console.log(fddid);
+      const rows=result.recordset[0];
+      const fddid=rows?.FDDID;
+      console.log(fddid);
     return NextResponse.json({
       success: true,
       fddid,
       data: result.recordset ?? [],
-
+      
     });
   } catch (error: any) {
-
+    
     console.error("SetFinalDisposalDetails error:", error);
 
     return NextResponse.json(

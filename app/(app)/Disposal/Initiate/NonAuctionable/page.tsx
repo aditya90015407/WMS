@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 type Option = { id: string; name: string };
- type Option1 = { ID: string; NAME: string };
+type Option1 = { ID: string; NAME: string };
 export default function NonAuctionablePage() {
   const [wasteCategory, setWasteCategory] = useState("");
   const [waste, setWaste] = useState("");
@@ -25,30 +25,30 @@ export default function NonAuctionablePage() {
 
   const [remarks, setRemarks] = useState("");
   useEffect(() => {
-  const loadDropdowns = async () => {
-    try {
-      const [ physicalRes] = await Promise.all([
-        
-        fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
-      ]);
+    const loadDropdowns = async () => {
+      try {
+        const [physicalRes] = await Promise.all([
 
-      const physicalPayload = await physicalRes.json();
+          fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
+        ]);
 
-      
+        const physicalPayload = await physicalRes.json();
 
-      setPhysicalOptions(
-        physicalPayload.success && Array.isArray(physicalPayload.data)
-          ? physicalPayload.data
-          : [],
-      );
-    } catch {
-  
-      setPhysicalOptions([]);
-    }
-  };
 
-  void loadDropdowns();
-}, []);
+
+        setPhysicalOptions(
+          physicalPayload.success && Array.isArray(physicalPayload.data)
+            ? physicalPayload.data
+            : [],
+        );
+      } catch {
+
+        setPhysicalOptions([]);
+      }
+    };
+
+    void loadDropdowns();
+  }, []);
   useEffect(() => {
     const loadBase = async () => {
       setLoadingBase(true);
@@ -193,7 +193,7 @@ export default function NonAuctionablePage() {
           WID: selectedWasteId,
           TotalQty: totalSelectedQty,
           Auctionable: 2,
-          PSID:physicalForm,
+          PSID: physicalForm,
           AuctionDate: Date,
           Remarks: remarks,
         }),
@@ -298,8 +298,8 @@ export default function NonAuctionablePage() {
             {selectedUndisposedItems.length > 0
               ? selectedUndisposedItems.map((x) => x.label).join(", ")
               : loadingUndisposed
-              ? "Loading..."
-              : "Select Dept - Quantity"}
+                ? "Loading..."
+                : "Select Dept - Quantity"}
           </button>
 
           {undisposedDropdownOpen && (
@@ -344,23 +344,23 @@ export default function NonAuctionablePage() {
             className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
           />
         </div>
-         <div>
-         <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
-         
-        <select
-        value={physicalForm}
-        onChange={(e) => setPhysicalForm(e.target.value)}
-        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-      >
-        <option value="">Select</option>
-        {physicalOptions.map((opt) => (
-          <option key={opt.ID} value={opt.ID}>
-            {opt.NAME}
-          </option>
-        ))}
-      </select>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
 
-       </div>
+          <select
+            value={physicalForm}
+            onChange={(e) => setPhysicalForm(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="">Select</option>
+            {physicalOptions.map((opt) => (
+              <option key={opt.ID} value={opt.ID}>
+                {opt.NAME}
+              </option>
+            ))}
+          </select>
+
+        </div>
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Remarks</label>

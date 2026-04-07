@@ -82,7 +82,7 @@ export default function HazardousForm10Page() {
 
   useEffect(() => {
     const loadForm10Details = async () => {
-        console.log(id)
+      console.log(id)
       if (!id) return;
 
       try {
@@ -100,14 +100,14 @@ export default function HazardousForm10Page() {
         console.log("data.success:", data.success);
         console.log("data.data:", data.data);
 
-if (!res.ok || !data.success) {
-  setStatus(data.message || "Failed to load Form 10 details.");
-  return;
-}
+        if (!res.ok || !data.success) {
+          setStatus(data.message || "Failed to load Form 10 details.");
+          return;
+        }
 
-const row = (Array.isArray(data.data) ? data.data[0] : data.data) as Record<string, unknown>;
+        const row = (Array.isArray(data.data) ? data.data[0] : data.data) as Record<string, unknown>;
         // console.log(row)
-      
+
 
 
         const transporterName = getFirstValue(row, ["TransporterName"]);
@@ -164,7 +164,7 @@ const row = (Array.isArray(data.data) ? data.data[0] : data.data) as Record<stri
     void loadForm10Details();
   }, [id]);
 
-  
+
 
   const updateField = <K extends keyof Form10Data>(key: K, value: Form10Data[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -182,9 +182,8 @@ const row = (Array.isArray(data.data) ? data.data[0] : data.data) as Record<stri
 
       {status && (
         <p
-          className={`mt-4 text-sm ${
-            status.toLowerCase().includes("fail") ? "text-red-600" : "text-green-700"
-          }`}
+          className={`mt-4 text-sm ${status.toLowerCase().includes("fail") ? "text-red-600" : "text-green-700"
+            }`}
         >
           {status}
         </p>

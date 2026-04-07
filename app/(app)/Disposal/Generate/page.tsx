@@ -118,29 +118,29 @@ export default function DisposalListPage() {
                       try {
                         const iddid = String(row.ID ?? "").trim();
                         const wcid = String(row.WCID ?? "").trim();
-                           
 
-                        const disposalType=String(row.DisType ?? "").trim();
+
+                        const disposalType = String(row.DisType ?? "").trim();
                         console.log("Row clicked:", { iddid, wcid, disposalType });
                         if (!iddid || !disposalType) return;
-                      
-                                  const target =
-            disposalType?.toLowerCase() === "internal"
-              ? `/Disposal/Generate/Internal?id=${encodeURIComponent(iddid)}`
-              : wcid === "1"
-              ? `/Disposal/Generate/Hazardous?id=${encodeURIComponent(iddid)}`
-              :
-              `/Disposal/Generate/NonHazardous?id=${encodeURIComponent(iddid)}`
-              ;
 
-          if (!target) {
-            alert("Invalid disposal route");
-            return;
-          }
+                        const target =
+                          disposalType?.toLowerCase() === "internal"
+                            ? `/Disposal/Generate/Internal?id=${encodeURIComponent(iddid)}`
+                            : wcid === "1"
+                              ? `/Disposal/Generate/Hazardous?id=${encodeURIComponent(iddid)}`
+                              :
+                              `/Disposal/Generate/NonHazardous?id=${encodeURIComponent(iddid)}`
+                          ;
 
-          router.push(target);
+                        if (!target) {
+                          alert("Invalid disposal route");
+                          return;
+                        }
 
-                        
+                        router.push(target);
+
+
                       } catch (err) {
                         console.error("Redirect failed:", err);
                       }
