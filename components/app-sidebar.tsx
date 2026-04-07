@@ -143,8 +143,8 @@ export default function AppSidebar() {
                         type="button"
                         onClick={() => toggleMenu(parent.MenuID)}
                         className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
-                            ? "flex items-center justify-center px-2"
-                            : "flex items-center justify-between px-3"
+                          ? "flex items-center justify-center px-2"
+                          : "flex items-center justify-between px-3"
                           }`}
                         title={parent.Menu}
                       >
@@ -162,10 +162,10 @@ export default function AppSidebar() {
                           {children.map((child) => (
                             <Link
                               key={child.MenuID}
-                              href={buildHref(child.AspxPage)}
+                              href={buildHref(`${parent.AspxPage}/${child.AspxPage}`)}
                               className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                                  ? "flex items-center justify-center px-2"
-                                  : "flex items-center gap-2 px-3"
+                                ? "flex items-center justify-center px-2"
+                                : "flex items-center gap-2 px-3"
                                 }`}
                               title={child.Menu}
                             >
@@ -186,8 +186,8 @@ export default function AppSidebar() {
                     <Link
                       href={buildHref(parent.AspxPage)}
                       className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
-                          ? "flex items-center justify-center px-2"
-                          : "flex items-center gap-2 px-3"
+                        ? "flex items-center justify-center px-2"
+                        : "flex items-center gap-2 px-3"
                         }`}
                       title={parent.Menu}
                     >

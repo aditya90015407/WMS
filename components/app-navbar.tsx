@@ -1,11 +1,11 @@
 "use client";
-
+ 
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronRight, UserCircle2 } from "lucide-react";
-
+ 
 type SessionUserLike = {
   username?: string;
   name?: string;
@@ -13,18 +13,19 @@ type SessionUserLike = {
   department?: string;
   roles?: string[] | string;
   role?: string;
+  roleName?: string;
   uid?: string;
   deptId?: string;
   WMSUnit?: string;
   WMSDept?: string;
   id?: string;
 };
-
+ 
 const normalizeUser = (value: unknown): SessionUserLike => {
   if (typeof value !== "object" || value === null) return {};
   return value as SessionUserLike;
 };
-
+ 
 const formatSegment = (segment: string) =>
   segment
     .replace(/[-_]+/g, " ")
@@ -32,7 +33,7 @@ const formatSegment = (segment: string) =>
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
-
+ 
 export default function AppNavbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -40,11 +41,11 @@ export default function AppNavbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-
+ 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
+ 
   const user = normalizeUser(isMounted ? session?.user : null);
   const displayName = user.username || user.name || "Unknown User";
   const email = user.email || "Not available";
@@ -54,22 +55,18 @@ export default function AppNavbar() {
   const wmsUnit = user.WMSUnit || "Not available";
   const wmsDept = user.WMSDept || "Not available";
   const empCode = user.id || "Not available";
+  const assignedRole =
+    (typeof user.roleName === "string" && user.roleName.trim().length > 0
+      ? user.roleName.trim()
+      : typeof user.role === "string" && user.role.trim().length > 0
+        ? user.role.trim()
+        : "") || "";
   const pathSegments = (pathname || "/")
     .split("/")
     .filter(Boolean)
     .filter((segment) => segment.toLowerCase() !== "home");
   const breadcrumbParts = ["Home", ...pathSegments.map(formatSegment)];
-  const roleList = Array.isArray(user.roles)
-    ? user.roles.filter((role) => typeof role === "string" && role.trim().length > 0)
-    : typeof user.roles === "string" && user.roles.trim().length > 0
-      ? user.roles
-        .split(",")
-        .map((role) => role.trim())
-        .filter((role) => role.length > 0)
-      : typeof user.role === "string" && user.role.trim().length > 0
-        ? [user.role]
-        : [];
-
+ 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (!containerRef.current) return;
@@ -77,17 +74,17 @@ export default function AppNavbar() {
         setIsOpen(false);
       }
     };
-
+ 
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
-
+ 
   const handleLogout = async () => {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     await signOut({ callbackUrl: "/sign-in" });
   };
-
+ 
   return (
     <header className="w-full sticky z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
       <div className="relative flex h-16 w-full items-center justify-between px-4 md:px-6">
@@ -101,13 +98,13 @@ export default function AppNavbar() {
             priority
           />
         </div>
-
+ 
         <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-center">
           <h1 className="text-lg font-extrabold tracking-wide text-slate-800 drop-shadow-sm md:text-2xl">
             WASTE MANAGEMENT SYSTEM
           </h1>
         </div>
-
+ 
         <div className="relative" ref={containerRef}>
           <button
             type="button"
@@ -117,7 +114,7 @@ export default function AppNavbar() {
           >
             <UserCircle2 className="h-9 w-9" />
           </button>
-
+ 
           {isOpen && (
             <div className="absolute right-0 mt-2 w-80 rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -156,20 +153,15 @@ export default function AppNavbar() {
                 <p className="text-slate-800">
                   <span className="font-semibold">Assigned Roles:</span>
                 </p>
-                {roleList.length > 0 ? (
+                {assignedRole ? (
                   <div className="flex flex-wrap gap-2 pt-1">
-                    {roleList.map((role) => (
-                      <span
-                        key={role}
-                        className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
-                      >
-                        {role}
-                      </span>
-                    ))}
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                      {assignedRole}
+                    </span>
                   </div>
-                ) : (
+                ) : !assignedRole ? (
                   <p className="text-sm text-slate-600">Not assigned yet</p>
-                )}
+                ) : null}
                 <div className="pt-3">
                   <button
                     type="button"
@@ -200,3 +192,5 @@ export default function AppNavbar() {
     </header>
   );
 }
+ 
+ 

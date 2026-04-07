@@ -296,7 +296,7 @@ export const authOptions: NextAuthOptions = {
         tokenClaims.roleName = userRoleName;
         tokenClaims.loginDate = new Date().toISOString().slice(0, 10);
       }
-      // console.log(token)
+      console.log(token)
       return token;
     },
     async session({ session, token }) {
@@ -342,7 +342,7 @@ export const authOptions: NextAuthOptions = {
         safeSessionUser.id =
           typeof tokenClaims.sub === "string" ? tokenClaims.sub : "";
       }
-      // console.log(session)
+      console.log(session)
       return session;
     },
   },
