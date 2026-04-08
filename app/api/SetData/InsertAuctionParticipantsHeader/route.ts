@@ -30,7 +30,7 @@ export async function POST(req: Request) {
             .input("IDDID", sql.Int, Number(realId))
             .input("Name", sql.VarChar, Name)
             .input("Email", sql.VarChar, Email)
-            .input("VendorCode", sql.VarChar, EmpCode)
+            .input("EmpCode", sql.VarChar, EmpCode)
             .execute("PRO-WMS_SET");
 
         const row = result.recordset?.[0];
