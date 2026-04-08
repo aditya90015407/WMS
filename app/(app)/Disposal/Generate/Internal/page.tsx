@@ -27,11 +27,11 @@ type PhysicalFormOption = {
   NAME: string;
 };
 
-export default function InternalDisposalGeneratePage() {
+export default function InternalDisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
   const iddid = params.id;
-  const iddid = params.get("id") ?? "";
+  // const iddid = params.get("id") ?? "";
   const [form, setForm] = useState<InternalDisposalFormState>({
     disposalDate: today,
     wasteIds: [],
