@@ -118,7 +118,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br bg-white flex items-center justify-center">
+    <div className="min-h-screen bg-linear-to-br bg-white/75 flex items-center justify-center">
       <Toaster position="top-right" />
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
         <div className="grid md:grid-cols-2 gap-16 items-center">
