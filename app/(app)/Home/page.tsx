@@ -29,7 +29,7 @@ export default function HomePage() {
       className="relative min-h-screen bg-cover bg-center bg-no-repeat p-2 md:p-4"
       style={{ backgroundImage: 'url("/wms pic.jpg")' }}
     >
-      <div className="absolute inset-0 bg-emerald-100" />
+      <div className="absolute inset-0 bg-white/75" />
       <div className="relative z-10 mx-auto max-w-6xl space-y-8">
         <section className="rounded-3xl border border-emerald-100 bg-white/90 p-8 shadow-sm md:p-10">
           {/* <p className="mb-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">

@@ -86,7 +86,7 @@ export default function AppNavbar() {
   };
 
   return (
-    <header className="w-full sticky z-40 border-b border-slate-200 bg-green-200 backdrop-blur">
+    <header className="w-full sticky z-40 border-b border-slate-200 bg-white backdrop-blur">
       <div className="relative flex h-16 w-full items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-3">
           <Image
