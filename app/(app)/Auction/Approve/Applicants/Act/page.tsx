@@ -37,6 +37,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         UpBy: string
         UpDt: string
         IsActive: string
+        VendorCode: string
     }
 
     type AuctionParticipantLine = {
@@ -85,7 +86,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         })
 
         const rawData = await res.json()
-        console.log(rawData)
+        // console.log(rawData)
         const HeaderData = rawData.HeaderDetails.map(normalizeData)
         setAuctionParticipant(HeaderData[0])
 
@@ -124,13 +125,50 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
     }, [])
 
 
+
+    async function downloadAttachment(attachPath: any, attachName: any) {
+        const payload = {
+            AttachPath: attachPath
+        }
+        // console.log(payload)
+
+        const res = await fetch(`/api/DownloadAttachments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        })
+
+        if (!res.ok) {
+            toast.error("File Not Found")
+            return
+        }
+
+        const blob = await res.blob()
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
+
+        a.href = url
+        a.download = `${attachName}.zip`
+        document.body.appendChild(a)
+        a.click()
+
+        a.remove()
+        window.URL.revokeObjectURL(url)
+
+        // setDownloading(false)
+    }
+
+
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
 
         const res = await fetch("/api/SetData/SetAuctionApproval", {
             method: "POST",
             body: JSON.stringify({
-                "WRID": auctionParticipant?.ID,
+                "APID": auctionParticipant?.ID,
+                "APLID": auctionParticipantLine.at(-1)?.ID,
                 "Remarks": remarks,
                 "Acceptance": acceptance
             })
@@ -139,9 +177,9 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         const data = await res.json()
         // console.log(data)
 
-        if (data.STATUS == 'Approved Successfully !') {
-            toast.success("Approved Successfully !")
-            redirect("./")
+        if (data.STATUS == 'Response Recorded Successfully!') {
+            toast.success("Response Recorded Successfully!")
+            // redirect("./")
             return
         }
 
@@ -171,7 +209,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
             <form onSubmit={handleSubmit} action="">
                 <div className="grid grid-cols-2 text-sm">
-                    <div className="px-2 py-2 font-semibold text-xs">ID : <span className="font-normal text-sm"> {auctionParticipant?.ID}</span></div>
+                    <div className="px-2 py-2 font-semibold text-xs">Vendor Code : <span className="font-normal text-sm"> {auctionParticipant?.VendorCode}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Name : <span className="font-normal text-sm"> {auctionParticipant?.NAME}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Email : <span className="font-normal text-sm"> {auctionParticipant?.EMAIL}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Applied On : <span className="font-normal text-sm"> {auctionParticipant?.CrDt?.split('T')[0]} {auctionParticipant?.CrDt?.split('T')[1]?.split('.')[0]} </span></div>
@@ -204,9 +242,9 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                 >EPR registration certificate for Plastic/oil/tyre</th>
                                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >Admin Remarks</th>
+                                >Remarks</th>
                                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >Rejection Date</th>
+                                >Apply Date</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 bg-white">
@@ -218,23 +256,39 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                     </td>
                                     <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.CTO_AttachPath}
+                                    >
+                                        <img src="/downloadicon.png" alt="" className="h-5"
+                                            onClick={() => downloadAttachment(row.CTO_AttachPath, "CTO Attachment")}
+                                        />
+                                    </td>
+
+                                    <td
+                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                    >
+                                        <img src="/downloadicon.png" alt="" className="h-5"
+                                            onClick={() => downloadAttachment(row.OSPCB_HW_Auth_AttachPath, "OSPCB_HW_Auth_AttachPath")}
+                                        />
                                     </td>
                                     <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.OSPCB_HW_Auth_AttachPath}
+                                    >
+                                        <img src="/downloadicon.png" alt="" className="h-5"
+                                            onClick={() => downloadAttachment(row.SPCB_HW_Auth_AttachPath, "SPCB_HW_Auth_AttachPath")}
+                                        />
                                     </td>
                                     <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.SPCB_HW_Auth_AttachPath}
+                                    >
+                                        <img src="/downloadicon.png" alt="" className="h-5"
+                                            onClick={() => downloadAttachment(row.BlueBook_AttachPath, "BlueBook_AttachPath")}
+                                        />
                                     </td>
                                     <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.BlueBook_AttachPath}
-                                    </td>
-                                    <td
-                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.EPR_Cert_AttachPath}
+                                    >
+                                        <img src="/downloadicon.png" alt="" className="h-5"
+                                            onClick={() => downloadAttachment(row.EPR_Cert_AttachPath, "EPR_Cert_AttachPath")}
+                                        />
                                     </td>
                                     <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"

@@ -3,21 +3,52 @@
 import { useEffect, useState } from "react";
 
 type Option = { id: string; name: string };
-
+type Option1 = { ID: string; NAME: string };
 export default function NonAuctionablePage() {
   const [wasteCategory, setWasteCategory] = useState("");
   const [waste, setWaste] = useState("");
   const [Date, setDate] = useState("");
   const [loadingBase, setLoadingBase] = useState(false);
   const [loadingWaste, setLoadingWaste] = useState(false);
-
+  const [physicalOptions, setPhysicalOptions] = useState<Option1[]>([]);
+  const [loadingUndisposed, setLoadingUndisposed] = useState(false);
+  const [physicalForm, setPhysicalForm] = useState("");
   const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
   const [wasteOptions, setWasteOptions] = useState<Option[]>([]);
-  const [selectedWasteIds, setSelectedWasteIds] = useState<string[]>([]);
-  const [wasteDropdownOpen, setWasteDropdownOpen] = useState(false);
+  const [selectedWasteId, setSelectedWasteId] = useState("");
+
+  const [undisposedOptions, setUndisposedOptions] = useState<
+    Array<{ id: string; dept: string; qty: number; label: string }>
+  >([]);
+  const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
+  const [undisposedDropdownOpen, setUndisposedDropdownOpen] = useState(false);
 
   const [remarks, setRemarks] = useState("");
+  useEffect(() => {
+    const loadDropdowns = async () => {
+      try {
+        const [physicalRes] = await Promise.all([
 
+          fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
+        ]);
+
+        const physicalPayload = await physicalRes.json();
+
+
+
+        setPhysicalOptions(
+          physicalPayload.success && Array.isArray(physicalPayload.data)
+            ? physicalPayload.data
+            : [],
+        );
+      } catch {
+
+        setPhysicalOptions([]);
+      }
+    };
+
+    void loadDropdowns();
+  }, []);
   useEffect(() => {
     const loadBase = async () => {
       setLoadingBase(true);
@@ -44,8 +75,10 @@ export default function NonAuctionablePage() {
     const loadWaste = async () => {
       if (!wasteCategory) {
         setWasteOptions([]);
-        setSelectedWasteIds([]);
+        setSelectedWasteId("");
         setWaste("");
+        setUndisposedOptions([]);
+        setSelectedUndisposedIds([]);
         return;
       }
 
@@ -58,12 +91,16 @@ export default function NonAuctionablePage() {
         const payload = (await res.json()) as { success?: boolean; data?: Option[] };
         const data = payload.success && Array.isArray(payload.data) ? payload.data : [];
         setWasteOptions(data);
-        setSelectedWasteIds([]);
+        setSelectedWasteId("");
         setWaste("");
+        setUndisposedOptions([]);
+        setSelectedUndisposedIds([]);
       } catch {
         setWasteOptions([]);
-        setSelectedWasteIds([]);
+        setSelectedWasteId("");
         setWaste("");
+        setUndisposedOptions([]);
+        setSelectedUndisposedIds([]);
       } finally {
         setLoadingWaste(false);
       }
@@ -72,43 +109,127 @@ export default function NonAuctionablePage() {
     void loadWaste();
   }, [wasteCategory]);
 
-  const selectedWasteNames = wasteOptions
-    .filter((w) => selectedWasteIds.includes(w.id))
-    .map((w) => w.name);
+  useEffect(() => {
+    const loadUndisposed = async () => {
+      if (!wasteCategory || !selectedWasteId) {
+        setUndisposedOptions([]);
+        setSelectedUndisposedIds([]);
+        return;
+      }
+
+      setLoadingUndisposed(true);
+      try {
+        const res = await fetch("/api/GetData/GetAllUndisposedWaste", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            flag: "GetAllUndisposedWaste",
+            WCID: wasteCategory,
+            WID: selectedWasteId,
+          }),
+        });
+
+        const payload = await res.json();
+        const raw =
+          (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
+          (Array.isArray(payload?.data) && payload.data) ||
+          (Array.isArray(payload?.recordset) && payload.recordset) ||
+          (Array.isArray(payload) && payload) ||
+          [];
+
+        const options = raw.map((row: any, index: number) => {
+          const dept = String(row.Dept ?? "").trim();
+          const qty = Number(row.WasteQty ?? 0);
+          const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
+          return {
+            id,
+            dept,
+            qty,
+            label: `${dept || "Dept"} - ${qty}`,
+          };
+        });
+
+        setUndisposedOptions(options);
+        setSelectedUndisposedIds([]);
+      } catch {
+        setUndisposedOptions([]);
+        setSelectedUndisposedIds([]);
+      } finally {
+        setLoadingUndisposed(false);
+      }
+    };
+
+    void loadUndisposed();
+  }, [wasteCategory, selectedWasteId]);
+
+  const selectedUndisposedItems = undisposedOptions.filter((item) =>
+    selectedUndisposedIds.includes(item.id),
+  );
+  const totalSelectedQty = selectedUndisposedItems.reduce(
+    (sum, item) => sum + (item.qty || 0),
+    0,
+  );
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!Date) {
       alert("Please select the Date");
-      return
-    }
-
-    if (!wasteCategory || selectedWasteIds.length === 0) {
-      alert("Please select waste category and at least one waste item.");
       return;
     }
 
-
-    const res = await fetch("api/SetData/SetNonAuctionableDisposal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        Auctionable: 0,
-        AuctionDate: Date,
-        wasteCategoryId: wasteCategory,
-        wasteIds: selectedWasteIds,
-        remarks,
-      }),
-
-    });
-
-    const data = await res.json();
-    if (!res.ok || !data.success) {
-      return alert(data.message || "Save Failed");
+    if (!wasteCategory || !selectedWasteId) {
+      alert("Please select waste category and waste item.");
+      return;
     }
-    alert("Saved Successfully")
 
+    try {
+      // 1) Initiate Disposal
+      const res = await fetch("/api/SetData/InitiateDisposal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          WCID: wasteCategory,
+          WID: selectedWasteId,
+          TotalQty: totalSelectedQty,
+          Auctionable: 2,
+          PSID: physicalForm,
+          AuctionDate: Date,
+          Remarks: remarks,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        return alert(data.message || "Save Failed");
+      }
+
+      const wrid = data?.data?.WRID;
+      if (!wrid) {
+        alert("WRID missing from InitiateDisposal response");
+        return;
+      }
+
+      // 2) Insert Auction Waste Details for ALL selected WRIDs
+      const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          IDDID: wrid,
+          WRID: selectedUndisposedIds,
+        }),
+      });
+
+      const data2 = await res2.json();
+      if (!res2.ok || !data2.success) {
+        return alert(data2.message || "InsertAuctionWasteDetails failed");
+      }
+
+      alert("Saved Successfully");
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong");
+    }
   };
 
   return (
@@ -116,7 +237,6 @@ export default function NonAuctionablePage() {
       <h1 className="text-2xl font-semibold text-slate-900">Non Auctionable Disposal</h1>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
-
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Date</label>
           <input
@@ -131,10 +251,7 @@ export default function NonAuctionablePage() {
           <label className="mb-1 block text-sm font-semibold text-slate-700">Waste Category</label>
           <select
             value={wasteCategory}
-            onChange={(e) => {
-              setWasteCategory(e.target.value);
-              setWasteDropdownOpen(false);
-            }}
+            onChange={(e) => setWasteCategory(e.target.value)}
             className="w-full rounded border border-slate-300 px-3 py-2"
             disabled={loadingBase}
           >
@@ -147,29 +264,51 @@ export default function NonAuctionablePage() {
           </select>
         </div>
 
-        <div className="relative">
+        <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Waste List</label>
+          <select
+            value={selectedWasteId}
+            onChange={(e) => {
+              setSelectedWasteId(e.target.value);
+              const name = wasteOptions.find((w) => w.id === e.target.value)?.name ?? "";
+              setWaste(name);
+            }}
+            className="w-full rounded border border-slate-300 px-3 py-2"
+            disabled={!wasteCategory || loadingWaste}
+          >
+            <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
+            {wasteOptions.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
+        <div className="relative">
+          <label className="mb-1 block text-sm font-semibold text-slate-700">
+            Undisposed Waste (Dept - Quantity)
+          </label>
           <button
             type="button"
-            onClick={() => setWasteDropdownOpen((prev) => !prev)}
-            disabled={!wasteCategory || loadingWaste}
+            onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
+            disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
             className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
           >
-            {selectedWasteNames.length > 0
-              ? selectedWasteNames.join(", ")
-              : loadingWaste
+            {selectedUndisposedItems.length > 0
+              ? selectedUndisposedItems.map((x) => x.label).join(", ")
+              : loadingUndisposed
                 ? "Loading..."
-                : "Select Waste Items"}
+                : "Select Dept - Quantity"}
           </button>
 
-          {wasteDropdownOpen && (
+          {undisposedDropdownOpen && (
             <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
-              {wasteOptions.length === 0 ? (
-                <p className="px-2 py-1 text-sm text-slate-500">No waste options</p>
+              {undisposedOptions.length === 0 ? (
+                <p className="px-2 py-1 text-sm text-slate-500">No undisposed waste</p>
               ) : (
-                wasteOptions.map((item) => {
-                  const checked = selectedWasteIds.includes(item.id);
+                undisposedOptions.map((item) => {
+                  const checked = selectedUndisposedIds.includes(item.id);
                   return (
                     <label
                       key={item.id}
@@ -180,34 +319,47 @@ export default function NonAuctionablePage() {
                         checked={checked}
                         onChange={(e) => {
                           const nextIds = e.target.checked
-                            ? [...selectedWasteIds, item.id]
-                            : selectedWasteIds.filter((id) => id !== item.id);
-
-                          setSelectedWasteIds(nextIds);
-
-                          const names = wasteOptions
-                            .filter((w) => nextIds.includes(w.id))
-                            .map((w) => w.name)
-                            .join(", ");
-                          setWaste(names);
-
-                          // close dropdown immediately after each selection/deselection
-                          setWasteDropdownOpen(false);
+                            ? [...selectedUndisposedIds, item.id]
+                            : selectedUndisposedIds.filter((id) => id !== item.id);
+                          setSelectedUndisposedIds(nextIds);
                         }}
                       />
-                      <span className="text-sm text-slate-700">{item.name}</span>
+                      <span className="text-sm text-slate-700">{item.label}</span>
                     </label>
                   );
                 })
               )}
             </div>
           )}
+        </div>
 
-          {selectedWasteNames.length > 0 && (
-            <p className="mt-1 text-xs text-slate-600">
-              Selected: {selectedWasteNames.join(", ")}
-            </p>
-          )}
+        <div>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">
+            Total Quantity
+          </label>
+          <input
+            type="text"
+            readOnly
+            value={totalSelectedQty.toFixed(2)}
+            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
+
+          <select
+            value={physicalForm}
+            onChange={(e) => setPhysicalForm(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="">Select</option>
+            {physicalOptions.map((opt) => (
+              <option key={opt.ID} value={opt.ID}>
+                {opt.NAME}
+              </option>
+            ))}
+          </select>
+
         </div>
 
         <div>

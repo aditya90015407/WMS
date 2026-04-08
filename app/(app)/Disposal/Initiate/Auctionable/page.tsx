@@ -3,18 +3,23 @@
 import { useEffect, useState } from "react";
 
 type Option = { id: string; name: string };
-
+type Option1 = { ID: string; NAME: string };
 export default function AuctionablePage() {
   // const [batchId, setBatchId] = useState("");
   const [auctionDate, setAuctionDate] = useState("");
-
+  const [physicalOptions, setPhysicalOptions] = useState<Option1[]>([]);
   const [wasteCategory, setWasteCategory] = useState("");
   const [wasteOptions, setWasteOptions] = useState<Option[]>([]);
-  const [selectedWasteIds, setSelectedWasteIds] = useState<string[]>([]);
+  const [selectedWasteId, setSelectedWasteId] = useState("");
+  const [undisposedOptions, setUndisposedOptions] = useState<
+    Array<{ id: string; dept: string; qty: number; label: string }>
+  >([]);
+  const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
+  const [loadingUndisposed, setLoadingUndisposed] = useState(false);
 
   const [vendorOptions, setVendorOptions] = useState<Option[]>([]);
   const [selectedVendorIds, setSelectedVendorIds] = useState<string[]>([]);
-
+  const [physicalForm, setPhysicalForm] = useState("");
   const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
 
   // kept to avoid removing old element references
@@ -25,7 +30,7 @@ export default function AuctionablePage() {
   const [loadingBase, setLoadingBase] = useState(false);
   const [loadingWaste, setLoadingWaste] = useState(false);
 
-  const [wasteDropdownOpen, setWasteDropdownOpen] = useState(false);
+  const [undisposedDropdownOpen, setUndisposedDropdownOpen] = useState(false);
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
 
   async function fetchVendor(): Promise<Option[]> {
@@ -65,6 +70,31 @@ export default function AuctionablePage() {
       return [];
     }
   }
+  useEffect(() => {
+    const loadDropdowns = async () => {
+      try {
+        const [physicalRes] = await Promise.all([
+
+          fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
+        ]);
+
+        const physicalPayload = await physicalRes.json();
+
+
+
+        setPhysicalOptions(
+          physicalPayload.success && Array.isArray(physicalPayload.data)
+            ? physicalPayload.data
+            : [],
+        );
+      } catch {
+
+        setPhysicalOptions([]);
+      }
+    };
+
+    void loadDropdowns();
+  }, []);
 
   useEffect(() => {
     const loadBase = async () => {
@@ -97,7 +127,7 @@ export default function AuctionablePage() {
     const loadWaste = async () => {
       if (!wasteCategory) {
         setWasteOptions([]);
-        setSelectedWasteIds([]);
+        setSelectedWasteId("");
         setWaste("");
         return;
       }
@@ -111,11 +141,11 @@ export default function AuctionablePage() {
         const payload = (await res.json()) as { success?: boolean; data?: Option[] };
         const data = payload.success && Array.isArray(payload.data) ? payload.data : [];
         setWasteOptions(data);
-        setSelectedWasteIds([]);
+        setSelectedWasteId("");
         setWaste("");
       } catch {
         setWasteOptions([]);
-        setSelectedWasteIds([]);
+        setSelectedWasteId("");
         setWaste("");
       } finally {
         setLoadingWaste(false);
@@ -125,9 +155,66 @@ export default function AuctionablePage() {
     void loadWaste();
   }, [wasteCategory]);
 
-  const selectedWasteNames = wasteOptions
-    .filter((w) => selectedWasteIds.includes(w.id))
-    .map((w) => w.name);
+  useEffect(() => {
+    const loadUndisposed = async () => {
+      if (!wasteCategory || !selectedWasteId) {
+        setUndisposedOptions([]);
+        setSelectedUndisposedIds([]);
+        return;
+      }
+
+      setLoadingUndisposed(true);
+      try {
+        const res = await fetch("/api/GetData/GetAllUndisposedWaste", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            flag: "GetAllUndisposedWaste",
+            WCID: wasteCategory,
+            WID: selectedWasteId,
+          }),
+        });
+
+        const payload = await res.json();
+        console.log(payload)
+        const raw =
+          (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
+          (Array.isArray(payload?.data) && payload.data) ||
+          (Array.isArray(payload?.recordset) && payload.recordset) ||
+          (Array.isArray(payload) && payload) ||
+          [];
+
+        const options = raw.map((row: any, index: number) => {
+          const dept = String(row.Dept ?? "").trim();
+          const rawQty = String(row.WasteQty ?? "").replace(",", ".");
+          const qtyNum = Number.parseFloat(rawQty);
+          const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
+
+          const qtyLabel = qty.toFixed(2);
+          const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
+
+          return {
+            id,
+            dept,
+            qty,
+            label: `${dept || "Dept"} - ${qtyLabel}`,
+          };
+        });
+
+        setUndisposedOptions(options);
+        setSelectedUndisposedIds([]);
+        setUndisposedDropdownOpen(false);
+      } catch (err) {
+        console.error("loadUndisposed failed", err);
+        setUndisposedOptions([]);
+        setSelectedUndisposedIds([]);
+      } finally {
+        setLoadingUndisposed(false);
+      }
+    };
+
+    void loadUndisposed();
+  }, [wasteCategory, selectedWasteId]);
 
   const displayVendorOptions = vendorOptions.filter((v) => v.name && v.name.trim().length > 0);
 
@@ -135,14 +222,22 @@ export default function AuctionablePage() {
     .filter((v) => selectedVendorIds.includes(v.id))
     .map((v) => v.name);
 
+  const selectedUndisposedItems = undisposedOptions.filter((item) =>
+    selectedUndisposedIds.includes(item.id),
+  );
+  const totalSelectedQty = selectedUndisposedItems.reduce(
+    (sum, item) => sum + (item.qty || 0),
+    0,
+  );
+  // console.log(totalSelectedQty)
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    console.log(totalSelectedQty)
     if (
       // !batchId ||
       !auctionDate ||
       !wasteCategory ||
-      selectedWasteIds.length === 0 ||
+      !selectedWasteId ||
       selectedVendorIds.length === 0
     ) {
       alert("Please fill all required fields and select at least one waste item and vendor.");
@@ -150,50 +245,57 @@ export default function AuctionablePage() {
     }
 
     try {
-
-      const res = await fetch("/api/SetData/SetAuctionableDisposal", {
+      const res = await fetch("/api/SetData/InitiateDisposal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          {
-            Auctionable: 1,
-            AuctionDate: auctionDate,
-            wasteCategoryId: wasteCategory,
-            wasteIds: selectedWasteIds,
-            vendorIds: selectedVendorIds,
-            Remarks: remarks,
-          }
-        ),
-
+        body: JSON.stringify({
+          WCID: wasteCategory,
+          WID: selectedWasteId,
+          TotalQty: totalSelectedQty,
+          Auctionable: 1,
+          AuctionDate: auctionDate,
+          PSID: physicalForm,
+          Remarks: remarks,
+        }),
       });
 
       const data = await res.json();
+      // console.log("InitiateDisposal response:", data);
+
       if (!res.ok || !data.success) {
         alert(data.message || "Save Failed");
         return;
       }
-      const a1 = data.data?.a1 ?? [];
-      const a2 = data.data?.a2 ?? [];
-      const a3 = data.data?.a3 ?? [];
+
+      const iddid = data?.data?.WRID;
+      // console.log(iddid)
+      if (!iddid) {
+        alert("IDDID missing in InitiateDisposal response");
+        return;
+      }
+
+      const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          IDDID: iddid, // using WRID as IDDID per your instruction
+          WRID: selectedUndisposedIds,
+        }),
+      });
+
+      const data2 = await res2.json();
+      if (!res2.ok || !data2.success) {
+        alert(data2.message || "InsertAuctionWasteDetails failed");
+        return;
+      }
+
       alert(data.message || "Saved Successfully");
-
-    }
-
-
-    // setBatchId("");
-    // setAuctionDate("");
-    // setWasteCategory("");
-    // setSelectedWasteIds([]);
-    //   setSelectedVendorIds([]);
-    //   setWaste("");
-    //   setVendor("");
-    //   setRemarks("");
-    catch (error) {
-
+    } catch (error) {
       console.error("Submit Failed", error);
       alert("Something went wrong while saving");
     }
   };
+
 
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -227,7 +329,6 @@ export default function AuctionablePage() {
             value={wasteCategory}
             onChange={(e) => {
               setWasteCategory(e.target.value);
-              setWasteDropdownOpen(false);
             }}
             className="w-full rounded border border-slate-300 px-3 py-2"
             disabled={loadingBase}
@@ -241,29 +342,54 @@ export default function AuctionablePage() {
           </select>
         </div>
 
-        <div className="relative">
+        <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Waste List</label>
+          <select
+            value={selectedWasteId}
+            onChange={(e) => {
+              setSelectedWasteId(e.target.value);
+              const name =
+                wasteOptions.find((w) => w.id === e.target.value)?.name ?? "";
+              setWaste(name);
+            }}
+            className="w-full rounded border border-slate-300 px-3 py-2"
+            disabled={!wasteCategory || loadingWaste}
+          >
+            <option value="">
+              {loadingWaste ? "Loading..." : "Select Waste Item"}
+            </option>
+            {wasteOptions.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
+        <div className="relative">
+          <label className="mb-1 block text-sm font-semibold text-slate-700">
+            Undisposed Waste (Dept - Quantity)
+          </label>
           <button
             type="button"
-            onClick={() => setWasteDropdownOpen((prev) => !prev)}
-            disabled={!wasteCategory || loadingWaste}
+            onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
+            disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
             className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
           >
-            {selectedWasteNames.length > 0
-              ? selectedWasteNames.join(", ")
-              : loadingWaste
+            {selectedUndisposedItems.length > 0
+              ? selectedUndisposedItems.map((x) => x.label).join(", ")
+              : loadingUndisposed
                 ? "Loading..."
-                : "Select Waste Items"}
+                : "Select Dept - Quantity"}
           </button>
 
-          {wasteDropdownOpen && (
+          {undisposedDropdownOpen && (
             <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
-              {wasteOptions.length === 0 ? (
-                <p className="px-2 py-1 text-sm text-slate-500">No waste options</p>
+              {undisposedOptions.length === 0 ? (
+                <p className="px-2 py-1 text-sm text-slate-500">No undisposed waste</p>
               ) : (
-                wasteOptions.map((item) => {
-                  const checked = selectedWasteIds.includes(item.id);
+                undisposedOptions.map((item) => {
+                  const checked = selectedUndisposedIds.includes(item.id);
                   return (
                     <label
                       key={item.id}
@@ -274,35 +400,50 @@ export default function AuctionablePage() {
                         checked={checked}
                         onChange={(e) => {
                           const nextIds = e.target.checked
-                            ? [...selectedWasteIds, item.id]
-                            : selectedWasteIds.filter((id) => id !== item.id);
-
-                          setSelectedWasteIds(nextIds);
-
-                          const names = wasteOptions
-                            .filter((w) => nextIds.includes(w.id))
-                            .map((w) => w.name)
-                            .join(", ");
-                          setWaste(names);
-
-                          setWasteDropdownOpen(false);
+                            ? [...selectedUndisposedIds, item.id]
+                            : selectedUndisposedIds.filter((id) => id !== item.id);
+                          setSelectedUndisposedIds(nextIds);
                         }}
                       />
-                      <span className="text-sm text-slate-700">{item.name}</span>
+                      <span className="text-sm text-slate-700">{item.label}</span>
                     </label>
                   );
                 })
               )}
             </div>
           )}
-
-          {selectedWasteNames.length > 0 && (
-            <p className="mt-1 text-xs text-slate-600">
-              Selected: {selectedWasteNames.join(", ")}
-            </p>
-          )}
         </div>
 
+        <div>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">
+            Total Quantity
+          </label>
+          <input
+            type="text"
+            readOnly
+            value={Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}
+
+
+            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
+
+          <select
+            value={physicalForm}
+            onChange={(e) => setPhysicalForm(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="">Select</option>
+            {physicalOptions.map((opt) => (
+              <option key={opt.ID} value={opt.ID}>
+                {opt.NAME}
+              </option>
+            ))}
+          </select>
+
+        </div>
         <div className="relative">
           <label className="mb-1 block text-sm font-semibold text-slate-700">Vendor List</label>
 

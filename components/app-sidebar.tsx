@@ -2,53 +2,86 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { useSession } from "next-auth/react";
+
+type Menu = {
+  MenuID: string;
+  Menu: string;
+  AspxPage: string;
+  PID: string;
+};
+
+function normalizeData<T extends Record<string, any>>(row: T): Menu {
+  return {
+    MenuID: String(row.MenuID ?? ""),
+    Menu: String(row.Menu ?? ""),
+    AspxPage: String(row.AspxPage ?? ""),
+    PID: String(row.PID ?? ""),
+  };
+}
 
 export default function AppSidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const [wasteOpen, setWasteOpen] = useState(true);
-  const [reportOpen, setReportOpen] = useState(true);
-  const [auctionOpen, setAuctionOpen] = useState(true);
-  const [disposalOpen, setDisposalOpen] = useState(true);
-  const [disposalGenerateOpen, setDisposalGenerateOpen] = useState(false);
+  const [openParent, setOpenParent] = useState<string | null>(null);
+  const [menuData, setMenuData] = useState<Menu[]>([]);
+  const { data: session } = useSession();
 
-  const wasteSubmenu = [
-    { label: "APPROVE", href: "/Waste/Approve", enabled: true },
-    { label: "GENERATE", href: "/Waste/Generate", enabled: true },
-    { label: "VIEW", href: "/Waste/View", enabled: true },
-    { label: "EDIT", href: "/Waste/Edit", enabled: true },
-  ];
+  const empCode = String(session?.user?.id ?? "").trim();
 
-  const disposalSubmenu = [
-    { label: "INITIATE", href: "/Disposal/Initiate", enabled: true },
-  ];
+  useEffect(() => {
+    const loadMenu = async () => {
+      if (!empCode) return;
 
-  const disposalGenerateSubmenu = [
-    { label: "HAZARDOUS", href: "/Disposal/Generate/Hazardous", enabled: true },
-    { label: "NON HAZARDOUS", href: "/Disposal/Generate/NonHazardous", enabled: true },
-  ];
+      try {
+        const res = await fetch("/api/GetData/GetMenu", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ EmpCode: empCode }),
+        });
 
-  const auctionSubmenu = [
-    { label: "APPROVE", href: "/Auction/Approve", enabled: true },
-    { label: "APPLY", href: "/Auction/Apply", enabled: true },
-    { label: "VIEW", href: "", enabled: false },
-    { label: "EDIT", href: "", enabled: false },
-  ];
+        const raw = await res.json();
+        const rows = Array.isArray(raw) ? raw : Array.isArray(raw?.data) ? raw.data : [];
+        const normalized = rows.map(normalizeData);
 
-  const reportSubmenu = [
-    { label: "FORM 3", href: "/Form/Form-3", enabled: true },
-    { label: "FORM 10", href: "/Form/Form-10", enabled: true },
-  ];
+        setMenuData(normalized);
+      } catch (error) {
+        console.error("Failed to load menu", error);
+        setMenuData([]);
+      }
+    };
+
+    void loadMenu();
+  }, [empCode]);
+
+  const parentMenu = useMemo(
+    () => menuData.filter((item) => item.PID === "0" || item.PID === ""),
+    [menuData],
+  );
+
+  const childMenu = useMemo(
+    () => menuData.filter((item) => item.PID !== "0" && item.PID !== ""),
+    [menuData],
+  );
+
+  const toggleMenu = (menuId: string) => {
+    setOpenParent((prev) => (prev === menuId ? null : menuId));
+  };
 
   const menuIcon = (label: string) =>
-    label === "APPROVE"
+    label.toUpperCase() === "APPROVE"
       ? "/approved.png"
-      : label === "EDIT"
+      : label.toUpperCase() === "EDIT"
         ? "/edit.png"
-        : label === "VIEW"
+        : label.toUpperCase() === "VIEW"
           ? "/view-list.png"
           : "/form_generate.png";
+
+  const buildHref = (page: string) => {
+    const cleaned = String(page ?? "").trim().replace(/^\/+/, "");
+    return cleaned ? `/${cleaned}` : "#";
+  };
 
   return (
     <aside
@@ -89,288 +122,89 @@ export default function AppSidebar() {
         )}
 
         <nav className={`${collapsed ? "mt-1" : "mt-3"}`}>
-          <div>
-            <button
-              type="button"
-              onClick={() => setWasteOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
-                ? "flex items-center justify-center px-2"
-                : "flex items-center justify-between px-3"
+          {parentMenu.length === 0 ? (
+            <div
+              className={`rounded-lg py-2 text-sm text-slate-500 ${collapsed ? "px-2 text-center" : "px-3"
                 }`}
-              title="WASTE"
             >
-              <span className={collapsed ? "" : "tracking-wide"}>Generation</span>
-              {!collapsed && (
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${wasteOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                />
-              )}
-            </button>
+              Loading Menu...
+            </div>
+          ) : (
+            parentMenu.map((parent) => {
+              const children = childMenu.filter((child) => child.PID === parent.MenuID);
+              const hasChildren = children.length > 0;
+              const isOpen = openParent === parent.MenuID;
 
-            {wasteOpen && (
-              <div className={collapsed ? "mt-1 space-y-1" : "mt-1 space-y-1 pl-3"}>
-                {wasteSubmenu.map((item) =>
-                  item.enabled ? (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
-                      title={item.label}
-                    >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4"
-                      />
-                      {!collapsed && item.label}
-                    </Link>
-                  ) : (
-                    <div
-                      key={item.label}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
-                      title={`${item.label} (coming soon)`}
-                    >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4 opacity-70"
-                      />
-                      {!collapsed && item.label}
-                    </div>
-                  ),
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="mt-2">
-            <button
-              type="button"
-              onClick={() => setAuctionOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
-                ? "flex items-center justify-center px-2"
-                : "flex items-center justify-between px-3"
-                }`}
-              title="AUCTION"
-            >
-              <span className={collapsed ? "" : "tracking-wide"}>Auction</span>
-              {!collapsed && (
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${auctionOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                />
-              )}
-            </button>
-
-            {auctionOpen && (
-              <div className={collapsed ? "mt-1 space-y-1" : "mt-1 space-y-1 pl-3"}>
-                {auctionSubmenu.map((item) =>
-                  item.enabled ? (
-                    <Link
-                      key={`auction-${item.label}`}
-                      href={item.href}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
-                      title={item.label}
-                    >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4"
-                      />
-                      {!collapsed && item.label}
-                    </Link>
-                  ) : (
-                    <div
-                      key={`auction-${item.label}`}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
-                      title={`${item.label} (coming soon)`}
-                    >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4 opacity-70"
-                      />
-                      {!collapsed && item.label}
-                    </div>
-                  ),
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="mt-2">
-            <button
-              type="button"
-              onClick={() => setDisposalOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
-                ? "flex items-center justify-center px-2"
-                : "flex items-center justify-between px-3"
-                }`}
-              title="DISPOSAL"
-            >
-              <span className={collapsed ? "" : "tracking-wide"}>Disposal</span>
-              {!collapsed && (
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${disposalOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                />
-              )}
-            </button>
-
-            {disposalOpen && (
-              <div className={collapsed ? "mt-1 space-y-1" : "mt-1 space-y-1 pl-3"}>
-                {disposalSubmenu.map((item) => (
-                  <Link
-                    key={`disposal-${item.label}`}
-                    href={item.href}
-                    className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                      ? "flex items-center justify-center px-2"
-                      : "flex items-center gap-2 px-3"
-                      }`}
-                    title={item.label}
-                  >
-                    <Image
-                      src="/form_generate.png"
-                      alt={item.label}
-                      width={16}
-                      height={16}
-                      className="h-4 w-4"
-                    />
-                    {!collapsed && item.label}
-                  </Link>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() => setDisposalGenerateOpen((prev) => !prev)}
-                  className={`w-full rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
-                    ? "flex items-center justify-center px-2"
-                    : "flex items-center justify-between px-3"
-                    }`}
-                  title="GENERATE"
-                >
-                  <span>GENERATE</span>
-                  {!collapsed && (
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform ${disposalGenerateOpen ? "rotate-0" : "-rotate-90"
-                        }`}
-                    />
-                  )}
-                </button>
-
-                {disposalGenerateOpen && (
-                  <div className={collapsed ? "space-y-1" : "space-y-1 pl-3"}>
-                    {disposalGenerateSubmenu.map((item) => (
-                      <Link
-                        key={`disposal-gen-${item.label}`}
-                        href={item.href}
-                        className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
+              return (
+                <div key={parent.MenuID} className="mt-2">
+                  {hasChildren ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => toggleMenu(parent.MenuID)}
+                        className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
                           ? "flex items-center justify-center px-2"
-                          : "flex items-center gap-2 px-3"
+                          : "flex items-center justify-between px-3"
                           }`}
-                        title={item.label}
+                        title={parent.Menu}
                       >
-                        <Image
-                          src="/form_generate.png"
-                          alt={item.label}
-                          width={16}
-                          height={16}
-                          className="h-4 w-4"
-                        />
-                        {!collapsed && item.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+                        <span className={collapsed ? "" : "tracking-wide"}>{parent.Menu}</span>
+                        {!collapsed && (
+                          <ChevronDown
+                            className={`h-4 w-4 transition-transform ${isOpen ? "rotate-0" : "-rotate-90"
+                              }`}
+                          />
+                        )}
+                      </button>
 
-          <div className="mt-2">
-            <button
-              type="button"
-              onClick={() => setReportOpen((prev) => !prev)}
-              className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
-                ? "flex items-center justify-center px-2"
-                : "flex items-center justify-between px-3"
-                }`}
-              title="REPORT"
-            >
-              <span className={collapsed ? "" : "tracking-wide"}>Report</span>
-              {!collapsed && (
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${reportOpen ? "rotate-0" : "-rotate-90"
-                    }`}
-                />
-              )}
-            </button>
-
-            {reportOpen && (
-              <div className={collapsed ? "mt-1 space-y-1" : "mt-1 space-y-1 pl-3"}>
-                {reportSubmenu.map((item) =>
-                  item.enabled ? (
+                      {isOpen && (
+                        <div className={collapsed ? "mt-1 space-y-1" : "mt-1 space-y-1 pl-3"}>
+                          {children.map((child) => (
+                            <Link
+                              key={child.MenuID}
+                              href={buildHref(`${parent.AspxPage}/${child.AspxPage}`)}
+                              className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
+                                ? "flex items-center justify-center px-2"
+                                : "flex items-center gap-2 px-3"
+                                }`}
+                              title={child.Menu}
+                            >
+                              <Image
+                                src={menuIcon(child.Menu)}
+                                alt={child.Menu}
+                                width={16}
+                                height={16}
+                                className="h-4 w-4"
+                              />
+                              {!collapsed && child.Menu}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  ) : (
                     <Link
-                      key={`report-${item.label}`}
-                      href={item.href}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 ${collapsed
+                      href={buildHref(parent.AspxPage)}
+                      className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
                         ? "flex items-center justify-center px-2"
                         : "flex items-center gap-2 px-3"
                         }`}
-                      title={item.label}
+                      title={parent.Menu}
                     >
                       <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
+                        src={menuIcon(parent.Menu)}
+                        alt={parent.Menu}
                         width={16}
                         height={16}
                         className="h-4 w-4"
                       />
-                      {!collapsed && item.label}
+                      {!collapsed && <span className="tracking-wide">{parent.Menu}</span>}
                     </Link>
-                  ) : (
-                    <div
-                      key={`report-${item.label}`}
-                      className={`rounded-lg py-2 text-sm font-medium text-slate-400 ${collapsed
-                        ? "flex items-center justify-center px-2"
-                        : "flex items-center gap-2 px-3"
-                        }`}
-                      title={`${item.label} (coming soon)`}
-                    >
-                      <Image
-                        src={menuIcon(item.label)}
-                        alt={item.label}
-                        width={16}
-                        height={16}
-                        className="h-4 w-4 opacity-70"
-                      />
-                      {!collapsed && item.label}
-                    </div>
-                  ),
-                )}
-              </div>
-            )}
-          </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </nav>
       </div>
     </aside>

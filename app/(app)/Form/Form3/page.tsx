@@ -56,6 +56,14 @@ const getDestinedDisplay = (entry: FormEntry): string => {
   return disposerLabel;
 };
 
+const getApprovalRowClass = (status: string): string => {
+  const normalized = status.trim().toLowerCase();
+  if (normalized === "approval completed") return "bg-green-100";
+  if (normalized === "approval inprogress") return "bg-yellow-100";
+  if (normalized === "rejected") return "bg-red-100";
+  return "";
+};
+
 const esc = (value: string): string =>
   value
     .replaceAll("&", "&amp;")
@@ -294,7 +302,7 @@ export default function Form3Page() {
                   </tr>
                 )}
                 {pagedRows.map((item, index) => (
-                  <tr key={`form3-entry-${(currentPage - 1) * PAGE_SIZE + index}`}>
+                  <tr key={`form3-entry-${(currentPage - 1) * PAGE_SIZE + index}`} className={getApprovalRowClass(item.approvalStatus)}>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.code}</td>
                     <td className="whitespace-nowrap border border-slate-300 px-2 py-0.5 text-slate-800">{item.date}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.wasteCategory}</td>
@@ -309,10 +317,7 @@ export default function Form3Page() {
                     <td className="whitespace-nowrap border border-slate-300 px-2 py-0.5 text-slate-800">{item.targetDate}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">
                       <div className="flex items-center gap-2">
-
-
                         {item.wcid !== "1" && <div className="text-center">Not Applicable</div>}
-
                         {item.wcid === "1" && item.stsCode === "3" && (
                           <>
                             <button
@@ -338,11 +343,9 @@ export default function Form3Page() {
                           <div className="text-center">Download requires approval.</div>
                         )}
 
-
                         {item.wcid == "1" && item.stsCode != "3" && item.stsCode != "2" && (
                           <div className="text-center">Not Applicable.</div>
                         )}
-
                       </div>
                     </td>
                   </tr>

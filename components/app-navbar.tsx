@@ -13,6 +13,7 @@ type SessionUserLike = {
   department?: string;
   roles?: string[] | string;
   role?: string;
+  roleName?: string;
   uid?: string;
   deptId?: string;
   WMSUnit?: string;
@@ -54,21 +55,17 @@ export default function AppNavbar() {
   const wmsUnit = user.WMSUnit || "Not available";
   const wmsDept = user.WMSDept || "Not available";
   const empCode = user.id || "Not available";
+  const assignedRole =
+    (typeof user.roleName === "string" && user.roleName.trim().length > 0
+      ? user.roleName.trim()
+      : typeof user.role === "string" && user.role.trim().length > 0
+        ? user.role.trim()
+        : "") || "";
   const pathSegments = (pathname || "/")
     .split("/")
     .filter(Boolean)
     .filter((segment) => segment.toLowerCase() !== "home");
   const breadcrumbParts = ["Home", ...pathSegments.map(formatSegment)];
-  const roleList = Array.isArray(user.roles)
-    ? user.roles.filter((role) => typeof role === "string" && role.trim().length > 0)
-    : typeof user.roles === "string" && user.roles.trim().length > 0
-      ? user.roles
-        .split(",")
-        .map((role) => role.trim())
-        .filter((role) => role.length > 0)
-      : typeof user.role === "string" && user.role.trim().length > 0
-        ? [user.role]
-        : [];
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -89,7 +86,7 @@ export default function AppNavbar() {
   };
 
   return (
-    <header className="w-full sticky z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <header className="w-full sticky z-40 border-b border-slate-200 bg-white backdrop-blur">
       <div className="relative flex h-16 w-full items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-3">
           <Image
@@ -156,26 +153,21 @@ export default function AppNavbar() {
                 <p className="text-slate-800">
                   <span className="font-semibold">Assigned Roles:</span>
                 </p>
-                {roleList.length > 0 ? (
+                {assignedRole ? (
                   <div className="flex flex-wrap gap-2 pt-1">
-                    {roleList.map((role) => (
-                      <span
-                        key={role}
-                        className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700"
-                      >
-                        {role}
-                      </span>
-                    ))}
+                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                      {assignedRole}
+                    </span>
                   </div>
-                ) : (
+                ) : !assignedRole ? (
                   <p className="text-sm text-slate-600">Not assigned yet</p>
-                )}
+                ) : null}
                 <div className="pt-3">
                   <button
                     type="button"
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isLoggingOut ? "Logging out..." : "Log out"}
                   </button>
@@ -200,3 +192,4 @@ export default function AppNavbar() {
     </header>
   );
 }
+

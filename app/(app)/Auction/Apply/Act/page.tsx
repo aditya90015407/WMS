@@ -1,40 +1,77 @@
 "use client";
- 
+
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
- 
+
+
+
+
+
 export default function AuctionApply() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const auctionId = searchParams.get("id");
- 
+  const [showTransportForm, setShowTransportForm] = useState(false);
+
   const [recyclerName, setRecyclerName] = useState("");
   const [vendorId, setVendorId] = useState("");
   const [recyclerEmail, setRecyclerEmail] = useState("");
   const [remarks, setRemarks] = useState("");
   const [hwAuthSpcbFile, setHwAuthSpcbFile] = useState<File | null>(null);
- 
+
   const { data: session } = useSession();
   const empCode = session?.user?.id ?? "";
- 
+
   const [ctoFile, setCtoFile] = useState<File | null>(null);
   const [hwAuthFile, setHwAuthFile] = useState<File | null>(null);
   const [blueBookFile, setBlueBookFile] = useState<File | null>(null);
   const [eprFile, setEprFile] = useState<File | null>(null);
- 
+
+
+  const employeeCode = String(session?.user?.id ?? "").trim();
+  const employeeName = String(session?.user?.username ?? session?.user?.name ?? "").trim();
+  const employeeEmail = String(session?.user?.email ?? "").trim();
+
+  useEffect(() => {
+    if (!employeeCode && !employeeName && !employeeEmail) return;
+
+    setRecyclerName(employeeName);
+    setRecyclerEmail(employeeEmail);
+    setVendorId(employeeCode);
+  }, [employeeCode, employeeName, employeeEmail]);
+
+
+  const [transportForm, setTransportForm] = useState({
+    APID: "",
+    TransporterName: "",
+    TransporterAddress: "",
+    TransporterPhone: "",
+    TransporterEmail: "",
+    VTID: "",
+    TransporterRegNo: "",
+    VehicleRegNo: "",
+    ReceiverName: "",
+    ReceiverAddress: "",
+    ReceiverAuthNo: "",
+  });
+
+
+  const [vehicleTypes, setVehicleTypes] = useState<Array<{ id: string; name: string }>>([]);
+
+
   const [auctionDetails, setAuctionDetails] = useState<{
     AuctionDate: string;
     WasteCategory: string;
     Remarks: string;
     CrDt: string;
   } | null>(null);
- 
+
   useEffect(() => {
     if (!auctionId) return;
- 
+
     const loadDetails = async () => {
       const res = await fetch("/api/GetData/GetAuctionDetailsById", {
         method: "POST",
@@ -44,58 +81,78 @@ export default function AuctionApply() {
           id: auctionId,
         }),
       });
- 
+
       const payload = await res.json();
       if (payload.success) {
         setAuctionDetails(payload.data);
       }
     };
- 
+
     loadDetails();
   }, [auctionId]);
- 
-  const [wasteDetails, setWasteDetails] = useState<{ WasteType: string } | null>(
-    null
+
+  const [wasteDetails, setWasteDetails] = useState<Array<{ WasteType: string }>>(
+    []
   );
- 
+
   useEffect(() => {
     if (!auctionId) return;
- 
+
     const loadWaste = async () => {
       const res = await fetch("/api/GetData/GetWasteDetailsByAuctionId", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: auctionId }),
       });
- 
+
       const payload = await res.json();
       if (payload.success) {
-        setWasteDetails(payload.data);
+        const data = payload.data;
+        setWasteDetails(Array.isArray(data) ? data : data ? [data] : []);
       }
     };
- 
+
     loadWaste();
   }, [auctionId]);
- 
- const allFilesReady = Boolean(
-      ctoFile && hwAuthFile && hwAuthSpcbFile && blueBookFile && eprFile
-    );
- 
+
+
+  useEffect(() => {
+    const loadVT = async () => {
+      const res = await fetch("/api/GetData/GetVehicleType", { method: "POST" });
+      const payload = await res.json();
+      console.log("vehicle type payload:", payload);
+
+      if (payload.success) {
+        const data = Array.isArray(payload.data) ? payload.data : payload.data ? [payload.data] : [];
+        const list = data.map((v: any) => ({
+          id: String(v.VTID ?? v.id),
+          name: String(v.VehicleType ?? v.name),
+        }));
+        setVehicleTypes(list);
+      }
+    };
+    loadVT();
+  }, []);
+
+
+  const allFilesReady = Boolean(
+    ctoFile && hwAuthFile && hwAuthSpcbFile && blueBookFile && eprFile
+  );
+
   const canSubmit =
     recyclerName.trim().length > 0 &&
     recyclerEmail.trim().length > 0 &&
     vendorId.trim().length > 0 &&
     allFilesReady;
- 
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
- 
+
     if (!canSubmit) {
       toast.error("Please fill Name, Email, Vendor ID and upload all required documents.");
       return;
     }
- 
-    // 1) Insert header (returns APID)
+
     const headerRes = await fetch("/api/SetData/InsertAuctionParticipantsHeader", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -104,49 +161,68 @@ export default function AuctionApply() {
         Name: recyclerName,
         Email: recyclerEmail,
         EmpCode: empCode,
-        VID: vendorId,
+        VendorCode: vendorId,
       }),
     });
- 
+
     const headerPayload = await headerRes.json();
-    console.log(headerPayload)
     if (!headerRes.ok || !headerPayload.success) {
       toast.error(headerPayload.message || "Failed to save header");
       return;
     }
- 
- 
-    const apid = headerPayload.data.APID;
-    console.log(apid)
-    // 2) Insert documents (APID + files)
+
+    const apid = headerPayload.data?.APID;
+    const StsCode = headerPayload.data?.StsCode;
+
+
     const docsForm = new FormData();
     docsForm.append("APID", apid);
     docsForm.append("EmpCode", empCode);
     docsForm.append("Remarks", remarks);
-      console.log("docsForm entries:", Array.from(docsForm.entries()));
- 
+
     if (ctoFile) docsForm.append("CtoRespectiveFile", ctoFile);
     if (hwAuthFile) docsForm.append("HwAuthorizationOspcbFile", hwAuthFile);
     if (hwAuthSpcbFile) docsForm.append("HwAuthorizationSpcbFile", hwAuthSpcbFile);
- 
     if (blueBookFile) docsForm.append("BlueBookFile", blueBookFile);
     if (eprFile) docsForm.append("RegistrationCertificateFile", eprFile);
-     console.log("docsForm entries:", Array.from(docsForm.entries()));
- 
+
     await fetch("/api/SetData/InsertAuctionParticipantsLine", {
       method: "POST",
       body: docsForm,
     });
- 
- 
- 
+
+    if (StsCode === 2) {
+      setShowTransportForm(true);
+      setTransportForm((prev) => ({ ...prev, APID: apid }));
+    }
+
     toast.success("Saved successfully!");
   }
- 
+
+  async function handleTransportSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    const res = await fetch("/api/SetData/SetTransportationDetails", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(transportForm),
+    });
+
+    const data = await res.json();
+    if (!res.ok || !data.success) {
+      toast.error(data.message || "Failed to save transporter details");
+      return;
+    }
+
+    toast.success("Transporter details saved!");
+  }
+
+
+
   return (
     <div className="bg-white h-fit px-8 py-4 relative">
       <Toaster />
- 
+
       <div>
         <div className="text-center text-orange-600 mb-5 text-2xl font-bold">
           Apply for Auction
@@ -155,12 +231,12 @@ export default function AuctionApply() {
           <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
         </Link>
       </div>
- 
+
       <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
         <h2 className="text-sm font-semibold text-slate-800 mb-3">
           Auction Details
         </h2>
- 
+
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <p className="text-xs text-slate-500">Auction Date</p>
@@ -168,21 +244,21 @@ export default function AuctionApply() {
               {auctionDetails?.AuctionDate ?? "N/A"}
             </p>
           </div>
- 
+
           <div>
             <p className="text-xs text-slate-500">Posted On</p>
             <p className="font-medium text-slate-800">
               {auctionDetails?.CrDt?.split("T")[0] ?? "N/A"}
             </p>
           </div>
- 
+
           <div>
             <p className="text-xs text-slate-500">Waste Category</p>
             <p className="font-medium text-slate-800">
               {auctionDetails?.WasteCategory ?? "N/A"}
             </p>
           </div>
- 
+
           <div>
             <p className="text-xs text-slate-500">Remarks</p>
             <p className="font-medium text-slate-800">
@@ -190,15 +266,25 @@ export default function AuctionApply() {
             </p>
           </div>
         </div>
- 
-        <div className="mt-4">
-          <p className="text-xs text-slate-500">Waste Type</p>
-          <p className="font-medium text-slate-800">
-            {wasteDetails?.WasteType ?? "N/A"}
-          </p>
+
+        <p className="text-xs text-slate-500 mb-1">Waste Type</p>
+        <div className="flex flex-wrap gap-2">
+          {wasteDetails.length > 0 ? (
+            wasteDetails.map((w, i) => (
+              <span
+                key={i}
+                className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-700"
+              >
+                {w.WasteType}
+              </span>
+            ))
+          ) : (
+            <span className="text-slate-500">N/A</span>
+          )}
         </div>
+
       </div>
- 
+
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
@@ -211,9 +297,9 @@ export default function AuctionApply() {
               className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
- 
+
           <div>
-            <label className="font-semibold">Vendor ID</label>
+            <label className="font-semibold">Vendor Code</label>
             <input
               type="text"
               value={vendorId}
@@ -222,7 +308,7 @@ export default function AuctionApply() {
               className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
- 
+
           <div>
             <label className="font-semibold">Recycler Email</label>
             <input
@@ -233,7 +319,7 @@ export default function AuctionApply() {
               className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>
- 
+
           <div>
             <label className="font-semibold">CTO for respective SPCB</label>
             <input
@@ -245,7 +331,7 @@ export default function AuctionApply() {
             />
             <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
           </div>
- 
+
           <div>
             <label className="font-semibold">HW authorization from OSPCB</label>
             <input
@@ -257,9 +343,7 @@ export default function AuctionApply() {
             />
             <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
           </div>
-         
- 
- 
+
           <div>
             <label className="font-semibold">HW authorization from SPCB</label>
             <input
@@ -271,7 +355,7 @@ export default function AuctionApply() {
             />
             <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
           </div>
- 
+
           <div>
             <label className="font-semibold">
               Copy of blue book (quantity bought till date to be shown)
@@ -285,7 +369,7 @@ export default function AuctionApply() {
             />
             <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
           </div>
- 
+
           <div>
             <label className="font-semibold">
               EPR registration certificate for Plastic/oil/tyre
@@ -300,7 +384,7 @@ export default function AuctionApply() {
             <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
           </div>
         </div>
- 
+
         <div className="mt-4">
           <label className="font-semibold">Remarks</label>
           <textarea
@@ -311,20 +395,174 @@ export default function AuctionApply() {
             className="mt-2 border border-gray-200 p-2 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
           />
         </div>
- 
+
         <button
           type="submit"
           disabled={!canSubmit}
-          className={`mt-6 text-sm px-4 py-1.5 rounded-md text-white ${
-            canSubmit
-              ? "bg-green-700 hover:bg-green-800 cursor-pointer"
-              : "bg-gray-400 cursor-not-allowed"
-          }`}
+          className={`mt-6 text-sm px-4 py-1.5 rounded-md text-white ${canSubmit
+            ? "bg-green-700 hover:bg-green-800 cursor-pointer"
+            : "bg-gray-400 cursor-not-allowed"
+            }`}
         >
           Submit
         </button>
       </form>
+      {showTransportForm && (
+        <form onSubmit={handleTransportSubmit} className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
+          <h3 className="text-sm font-semibold text-slate-800 mb-3">
+            Transporter Details
+          </h3>
+
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <label className="font-semibold">APID</label>
+              <input
+                type="text"
+                value={transportForm.APID}
+                readOnly
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm bg-slate-100"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold">Transporter Name</label>
+              <input
+                type="text"
+                value={transportForm.TransporterName}
+                onChange={(e) =>
+                  setTransportForm((p) => ({ ...p, TransporterName: e.target.value }))
+                }
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold">Transporter Address</label>
+              <input
+                type="text"
+                value={transportForm.TransporterAddress}
+                onChange={(e) =>
+                  setTransportForm((p) => ({ ...p, TransporterAddress: e.target.value }))
+                }
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold">Transporter Phone</label>
+              <input
+                type="text"
+                value={transportForm.TransporterPhone}
+                onChange={(e) =>
+                  setTransportForm((p) => ({ ...p, TransporterPhone: e.target.value }))
+                }
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold">Transporter Email</label>
+              <input
+                type="email"
+                value={transportForm.TransporterEmail}
+                onChange={(e) =>
+                  setTransportForm((p) => ({ ...p, TransporterEmail: e.target.value }))
+                }
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold">Vehicle Type</label>
+              <select
+                value={transportForm.VTID}
+                onChange={(e) =>
+                  setTransportForm((p) => ({ ...p, VTID: e.target.value }))
+                }
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+              >
+                <option value="">Select Vehicle Type</option>
+                {vehicleTypes.map((vt) => (
+                  <option key={vt.id} value={vt.id}>
+                    {vt.name}
+                  </option>
+                ))}
+              </select>
+
+            </div>
+
+            <div>
+              <label className="font-semibold">Transporter Reg No</label>
+              <input
+                type="text"
+                value={transportForm.TransporterRegNo}
+                onChange={(e) =>
+                  setTransportForm((p) => ({ ...p, TransporterRegNo: e.target.value }))
+                }
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold">Vehicle Reg No</label>
+              <input
+                type="text"
+                value={transportForm.VehicleRegNo}
+                onChange={(e) =>
+                  setTransportForm((p) => ({ ...p, VehicleRegNo: e.target.value }))
+                }
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold">Receiver Name</label>
+              <input
+                type="text"
+                value={transportForm.ReceiverName}
+                onChange={(e) =>
+                  setTransportForm((p) => ({ ...p, ReceiverName: e.target.value }))
+                }
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold">Receiver Address</label>
+              <input
+                type="text"
+                value={transportForm.ReceiverAddress}
+                onChange={(e) =>
+                  setTransportForm((p) => ({ ...p, ReceiverAddress: e.target.value }))
+                }
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="font-semibold">Receiver Auth No</label>
+              <input
+                type="text"
+                value={transportForm.ReceiverAuthNo}
+                onChange={(e) =>
+                  setTransportForm((p) => ({ ...p, ReceiverAuthNo: e.target.value }))
+                }
+                className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="mt-4 bg-blue-700 text-white px-4 py-2 rounded-md text-sm"
+          >
+            Save Transporter Details
+          </button>
+
+        </form>
+      )}
+
     </div>
   );
 }
- 
+
