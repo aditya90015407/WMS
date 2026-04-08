@@ -83,38 +83,38 @@ export default function DisposalRecycleForm() {
   }, [wasteCategory]);
 
   useEffect(() => {
-  const loadDropdowns = async () => {
-            try {
-            const [disposedRes, physicalRes] = await Promise.all([
-                fetch("/api/GetData/GetInternalReciever", { cache: "no-store" }),
-                fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
-            ]);
+    const loadDropdowns = async () => {
+      try {
+        const [disposedRes, physicalRes] = await Promise.all([
+          fetch("/api/GetData/GetInternalReciever", { cache: "no-store" }),
+          fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
+        ]);
 
-            const disposedPayload = await disposedRes.json();
-            const physicalPayload = await physicalRes.json();
-            console.log(physicalPayload)
-            console.log(disposedPayload)
-            setDisposedOptions(
-                disposedPayload.success && Array.isArray(disposedPayload.data)
-                ? disposedPayload.data
-                : [],
-            );
+        const disposedPayload = await disposedRes.json();
+        const physicalPayload = await physicalRes.json();
+        console.log(physicalPayload)
+        console.log(disposedPayload)
+        setDisposedOptions(
+          disposedPayload.success && Array.isArray(disposedPayload.data)
+            ? disposedPayload.data
+            : [],
+        );
 
-            setPhysicalOptions(
-                physicalPayload.success && Array.isArray(physicalPayload.data)
-                ? physicalPayload.data
-                : [],
-            );
-            } catch {
-            setDisposedOptions([]);
-            setPhysicalOptions([]);
-            }
-        };
+        setPhysicalOptions(
+          physicalPayload.success && Array.isArray(physicalPayload.data)
+            ? physicalPayload.data
+            : [],
+        );
+      } catch {
+        setDisposedOptions([]);
+        setPhysicalOptions([]);
+      }
+    };
 
-        void loadDropdowns();
-        }, []);
+    void loadDropdowns();
+  }, []);
 
-  
+
 
   useEffect(() => {
     const loadUndisposed = async () => {
@@ -188,8 +188,8 @@ export default function DisposalRecycleForm() {
           TotalQty: totalQty,
           Auctionable: 3,
           AuctionDate: disposalDate,
-          PSID:physicalForm,
-          AID:disposedTo,
+          PSID: physicalForm,
+          AID: disposedTo,
           Remarks: "",
         }),
       });
@@ -252,18 +252,18 @@ export default function DisposalRecycleForm() {
 
           <div>
             <label className="block text-sm font-semibold text-slate-700">Disposed To</label>
-           <select
-                    value={disposedTo}
-                    onChange={(e) => setDisposedTo(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    >
-                    <option value="">Select</option>
-                    {disposedOptions.map((opt) => (
-                        <option key={opt.IRID} value={opt.IRID}>
-                        {opt.IRName}
-                        </option>
-                    ))}
-                    </select>
+            <select
+              value={disposedTo}
+              onChange={(e) => setDisposedTo(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            >
+              <option value="">Select</option>
+              {disposedOptions.map((opt) => (
+                <option key={opt.IRID} value={opt.IRID}>
+                  {opt.IRName}
+                </option>
+              ))}
+            </select>
 
           </div>
         </div>
@@ -315,8 +315,8 @@ export default function DisposalRecycleForm() {
             {selectedUndisposedItems.length > 0
               ? selectedUndisposedItems.map((x) => x.label).join(", ")
               : loadingUndisposed
-              ? "Loading..."
-              : "Select Dept - Quantity"}
+                ? "Loading..."
+                : "Select Dept - Quantity"}
           </button>
 
           {undisposedDropdownOpen && (
@@ -361,17 +361,17 @@ export default function DisposalRecycleForm() {
           <div>
             <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
             <select
-                value={physicalForm}
-                onChange={(e) => setPhysicalForm(e.target.value)}
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                >
-                <option value="">Select</option>
-                {physicalOptions.map((opt) => (
-                    <option key={opt.ID} value={opt.ID}>
-                    {opt.NAME}
-                    </option>
-                ))}
-                </select>
+              value={physicalForm}
+              onChange={(e) => setPhysicalForm(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            >
+              <option value="">Select</option>
+              {physicalOptions.map((opt) => (
+                <option key={opt.ID} value={opt.ID}>
+                  {opt.NAME}
+                </option>
+              ))}
+            </select>
 
           </div>
 

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import type { Route } from "next";
 import toast, { Toaster } from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 type ViewRow = Record<string, string | number | null>;
 
@@ -83,6 +84,12 @@ export default function AuctionSelect() {
 
   const router = useRouter();
 
+
+  const { data: session } = useSession();
+
+  const empCode = String(session?.user?.id ?? "").trim();
+
+
   useEffect(() => {
     const loadRows = async () => {
       setLoading(true);
@@ -151,6 +158,7 @@ export default function AuctionSelect() {
         body: JSON.stringify({
           IDDID: id,
           VID: String(selectedVid).trim(),
+          EmpCode: empCode
 
         }),
       });

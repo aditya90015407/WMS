@@ -1,9 +1,11 @@
 "use client";
 
 import encrypt from "@/components/Encrypt";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { normalize } from "path";
 import { useEffect, useMemo, useState } from "react";
+import { json } from "stream/consumers";
 
 type ViewRow = Record<string, string | number | null>;
 type Option = {
@@ -124,6 +126,13 @@ export default function AuctionApply() {
   const [receivers, setReceivers] = useState<Option[]>([]);
 
 
+
+  const { data: session } = useSession();
+  // console.log(session)
+
+  const empCode = String(session?.user?.id ?? "").trim();
+
+
   const router = useRouter()
 
   useEffect(() => {
@@ -164,8 +173,9 @@ export default function AuctionApply() {
 
         setRows(payload.data);
 
-        const res2 = await fetch(`/api/GetData/GetAllAuctionList`, {
+        const res2 = await fetch(`/api/GetData/GetInvitedAuctionsList`, {
           method: "POST",
+          body: JSON.stringify({ EmpCode: empCode })
         });
 
         const rawData = await res2.json()
@@ -182,7 +192,7 @@ export default function AuctionApply() {
     };
 
     void loadRows();
-  }, [refreshSeed, filters]);
+  }, [refreshSeed, filters, session]);
 
   useEffect(() => {
     const loadBaseFilters = async () => {

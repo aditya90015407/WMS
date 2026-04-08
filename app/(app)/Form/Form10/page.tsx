@@ -92,27 +92,27 @@ export default function Form10Page() {
         });
 
         const data = await res.json();
-        console.log(data)
+        // console.log(data)
         if (!res.ok || !data.success) {
           setStatus(data.message || "Failed to load Form 10 details.");
           return;
         }
-        
 
-        const row = ( data.data) as Record<
+
+        const row = (data.data) as Record<
           string,
           unknown
         >;
-        console.log(row)
+        // console.log(row)
         const transporterName = getFirstValue(row, ["TransporterName"]);
         const transporterAddress = getFirstValue(row, ["TransporterAddress"]);
         const receiverName = getFirstValue(row, ["ReceiverName"]);
         const receiverAddress = getFirstValue(row, ["ReceiverAddress"]);
 
-       const mm = getFirstValue(row, ["UnitDesc"]);
-        console.log("mm:", mm);
-         
-        
+        const mm = getFirstValue(row, ["UnitDesc"]);
+        // console.log("mm:", mm);
+
+
 
         setForm({
           senderNameAddress: getFirstValue(row, ["UnitDesc", "NAME", "SenderName"]),
@@ -206,11 +206,10 @@ export default function Form10Page() {
 
       {status && (
         <p
-          className={`mt-4 text-sm ${
-            status.toLowerCase().includes("fail") || status.toLowerCase().includes("fix")
-              ? "text-red-600"
-              : "text-green-700"
-          }`}
+          className={`mt-4 text-sm ${status.toLowerCase().includes("fail") || status.toLowerCase().includes("fix")
+            ? "text-red-600"
+            : "text-green-700"
+            }`}
         >
           {status}
         </p>

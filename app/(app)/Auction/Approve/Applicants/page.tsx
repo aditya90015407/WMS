@@ -86,6 +86,7 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
         CrBy: string
         CrDt: string
         IsActive: string
+        VendorCode: string
     }
 
     const [allAuctionParticipants, setAllAuctionParticipants] = useState<AuctionParticipants[]>([])
@@ -327,7 +328,7 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
                                 <tr >
 
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >VID</th>
+                                    >Vendor Code</th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Name</th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
@@ -349,7 +350,7 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
                                     >
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.VID}
+                                        >{row.VendorCode}
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"

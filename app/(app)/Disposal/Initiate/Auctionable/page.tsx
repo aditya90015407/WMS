@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 type Option = { id: string; name: string };
- type Option1 = { ID: string; NAME: string };
+type Option1 = { ID: string; NAME: string };
 export default function AuctionablePage() {
   // const [batchId, setBatchId] = useState("");
   const [auctionDate, setAuctionDate] = useState("");
@@ -19,7 +19,7 @@ export default function AuctionablePage() {
 
   const [vendorOptions, setVendorOptions] = useState<Option[]>([]);
   const [selectedVendorIds, setSelectedVendorIds] = useState<string[]>([]);
-   const [physicalForm, setPhysicalForm] = useState("");
+  const [physicalForm, setPhysicalForm] = useState("");
   const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
 
   // kept to avoid removing old element references
@@ -71,30 +71,30 @@ export default function AuctionablePage() {
     }
   }
   useEffect(() => {
-  const loadDropdowns = async () => {
-    try {
-      const [ physicalRes] = await Promise.all([
-        
-        fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
-      ]);
+    const loadDropdowns = async () => {
+      try {
+        const [physicalRes] = await Promise.all([
 
-      const physicalPayload = await physicalRes.json();
+          fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
+        ]);
 
-      
+        const physicalPayload = await physicalRes.json();
 
-      setPhysicalOptions(
-        physicalPayload.success && Array.isArray(physicalPayload.data)
-          ? physicalPayload.data
-          : [],
-      );
-    } catch {
-  
-      setPhysicalOptions([]);
-    }
-  };
 
-  void loadDropdowns();
-}, []);
+
+        setPhysicalOptions(
+          physicalPayload.success && Array.isArray(physicalPayload.data)
+            ? physicalPayload.data
+            : [],
+        );
+      } catch {
+
+        setPhysicalOptions([]);
+      }
+    };
+
+    void loadDropdowns();
+  }, []);
 
   useEffect(() => {
     const loadBase = async () => {
@@ -189,10 +189,10 @@ export default function AuctionablePage() {
           const rawQty = String(row.WasteQty ?? "").replace(",", ".");
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
-        
+
           const qtyLabel = qty.toFixed(2);
           const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
-          
+
           return {
             id,
             dept,
@@ -232,7 +232,7 @@ export default function AuctionablePage() {
   // console.log(totalSelectedQty)
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  console.log(totalSelectedQty)
+    console.log(totalSelectedQty)
     if (
       // !batchId ||
       !auctionDate ||
@@ -243,58 +243,58 @@ export default function AuctionablePage() {
       alert("Please fill all required fields and select at least one waste item and vendor.");
       return;
     }
-   
-     try {
-    const res = await fetch("/api/SetData/InitiateDisposal", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        WCID: wasteCategory,
-        WID: selectedWasteId,
-        TotalQty: totalSelectedQty,
-        Auctionable: 1,
-        AuctionDate: auctionDate,
-        PSID:physicalForm,
-        Remarks: remarks,
-      }),
-    });
 
-    const data = await res.json();
-    // console.log("InitiateDisposal response:", data);
+    try {
+      const res = await fetch("/api/SetData/InitiateDisposal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          WCID: wasteCategory,
+          WID: selectedWasteId,
+          TotalQty: totalSelectedQty,
+          Auctionable: 1,
+          AuctionDate: auctionDate,
+          PSID: physicalForm,
+          Remarks: remarks,
+        }),
+      });
 
-          if (!res.ok || !data.success) {
-            alert(data.message || "Save Failed");
-            return;
-          }
+      const data = await res.json();
+      // console.log("InitiateDisposal response:", data);
 
-          const iddid = data?.data?.WRID;
-          // console.log(iddid)
-          if (!iddid) {
-            alert("IDDID missing in InitiateDisposal response");
-            return;
-          }
+      if (!res.ok || !data.success) {
+        alert(data.message || "Save Failed");
+        return;
+      }
 
-            const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                IDDID: iddid, // using WRID as IDDID per your instruction
-                WRID: selectedUndisposedIds,
-              }),
-            });
+      const iddid = data?.data?.WRID;
+      // console.log(iddid)
+      if (!iddid) {
+        alert("IDDID missing in InitiateDisposal response");
+        return;
+      }
 
-            const data2 = await res2.json();
-            if (!res2.ok || !data2.success) {
-              alert(data2.message || "InsertAuctionWasteDetails failed");
-              return;
-            }
+      const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          IDDID: iddid, // using WRID as IDDID per your instruction
+          WRID: selectedUndisposedIds,
+        }),
+      });
 
-            alert(data.message || "Saved Successfully");
-          } catch (error) {
-            console.error("Submit Failed", error);
-            alert("Something went wrong while saving");
-          }
-        };
+      const data2 = await res2.json();
+      if (!res2.ok || !data2.success) {
+        alert(data2.message || "InsertAuctionWasteDetails failed");
+        return;
+      }
+
+      alert(data.message || "Saved Successfully");
+    } catch (error) {
+      console.error("Submit Failed", error);
+      alert("Something went wrong while saving");
+    }
+  };
 
 
   return (
@@ -421,29 +421,29 @@ export default function AuctionablePage() {
           <input
             type="text"
             readOnly
-           value={Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}
+            value={Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}
 
 
             className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
           />
         </div>
-       <div>
-         <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
-         
-        <select
-        value={physicalForm}
-        onChange={(e) => setPhysicalForm(e.target.value)}
-        className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-      >
-        <option value="">Select</option>
-        {physicalOptions.map((opt) => (
-          <option key={opt.ID} value={opt.ID}>
-            {opt.NAME}
-          </option>
-        ))}
-      </select>
+        <div>
+          <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
 
-       </div>
+          <select
+            value={physicalForm}
+            onChange={(e) => setPhysicalForm(e.target.value)}
+            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          >
+            <option value="">Select</option>
+            {physicalOptions.map((opt) => (
+              <option key={opt.ID} value={opt.ID}>
+                {opt.NAME}
+              </option>
+            ))}
+          </select>
+
+        </div>
         <div className="relative">
           <label className="mb-1 block text-sm font-semibold text-slate-700">Vendor List</label>
 

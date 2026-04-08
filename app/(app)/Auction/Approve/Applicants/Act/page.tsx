@@ -37,6 +37,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         UpBy: string
         UpDt: string
         IsActive: string
+        VendorCode: string
     }
 
     type AuctionParticipantLine = {
@@ -208,7 +209,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
             <form onSubmit={handleSubmit} action="">
                 <div className="grid grid-cols-2 text-sm">
-                    <div className="px-2 py-2 font-semibold text-xs">ID : <span className="font-normal text-sm"> {auctionParticipant?.ID}</span></div>
+                    <div className="px-2 py-2 font-semibold text-xs">Vendor Code : <span className="font-normal text-sm"> {auctionParticipant?.VendorCode}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Name : <span className="font-normal text-sm"> {auctionParticipant?.NAME}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Email : <span className="font-normal text-sm"> {auctionParticipant?.EMAIL}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Applied On : <span className="font-normal text-sm"> {auctionParticipant?.CrDt?.split('T')[0]} {auctionParticipant?.CrDt?.split('T')[1]?.split('.')[0]} </span></div>
