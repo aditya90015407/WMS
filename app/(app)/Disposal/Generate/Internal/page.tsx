@@ -29,7 +29,8 @@ type PhysicalFormOption = {
 
 export default function InternalDisposalGeneratePage() {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  const params = useSearchParams();
+  const params = React.use(searchParams)
+  const iddid = params.id;
   const iddid = params.get("id") ?? "";
   const [form, setForm] = useState<InternalDisposalFormState>({
     disposalDate: today,
@@ -274,7 +275,7 @@ export default function InternalDisposalGeneratePage() {
                       </option>
                     ))}
                   </select>
-                
+
                 </td>
               </tr>
 

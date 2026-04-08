@@ -101,8 +101,9 @@ export default function DisposalGeneratePage() {
   const [vehicleOptions, setVehicleOptions] = useState<Option[]>([]);
   const [physicalOptions, setPhysicalOptions] = useState<Option[]>([]);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  const params = useSearchParams();
-  const iddid = params.get("id") ?? "";
+  const params = React.use(searchParams)
+  const iddid = params.id;
+  // const iddid = params.get("id") ?? "";
 
   useEffect(() => {
     const loadUnits = async () => {

@@ -29,7 +29,8 @@ const fields = [
 
 export default function DisposalApproveHazardousPage() {
     const router = useRouter();
-    const params = useSearchParams();
+    const params = React.use(searchParams)
+    const id = params.id;
     const id = params.get("id") ?? "";
     const [row, setRow] = useState<FinalDisposalRow | null>(null);
     const [loading, setLoading] = useState(true);

@@ -46,12 +46,13 @@ const rows: RowDef[] = [
 
 export default function NonHazardousDisposalGeneratePage() {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-  const params = useSearchParams();
-  const iddid = params.get("id") ?? "";
+  const params = React.use(searchParams)
+  const iddid = params.id;
+  // const iddid = params.get("id") ?? "";
 
- const [values, setValues] = useState<Record<string, string | string[] | File | null>>({
-  disposalDate: today,
-});
+  const [values, setValues] = useState<Record<string, string | string[] | File | null>>({
+    disposalDate: today,
+  });
   const [unitOptions, setUnitOptions] = useState<string[]>([]);
 
   const updateValue = (key: string, value: string | string[] | File | null) => {
@@ -140,56 +141,56 @@ export default function NonHazardousDisposalGeneratePage() {
     void loadDetails();
   }, [iddid, today]);
 
- 
-    const onSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
 
-  const wasteIdsArr = Array.isArray(values.wasteIds) ? values.wasteIds : [];
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const formData = new FormData();
-  formData.append("IDDID", iddid);
-  formData.append("UID", String(wasteIdsArr[0] ?? ""));
-  formData.append("TransporterName", String(values.transporterNameAddress ?? "").split(",")[0] ?? "");
-  formData.append("TransporterAddress", String(values.transporterNameAddress ?? ""));
-  formData.append("TransporterPhone", String(values.transporterPhoneEmail ?? "").split(",")[0] ?? "");
-  formData.append("TransporterEmail", String(values.transporterPhoneEmail ?? "").split(",")[1] ?? "");
-  formData.append("VTID", String(values.vehicleType ?? ""));
-  formData.append("TransporterRegNo", String(values.transporterRegNo ?? ""));
-  formData.append("VehicleRegNo", String(values.vehicleRegNo ?? ""));
-  formData.append("ReceiverName", String(values.receiverName ?? ""));
-  formData.append("ReceiverAddress", String(values.receiverAddress ?? ""));
-  formData.append("ReceiverAuthNo", "");
-  formData.append("TotalQty", String(Number(values.totalQty ?? 0)));
-  formData.append("Waste", String(values.wasteDescription ?? ""));
-  formData.append("NoOfContainers", "0");
-  formData.append("PSID", String(values.physicalForm ?? ""));
-  formData.append("SpecialHandlingInstructions", "");
-  formData.append("EmpCode", "YOUR_EMP_CODE");
-  formData.append("DateOfDisposal", String(values.disposalDate ?? today));
+    const wasteIdsArr = Array.isArray(values.wasteIds) ? values.wasteIds : [];
 
-  if (values.salePoSoDoc instanceof File) {
-    formData.append("salePoSoDoc", values.salePoSoDoc);
-  }
-  if (values.finalPartyDoc instanceof File) {
-    formData.append("finalPartyDoc", values.finalPartyDoc);
-  }
+    const formData = new FormData();
+    formData.append("IDDID", iddid);
+    formData.append("UID", String(wasteIdsArr[0] ?? ""));
+    formData.append("TransporterName", String(values.transporterNameAddress ?? "").split(",")[0] ?? "");
+    formData.append("TransporterAddress", String(values.transporterNameAddress ?? ""));
+    formData.append("TransporterPhone", String(values.transporterPhoneEmail ?? "").split(",")[0] ?? "");
+    formData.append("TransporterEmail", String(values.transporterPhoneEmail ?? "").split(",")[1] ?? "");
+    formData.append("VTID", String(values.vehicleType ?? ""));
+    formData.append("TransporterRegNo", String(values.transporterRegNo ?? ""));
+    formData.append("VehicleRegNo", String(values.vehicleRegNo ?? ""));
+    formData.append("ReceiverName", String(values.receiverName ?? ""));
+    formData.append("ReceiverAddress", String(values.receiverAddress ?? ""));
+    formData.append("ReceiverAuthNo", "");
+    formData.append("TotalQty", String(Number(values.totalQty ?? 0)));
+    formData.append("Waste", String(values.wasteDescription ?? ""));
+    formData.append("NoOfContainers", "0");
+    formData.append("PSID", String(values.physicalForm ?? ""));
+    formData.append("SpecialHandlingInstructions", "");
+    formData.append("EmpCode", "YOUR_EMP_CODE");
+    formData.append("DateOfDisposal", String(values.disposalDate ?? today));
 
-  const res = await fetch("/api/SetData/SetFinalDisposalDetails", {
-    method: "POST",
-    body: formData,
-  });
+    if (values.salePoSoDoc instanceof File) {
+      formData.append("salePoSoDoc", values.salePoSoDoc);
+    }
+    if (values.finalPartyDoc instanceof File) {
+      formData.append("finalPartyDoc", values.finalPartyDoc);
+    }
 
-  const result = await res.json();
+    const res = await fetch("/api/SetData/SetFinalDisposalDetails", {
+      method: "POST",
+      body: formData,
+    });
 
-  if (!res.ok || !result.success) {
-    alert(result.message || "Save failed");
-    return;
-  }
+    const result = await res.json();
 
-  alert("Saved successfully");
-};
+    if (!res.ok || !result.success) {
+      alert(result.message || "Save failed");
+      return;
+    }
 
-  
+    alert("Saved successfully");
+  };
+
+
 
   const renderInput = (row: RowDef) => {
     const v = values[row.key];
@@ -300,15 +301,15 @@ export default function NonHazardousDisposalGeneratePage() {
     }
 
     if (row.type === "file") {
-        return (
-          <input
-            type="file"
-            accept=".pdf,.jpeg,.jpg,.png"
-            className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-            onChange={(e) => updateValue(row.key, e.target.files?.[0] ?? null)}
-          />
-        );
-      }
+      return (
+        <input
+          type="file"
+          accept=".pdf,.jpeg,.jpg,.png"
+          className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+          onChange={(e) => updateValue(row.key, e.target.files?.[0] ?? null)}
+        />
+      );
+    }
 
 
     if (row.type === "auto") {
