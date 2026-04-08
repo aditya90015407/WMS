@@ -41,9 +41,10 @@ function normalizeData<T extends Record<string, any>>(row: T) {
   );
 }
 
-export default function AuctionSelect() {
-  const params = useSearchParams();
-  const encoded = params.get("id");
+export default function AuctionSelect({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  const params = React.use(searchParams)
+  const encoded = params.id;
+  // const encoded = params.get("id");
 
   type AuctionParticipants = {
     ID: string;

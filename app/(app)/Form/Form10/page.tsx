@@ -72,10 +72,10 @@ const mapPhysicalForm = (value: string) => {
   return value;
 };
 
-export default function Form10Page({searchParams}:{searchParams:Promise<{id?:string}>}) {
-  // const params = useSearchParams();
-  const params=React.use(searchParams)
-  const id = params.id
+export default function Form10Page({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+
+  const params = React.use(searchParams)
+  const id = params.id;
 
   const [form, setForm] = useState<Form10Data>(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});

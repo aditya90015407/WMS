@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Form10Table, { type Form10Data } from "@/components/Form10Table";
 
@@ -72,9 +72,10 @@ const mapPhysicalForm = (value: string) => {
   return value;
 };
 
-export default function HazardousForm10Page() {
-  const params = useSearchParams();
-  const id = params.get("id") ?? "";
+export default function HazardousForm10Page({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  const params = React.use(searchParams)
+  const id = params.id;
+  // const id = params.get("id") ?? "";
 
   const [form, setForm] = useState<Form10Data>(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
