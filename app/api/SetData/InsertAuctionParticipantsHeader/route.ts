@@ -10,9 +10,10 @@ export async function POST(req: Request) {
             throw new Error("Could not connect to Database");
         }
 
-        const { Name, Email, EmpCode, IDDID, VID } = await req.json();
+        const { Name, Email, EmpCode, IDDID } = await req.json();
+        // console.log(Name, Email, EmpCode, IDDID)
 
-        if (!Name || !Email || !EmpCode || !IDDID || !VID) {
+        if (!Name || !Email || !EmpCode || !IDDID) {
             return NextResponse.json(
                 { success: false, message: "Name, Email, EmpCode, IDDID, VID are required" },
                 { status: 400 }
@@ -20,21 +21,21 @@ export async function POST(req: Request) {
         }
 
         const realId = await decrypt(IDDID);
-        const realVID = String(VID); 
+        // const realVID = String(VID);
 
         const result = await pool
             .request()
             .input("FLAG", sql.VarChar, "Insert-Auction-Participants-Header")
-            .input("VID", sql.VarChar, realVID)
+            // .input("VID", sql.VarChar, realVID)
             .input("IDDID", sql.Int, Number(realId))
             .input("Name", sql.VarChar, Name)
             .input("Email", sql.VarChar, Email)
-            .input("EmpCode", sql.VarChar, EmpCode)
+            .input("VendorCode", sql.VarChar, EmpCode)
             .execute("PRO-WMS_SET");
 
         const row = result.recordset?.[0];
-       
-        
+
+
         const status = row?.STATUS ?? "";
         const match = status.match(/Ref No\.\s*-(\d+)/);
         const apidFromStatus = match ? match[1] : undefined;

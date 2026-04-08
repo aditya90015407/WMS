@@ -1,11 +1,11 @@
 "use client";
- 
+
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ChevronRight, UserCircle2 } from "lucide-react";
- 
+
 type SessionUserLike = {
   username?: string;
   name?: string;
@@ -20,12 +20,12 @@ type SessionUserLike = {
   WMSDept?: string;
   id?: string;
 };
- 
+
 const normalizeUser = (value: unknown): SessionUserLike => {
   if (typeof value !== "object" || value === null) return {};
   return value as SessionUserLike;
 };
- 
+
 const formatSegment = (segment: string) =>
   segment
     .replace(/[-_]+/g, " ")
@@ -33,7 +33,7 @@ const formatSegment = (segment: string) =>
     .filter(Boolean)
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
     .join(" ");
- 
+
 export default function AppNavbar() {
   const { data: session } = useSession();
   const pathname = usePathname();
@@ -41,11 +41,11 @@ export default function AppNavbar() {
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
- 
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
- 
+
   const user = normalizeUser(isMounted ? session?.user : null);
   const displayName = user.username || user.name || "Unknown User";
   const email = user.email || "Not available";
@@ -66,7 +66,7 @@ export default function AppNavbar() {
     .filter(Boolean)
     .filter((segment) => segment.toLowerCase() !== "home");
   const breadcrumbParts = ["Home", ...pathSegments.map(formatSegment)];
- 
+
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
       if (!containerRef.current) return;
@@ -74,19 +74,19 @@ export default function AppNavbar() {
         setIsOpen(false);
       }
     };
- 
+
     document.addEventListener("mousedown", handleOutsideClick);
     return () => document.removeEventListener("mousedown", handleOutsideClick);
   }, []);
- 
+
   const handleLogout = async () => {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
     await signOut({ callbackUrl: "/sign-in" });
   };
- 
+
   return (
-    <header className="w-full sticky z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <header className="w-full sticky z-40 border-b border-slate-200 bg-green-200 backdrop-blur">
       <div className="relative flex h-16 w-full items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-3">
           <Image
@@ -98,13 +98,13 @@ export default function AppNavbar() {
             priority
           />
         </div>
- 
+
         <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-center">
           <h1 className="text-lg font-extrabold tracking-wide text-slate-800 drop-shadow-sm md:text-2xl">
             WASTE MANAGEMENT SYSTEM
           </h1>
         </div>
- 
+
         <div className="relative" ref={containerRef}>
           <button
             type="button"
@@ -114,7 +114,7 @@ export default function AppNavbar() {
           >
             <UserCircle2 className="h-9 w-9" />
           </button>
- 
+
           {isOpen && (
             <div className="absolute right-0 mt-2 w-80 rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -167,7 +167,7 @@ export default function AppNavbar() {
                     type="button"
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="w-full rounded-md bg-slate-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {isLoggingOut ? "Logging out..." : "Log out"}
                   </button>
@@ -192,5 +192,4 @@ export default function AppNavbar() {
     </header>
   );
 }
- 
- 
+

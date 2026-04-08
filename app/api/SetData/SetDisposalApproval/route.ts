@@ -1,39 +1,62 @@
 import { getConnection } from "@/lib/dbConnect";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../../auth/[...nextauth]/options";
-
+import sql from "mssql";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 
 export async function POST(req: NextRequest) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { success: false, message: "Invalid session" },
+                { status: 401 },
+            );
+        }
 
-    const session = await getServerSession(authOptions)
+        const body = await req.json();
+        const FDDID = Number(body?.FDDID ?? 0);
+        const StsCode = Number(body?.StsCode ?? 0);
+        const Remarks = String(body?.Remarks ?? "").trim();
+        const EmpCode = String(session.user.id ?? "").trim();
 
-    if (!session) return NextResponse.json("Invalid Session");
+        if (!FDDID) {
+            return NextResponse.json(
+                { success: false, message: "FDDID is required" },
+                { status: 400 },
+            );
+        }
 
-    const EmpCode = session.user.id
+        if (!StsCode) {
+            return NextResponse.json(
+                { success: false, message: "StsCode is required" },
+                { status: 400 },
+            );
+        }
 
-    const pool = await getConnection();
-    if (!pool || !pool.connected) {
-        throw new Error("Couldn't connect to Database");
+        const pool = await getConnection();
+        if (!pool || !pool.connected) {
+            throw new Error("Couldn't connect to Database");
+        }
+
+        const result = await pool
+            .request()
+            .input("FLAG", sql.VarChar, "SetDisposalApproval")
+            .input("StsCode", sql.Int, StsCode)
+            .input("Remarks", sql.NVarChar(sql.MAX), Remarks)
+            .input("EmpCode", sql.VarChar, EmpCode)
+            .input("FDDID", sql.Int, FDDID)
+            .execute("PRO-WMS_SET");
+
+        return NextResponse.json({
+            success: true,
+            data: result.recordset ?? [],
+        });
+    } catch (err: any) {
+        return NextResponse.json(
+            { success: false, message: err?.message || "Server error" },
+            { status: 500 },
+        );
     }
-
-    const body = await req.json()
-    const IDDID = body.IDDID
-    const Remarks = body.Remarks
-    const Acceptance = body.Acceptance
-
-    const StsCode = Acceptance == 1 ? 3 : 5
-
-    // console.log(body, EmpCode)
-
-    const result = await pool.request()
-        .input("FLAG", "SetDisposalApproval")
-        .input("IDDID", IDDID)
-        .input("Remarks", Remarks)
-        .input("StsCode", StsCode)
-        .input("EmpCode", EmpCode)
-        .execute("PRO-WMS_SET");
-
-    // console.log(result.recordset[0])
-    return NextResponse.json(result.recordset[0])
 }
+

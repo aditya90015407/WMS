@@ -162,10 +162,10 @@ export default function AuctionSelect() {
       }
 
       toast.success("Selected vendor saved!");
-   } catch (err) {
-  console.error("Select submit failed:", err);
-  toast.error(err instanceof Error ? err.message : "Error while saving selected vendor");
-}
+    } catch (err) {
+      console.error("Select submit failed:", err);
+      toast.error(err instanceof Error ? err.message : "Error while saving selected vendor");
+    }
 
   }
 

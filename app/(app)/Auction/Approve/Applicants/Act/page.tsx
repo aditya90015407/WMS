@@ -85,7 +85,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         })
 
         const rawData = await res.json()
-        console.log(rawData)
+        // console.log(rawData)
         const HeaderData = rawData.HeaderDetails.map(normalizeData)
         setAuctionParticipant(HeaderData[0])
 
@@ -166,7 +166,8 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         const res = await fetch("/api/SetData/SetAuctionApproval", {
             method: "POST",
             body: JSON.stringify({
-                "WRID": auctionParticipant?.ID,
+                "APID": auctionParticipant?.ID,
+                "APLID": auctionParticipantLine.at(-1)?.ID,
                 "Remarks": remarks,
                 "Acceptance": acceptance
             })
@@ -175,9 +176,9 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         const data = await res.json()
         // console.log(data)
 
-        if (data.STATUS == 'Approved Successfully !') {
-            toast.success("Approved Successfully !")
-            redirect("./")
+        if (data.STATUS == 'Response Recorded Successfully!') {
+            toast.success("Response Recorded Successfully!")
+            // redirect("./")
             return
         }
 
@@ -240,9 +241,9 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                 >EPR registration certificate for Plastic/oil/tyre</th>
                                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >Admin Remarks</th>
+                                >Remarks</th>
                                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >Rejection Date</th>
+                                >Apply Date</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 bg-white">

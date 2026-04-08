@@ -84,7 +84,7 @@ export default function LoginPage() {
       const encryptedEmployeeCode = await encryptForLogin(employeeCode.trim());
       const encryptedPassword = await encryptForLogin(password);
 
-      
+
 
       const res = await signIn("credentials", {
         username: encryptedEmployeeCode,
@@ -118,7 +118,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+    <div className="min-h-screen bg-linear-to-br from-emerald-100 via-emerald-200 to-emerald-400 flex items-center justify-center">
       <Toaster position="top-right" />
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
         <div className="grid md:grid-cols-2 gap-16 items-center">
@@ -144,7 +144,7 @@ export default function LoginPage() {
           </div>
 
           {/* Right Side - Login Form (DESIGN SAME) */}
-          <div className="bg-white/70 backdrop-blur-md rounded-3xl shadow-2xl p-10 border border-white/50">
+          <div className="bg-emerald-300 backdrop-blur-md rounded-3xl shadow-2xl p-10 border border-white/50">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
