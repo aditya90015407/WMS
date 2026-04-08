@@ -5,7 +5,9 @@ export default async function decrypt(encr: string) {
     const encryptionIV = "d78c12a7f93158cab68aedfe4a05fdfb"
     const key = Buffer.from(encryptionKey, "hex");
     const iv = Buffer.from(encryptionIV, "hex");
-    const encryptedText = encr.replace(/-/g, "+").replace(/_/g, "/");
+    if(!encr)
+        return
+    const encryptedText = encr?.replace(/-/g, "+").replace(/_/g, "/");
     const paddedText = encryptedText.padEnd(
         encryptedText.length + ((4 - (encryptedText.length % 4)) % 4),
         "="
