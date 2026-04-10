@@ -1,19 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
+export default function AuctionApply({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  // const searchParams = useSearchParams();
 
+  const params = React.use(searchParams);
+  const auctionId = params.id;
 
-
-
-export default function AuctionApply() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const auctionId = searchParams.get("id");
   const [showTransportForm, setShowTransportForm] = useState(false);
 
   const [recyclerName, setRecyclerName] = useState("");
@@ -30,19 +28,16 @@ export default function AuctionApply() {
   const [blueBookFile, setBlueBookFile] = useState<File | null>(null);
   const [eprFile, setEprFile] = useState<File | null>(null);
 
-
   const employeeCode = String(session?.user?.id ?? "").trim();
   const employeeName = String(session?.user?.username ?? session?.user?.name ?? "").trim();
   const employeeEmail = String(session?.user?.email ?? "").trim();
 
   useEffect(() => {
     if (!employeeCode && !employeeName && !employeeEmail) return;
-
     setRecyclerName(employeeName);
     setRecyclerEmail(employeeEmail);
     setVendorId(employeeCode);
   }, [employeeCode, employeeName, employeeEmail]);
-
 
   const [transportForm, setTransportForm] = useState({
     APID: "",
@@ -58,9 +53,7 @@ export default function AuctionApply() {
     ReceiverAuthNo: "",
   });
 
-
   const [vehicleTypes, setVehicleTypes] = useState<Array<{ id: string; name: string }>>([]);
-
 
   const [auctionDetails, setAuctionDetails] = useState<{
     AuctionDate: string;
@@ -68,6 +61,26 @@ export default function AuctionApply() {
     Remarks: string;
     CrDt: string;
   } | null>(null);
+
+  const [wasteDetails, setWasteDetails] = useState<
+    Array<{
+      ID?: string | number;
+      WRID?: string | number;
+      Waste?: string;
+      WasteType?: string;
+      WasteQty?: string | number;
+      GenerationDate?: string;
+      TargetDate?: string;
+      Unit?: string;
+      Dept?: string;
+    }>
+  >([]);
+
+  const formatDate = (value?: string) => {
+    if (!value) return "N/A";
+    const datePart = String(value).split("T")[0];
+    return datePart === "1900-01-01" ? "N/A" : datePart;
+  };
 
   useEffect(() => {
     if (!auctionId) return;
@@ -88,39 +101,43 @@ export default function AuctionApply() {
       }
     };
 
-    loadDetails();
+    void loadDetails();
   }, [auctionId]);
-
-  const [wasteDetails, setWasteDetails] = useState<Array<{ WasteType: string }>>(
-    []
-  );
 
   useEffect(() => {
     if (!auctionId) return;
 
     const loadWaste = async () => {
-      const res = await fetch("/api/GetData/GetWasteDetailsByAuctionId", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: auctionId }),
-      });
+      try {
+        const res = await fetch("/api/GetData/GetWasteDetailsByAuctionId", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: auctionId }),
+        });
 
-      const payload = await res.json();
-      if (payload.success) {
-        const data = payload.data;
-        setWasteDetails(Array.isArray(data) ? data : data ? [data] : []);
+        const payload = await res.json();
+        const data = Array.isArray(payload?.data)
+          ? payload.data
+          : Array.isArray(payload)
+            ? payload
+            : payload?.data
+              ? [payload.data]
+              : [];
+
+        setWasteDetails(data);
+      } catch (error) {
+        console.error("Failed to load waste details", error);
+        setWasteDetails([]);
       }
     };
 
-    loadWaste();
+    void loadWaste();
   }, [auctionId]);
-
 
   useEffect(() => {
     const loadVT = async () => {
       const res = await fetch("/api/GetData/GetVehicleType", { method: "POST" });
       const payload = await res.json();
-      console.log("vehicle type payload:", payload);
 
       if (payload.success) {
         const data = Array.isArray(payload.data) ? payload.data : payload.data ? [payload.data] : [];
@@ -131,12 +148,11 @@ export default function AuctionApply() {
         setVehicleTypes(list);
       }
     };
-    loadVT();
+    void loadVT();
   }, []);
 
-
   const allFilesReady = Boolean(
-    ctoFile && hwAuthFile && hwAuthSpcbFile && blueBookFile && eprFile
+    ctoFile && hwAuthFile && hwAuthSpcbFile && blueBookFile && eprFile,
   );
 
   const canSubmit =
@@ -161,7 +177,7 @@ export default function AuctionApply() {
         Name: recyclerName,
         Email: recyclerEmail,
         EmpCode: empCode,
-        VendorCode: vendorId,
+        VID: vendorId,
       }),
     });
 
@@ -172,8 +188,7 @@ export default function AuctionApply() {
     }
 
     const apid = headerPayload.data?.APID;
-    const StsCode = headerPayload.data?.StsCode;
-
+    const stsCode = headerPayload.data?.StsCode;
 
     const docsForm = new FormData();
     docsForm.append("APID", apid);
@@ -191,7 +206,7 @@ export default function AuctionApply() {
       body: docsForm,
     });
 
-    if (StsCode === 2) {
+    if (stsCode === 2) {
       setShowTransportForm(true);
       setTransportForm((prev) => ({ ...prev, APID: apid }));
     }
@@ -216,8 +231,6 @@ export default function AuctionApply() {
 
     toast.success("Transporter details saved!");
   }
-
-
 
   return (
     <div className="bg-white h-fit px-8 py-4 relative">
@@ -267,22 +280,63 @@ export default function AuctionApply() {
           </div>
         </div>
 
-        <p className="text-xs text-slate-500 mb-1">Waste Type</p>
-        <div className="flex flex-wrap gap-2">
+        <div className="mt-4">
+          <p className="text-xs text-slate-500 mb-2">Waste Details</p>
           {wasteDetails.length > 0 ? (
-            wasteDetails.map((w, i) => (
-              <span
-                key={i}
-                className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-700"
-              >
-                {w.WasteType}
-              </span>
-            ))
+            <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+              <table className="min-w-full divide-y divide-slate-200 text-sm">
+                <thead className="bg-slate-100">
+                  <tr>
+                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                      Waste
+                    </th>
+                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                      Waste Qty
+                    </th>
+                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                      Generation Date
+                    </th>
+                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                      Target Date
+                    </th>
+                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                      Unit
+                    </th>
+                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                      Dept
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {wasteDetails.map((w, i) => (
+                    <tr key={String(w.ID ?? w.WRID ?? i)}>
+                      <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                        {w.Waste ?? w.WasteType ?? "N/A"}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                        {w.WasteQty ?? "N/A"}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                        {formatDate(w.GenerationDate)}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                        {formatDate(w.TargetDate)}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                        {w.Unit ?? "N/A"}
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                        {w.Dept ?? "N/A"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <span className="text-slate-500">N/A</span>
           )}
         </div>
-
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -299,7 +353,7 @@ export default function AuctionApply() {
           </div>
 
           <div>
-            <label className="font-semibold">Vendor Code</label>
+            <label className="font-semibold">Vendor ID</label>
             <input
               type="text"
               value={vendorId}
@@ -407,6 +461,7 @@ export default function AuctionApply() {
           Submit
         </button>
       </form>
+
       {showTransportForm && (
         <form onSubmit={handleTransportSubmit} className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
           <h3 className="text-sm font-semibold text-slate-800 mb-3">
@@ -488,7 +543,6 @@ export default function AuctionApply() {
                   </option>
                 ))}
               </select>
-
             </div>
 
             <div>
@@ -558,11 +612,8 @@ export default function AuctionApply() {
           >
             Save Transporter Details
           </button>
-
         </form>
       )}
-
     </div>
   );
 }
-

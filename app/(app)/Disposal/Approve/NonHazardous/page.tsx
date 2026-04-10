@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 type FinalDisposalRow = Record<string, string | number | boolean | null>;
 
@@ -27,11 +27,11 @@ const fields = [
     ["UpDt", "Updated On"],
 ] as const;
 
-export default function DisposalApproveNonHazardousPage() {
+export default function DisposalApproveNonHazardousPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const router = useRouter();
     const params = React.use(searchParams)
     const id = params.id;
-    const id = params.get("id") ?? "";
+    // const id = params.get("id") ?? "";
     const [row, setRow] = useState<FinalDisposalRow | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

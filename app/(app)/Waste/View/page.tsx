@@ -462,7 +462,10 @@ export default function WasteViewPage() {
       alert("Form 10 link is missing.");
       return;
     }
-    window.open(`/Form/Form-10?id=${encodeURIComponent(linkedId)}`, "_blank");
+    window.open(
+      `/Form/Form10?fddid=${encodeURIComponent(entry.code)}&iddid=${encodeURIComponent(linkedId)}`,
+      "_blank"
+    );
   };
 
   const onDownloadForm10 = async (entry: FormEntry) => {

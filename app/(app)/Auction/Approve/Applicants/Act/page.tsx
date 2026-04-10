@@ -149,7 +149,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         const a = document.createElement("a")
 
         a.href = url
-        a.download = `${attachName}.zip`
+        a.download = `${auctionParticipant?.VendorCode}_${attachName}.zip`
         document.body.appendChild(a)
         a.click()
 

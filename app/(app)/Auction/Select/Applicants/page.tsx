@@ -49,6 +49,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
   type AuctionParticipants = {
     ID: string;
     VID: string;
+    VendorCode: string;
     NAME: string;
     EMAIL: string;
     CrBy: string;
@@ -65,6 +66,8 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
   const totalPages = Math.ceil(allAuctionParticipants.length / pageSize);
 
   const [selectedVid, setSelectedVid] = useState("");
+  const [selectedVendorCode, setSelectedVendorCode] = useState("");
+  const [selectedVendorName, setSelectedVendorName] = useState("");
   const [selectedRowVid, setSelectedRowVid] = useState("");
 
   const [rows, setRows] = useState<ViewRow[]>([]);
@@ -208,7 +211,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                     Select
                   </th>
-                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">VID</th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">VendorCode</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Name</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Email</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Applied By</th>
@@ -229,6 +232,8 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
                           if (e.target.checked) {
                             setSelectedRowVid(row.VID);
                             setSelectedVid(String(row.VID));
+                            setSelectedVendorCode(row.VendorCode)
+                            setSelectedVendorName(row.NAME)
                           } else {
                             setSelectedRowVid("");
                             setSelectedVid("");
@@ -236,7 +241,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
                         }}
                       />
                     </td>
-                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.VID}</td>
+                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.VendorCode}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.NAME}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.EMAIL}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.CrBy}</td>
@@ -273,13 +278,14 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
 
       <div className="mt-4">
         <label className="mb-1 block text-sm font-semibold text-slate-700">
-          Enter Selected VID
+          Selected Vendor
         </label>
         <input
           type="text"
-          value={selectedVid}
-          onChange={(e) => setSelectedVid(e.target.value)}
-          placeholder="Type VID here..."
+          value={selectedVendorName + " ( " + selectedVendorCode + " )"}
+          readOnly
+          // onChange={(e) => setSelectedVid(e.target.value)}
+          // placeholder="Type VID here..."
           className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
         />
       </div>
@@ -289,7 +295,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
         onClick={handleSelectSubmit}
         className="mt-4 rounded-lg bg-green-700 px-4 py-2 text-sm text-white hover:bg-green-800"
       >
-        Submit Selected VID
+        Submit Selected Vendor
       </button>
     </section>
   );

@@ -88,7 +88,7 @@ const rows: RowDef[] = [
 ];
 type Option = { id: string; name: string };
 
-export default function DisposalGeneratePage() {
+export default function DisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const router = useRouter();
 
 
@@ -231,7 +231,7 @@ export default function DisposalGeneratePage() {
     e.preventDefault();
 
     const formData = new FormData();
-    formData.append("IDDID", iddid);
+    formData.append("IDDID", iddid!);
     formData.append("UID", String(values.senderNameAddress ?? ""));
     formData.append("TransporterName", String(values.transporterNameAddress ?? "").split(",")[0] ?? "");
     formData.append("TransporterAddress", String(values.transporterNameAddress ?? ""));
@@ -295,9 +295,7 @@ export default function DisposalGeneratePage() {
       }
     }
 
-    router.push(`/Form/Form-10?id=${iddid}`);
-
-
+    router.push(`/Form/Form10?id=${iddid}`);
 
   };
 

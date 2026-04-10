@@ -27,7 +27,7 @@ type PhysicalFormOption = {
   NAME: string;
 };
 
-export default function InternalDisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+export default function InternalDisposalGeneratePage({searchParams}:{searchParams:Promise<{id?:string}>}) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
   const iddid = params.id;
@@ -184,7 +184,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     );
 
     const formData = new FormData();
-    formData.append("IDDID", iddid);
+    formData.append("IDDID", iddid!);
     formData.append("UID", String(wasteIdsArr[0] ?? ""));
     formData.append("SenderAuthNo", "");
     formData.append("TransporterName", "");

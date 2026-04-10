@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Form10Table, { type Form10Data } from "@/components/Form10Table";
 
@@ -72,10 +72,12 @@ const mapPhysicalForm = (value: string) => {
   return value;
 };
 
-export default function Form10Page({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+export default function Form10Page() {
+  const params = useSearchParams();
+  const fddid = params.get("fddid") ?? "";
+  const iddid = params.get("iddid") ?? "";
 
-  const params = React.use(searchParams)
-  const id = params.id;
+
 
   const [form, setForm] = useState<Form10Data>(initialFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -83,44 +85,91 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ i
 
   useEffect(() => {
     const loadForm10Details = async () => {
-      if (!id) return;
+      if (!fddid) {
+        setStatus("Missing final disposal id.");
+        return;
+      }
+
+      if (!iddid) {
+        setStatus("Missing disposal id.");
+        return;
+      }
+      console.log("fddid:", fddid);
+      console.log("iddid:", iddid);
 
       try {
-        const res = await fetch("/api/GetData/GetForm10Details", {
+        const statusRes = await fetch("/api/GetData/GetDisposalApprovalStatus", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ID: id }),
+          body: JSON.stringify({ FDDID: fddid }),
         });
 
-        const data = await res.json();
-        // console.log(data)
-        if (!res.ok || !data.success) {
-          setStatus(data.message || "Failed to load Form 10 details.");
+
+        const statusData = await statusRes.json();
+        if (!statusRes.ok || !statusData.success) {
+          setStatus(statusData.message || "Failed to check disposal approval status.");
           return;
         }
 
+        const statusRow = Array.isArray(statusData.data) ? statusData.data[0] : statusData.data;
+        const stsCode = Number(statusRow?.StsCode ?? 0);
 
-        const row = (data.data) as Record<
-          string,
-          unknown
-        >;
-        // console.log(row)
+        if (stsCode === 5) {
+          setStatus("Form 10 is rejected.");
+          return;
+        }
+
+        if (stsCode !== 3) {
+          setStatus("Form 10 is available only after disposal approval.");
+          return;
+        }
+
+        const fetchRow = async (url: string, body: Record<string, string>) => {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+
+
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            return null;
+          }
+
+          const row = (Array.isArray(data.data) ? data.data[0] : data.data) as
+            | Record<string, unknown>
+            | undefined;
+
+          return row && Object.keys(row).length > 0 ? row : null;
+        };
+
+        const row =
+          (await fetchRow("/api/GetData/GetForm10Details", { ID: iddid })) ??
+          (await fetchRow("/api/GetData/GetSelectedVendorDetails", { ID: iddid }));
+
+
+        if (!row) {
+          setStatus("Failed to load Form 10 details.");
+          return;
+        }
+
         const transporterName = getFirstValue(row, ["TransporterName"]);
         const transporterAddress = getFirstValue(row, ["TransporterAddress"]);
         const receiverName = getFirstValue(row, ["ReceiverName"]);
         const receiverAddress = getFirstValue(row, ["ReceiverAddress"]);
 
-        const mm = getFirstValue(row, ["UnitDesc"]);
-        // console.log("mm:", mm);
-
-
-
         setForm({
-          senderNameAddress: getFirstValue(row, ["UnitDesc", "NAME", "SenderName"]),
+          senderNameAddress: getFirstValue(row, [
+            "SenderNameAddress",
+            "UnitDesc",
+            "NAME",
+            "SenderName",
+          ]),
           senderPhone: getFirstValue(row, ["SenderPhone", "Phone", "PHONE"]),
           senderEmail: getFirstValue(row, ["SenderEmail", "EMAIL", "Email"]),
           senderAuthorizationNo: getFirstValue(row, ["SenderAuthorizationNo", "SenderAuthNo"]),
-          manifestDocumentNo: getFirstValue(row, ["ManifestDocumentNo"]),
+          manifestDocumentNo: getFirstValue(row, ["ManifestDocumentNo", "IDDID", "ID"]),
           transporterNameAddress: [transporterName, transporterAddress].filter(Boolean).join(" "),
           transporterPhone: getFirstValue(row, ["TransporterPhone"]),
           transporterEmail: getFirstValue(row, ["TransporterEmail"]),
@@ -162,7 +211,8 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ i
     };
 
     void loadForm10Details();
-  }, [id]);
+  }, [fddid, iddid]);
+
 
   const updateField = <K extends keyof Form10Data>(key: K, value: Form10Data[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));

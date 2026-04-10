@@ -69,14 +69,14 @@ export default function AppSidebar() {
     setOpenParent((prev) => (prev === menuId ? null : menuId));
   };
 
-  const menuIcon = (label: string) =>
-    label.toUpperCase() === "APPROVE"
-      ? "/approved.png"
-      : label.toUpperCase() === "EDIT"
-        ? "/edit.png"
-        : label.toUpperCase() === "VIEW"
-          ? "/view-list.png"
-          : "/form_generate.png";
+  // const menuIcon = (label: string) =>
+  //   label.toUpperCase() === "APPROVE"
+  //     ? "/approved.png"
+  //     : label.toUpperCase() === "EDIT"
+  //       ? "/edit.png"
+  //       : label.toUpperCase() === "VIEW"
+  //         ? "/view-list.png"
+  //         : "/form_generate.png";
 
   const buildHref = (page: string) => {
     const cleaned = String(page ?? "").trim().replace(/^\/+/, "");
@@ -169,13 +169,13 @@ export default function AppSidebar() {
                                 }`}
                               title={child.Menu}
                             >
-                              <Image
+                              {/* <Image
                                 src={menuIcon(child.Menu)}
                                 alt={child.Menu}
                                 width={16}
                                 height={16}
                                 className="h-4 w-4"
-                              />
+                              /> */}
                               {!collapsed && child.Menu}
                             </Link>
                           ))}
@@ -191,13 +191,13 @@ export default function AppSidebar() {
                         }`}
                       title={parent.Menu}
                     >
-                      <Image
+                      {/* <Image
                         src={menuIcon(parent.Menu)}
                         alt={parent.Menu}
                         width={16}
                         height={16}
                         className="h-4 w-4"
-                      />
+                      /> */}
                       {!collapsed && <span className="tracking-wide">{parent.Menu}</span>}
                     </Link>
                   )}

@@ -8,10 +8,10 @@ import { useSession } from "next-auth/react";
 import decrypt from "@/components/Decrypt";
 
 
-export default function AuctionApply() {
+export default function AuctionApply({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const auctionId = searchParams.get("id");
+    const Params = React.use(searchParams)
+    const auctionId = Params.id
     const [showTransportForm, setShowTransportForm] = useState(false);
 
     const [recyclerName, setRecyclerName] = useState("");

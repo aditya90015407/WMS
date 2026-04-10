@@ -44,7 +44,7 @@ const rows: RowDef[] = [
   { key: "finalPartyDoc", field: "Final party document intact as provided prior for verification", type: "file" },
 ];
 
-export default function NonHazardousDisposalGeneratePage() {
+export default function NonHazardousDisposalGeneratePage({searchParams}:{searchParams:Promise<{id?:string}>}) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
   const iddid = params.id;
@@ -148,7 +148,7 @@ export default function NonHazardousDisposalGeneratePage() {
     const wasteIdsArr = Array.isArray(values.wasteIds) ? values.wasteIds : [];
 
     const formData = new FormData();
-    formData.append("IDDID", iddid);
+    formData.append("IDDID", iddid!);
     formData.append("UID", String(wasteIdsArr[0] ?? ""));
     formData.append("TransporterName", String(values.transporterNameAddress ?? "").split(",")[0] ?? "");
     formData.append("TransporterAddress", String(values.transporterNameAddress ?? ""));
