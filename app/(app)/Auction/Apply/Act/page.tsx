@@ -353,7 +353,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
           </div>
 
           <div>
-            <label className="font-semibold">Vendor ID</label>
+            <label className="font-semibold">Vendor Code</label>
             <input
               type="text"
               value={vendorId}
