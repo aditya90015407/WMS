@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Form10Table, { type Form10Data } from "@/components/Form10Table";
 
@@ -72,10 +72,12 @@ const mapPhysicalForm = (value: string) => {
   return value;
 };
 
-export default function Form10Page() {
-  const params = useSearchParams();
-  const fddid = params.get("fddid") ?? "";
-  const iddid = params.get("iddid") ?? "";
+export default function Form10Page({ searchParams }: { searchParams: Promise<{ fddid?: string, iddid: string }> }) {
+  // const params = useSearchParams();
+
+  const params = React.use(searchParams);
+  const fddid = params.fddid;
+  const iddid = params.iddid;
 
   // console.log(fddid, iddid)
 
