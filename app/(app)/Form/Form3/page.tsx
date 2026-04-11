@@ -50,7 +50,7 @@ const getDestinedDisplay = (entry: FormEntry): string => {
   const receiverLabel = entry.receiver?.trim() || "";
 
   if (disposerLabel && receiverLabel) {
-    return `${disposerLabel} / Received From: ${receiverLabel}`;
+    return `Received From : ${disposerLabel} \n  Destined To: ${receiverLabel}`;
   }
   if (receiverLabel) return `Received From: ${receiverLabel}`;
   return disposerLabel;
@@ -452,7 +452,7 @@ export default function Form3Page() {
                     </td>
                     <td className="border border-slate-300 px-2 py-2">{selectedEntry.quantity}</td>
                     <td className="border border-slate-300 px-2 py-2">{selectedEntry.storageMethod}</td>
-                    <td className="border border-slate-300 px-2 py-2">{getDestinedDisplay(selectedEntry)}</td>
+                    <td className="border border-slate-300 px-2 py-2"><pre>{getDestinedDisplay(selectedEntry)}</pre></td>
                   </tr>
                 </tbody>
               </table>

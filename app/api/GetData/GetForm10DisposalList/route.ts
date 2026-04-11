@@ -1,16 +1,31 @@
+import { NextResponse } from "next/server";
+import * as sql from "mssql";
 import { getConnection } from "@/lib/dbConnect";
-import { NextRequest, NextResponse } from "next/server";
 
+export async function GET() {
+    try {
+        const pool = await getConnection();
 
-export async function POST(req: NextRequest) {
+        if (!pool || !pool.connected) {
+            throw new Error("Couldn't connect to database");
+        }
 
-    const pool = await getConnection();
-    if (!pool || !pool.connected) {
-        throw new Error("Couldn't connect to Database");
+        const result = await pool
+            .request()
+            .input("FLAG", sql.NVarChar(50), "GetForm10DisposalList")
+            .execute("PRO-WMS_GET");
+        // console.log(result)
+        return NextResponse.json({
+            success: true,
+            data: result.recordset ?? [],
+        });
+    } catch (error: any) {
+        return NextResponse.json(
+            {
+                success: false,
+                message: error?.message || "Failed to load Form 10 disposal list",
+            },
+            { status: 500 },
+        );
     }
-
-    const result = await pool.request().input("FLAG", 'GetForm10DisposalList').execute("PRO-WMS_GET");
-
-    // console.log(result)
-    return NextResponse.json(result.recordset)
 }

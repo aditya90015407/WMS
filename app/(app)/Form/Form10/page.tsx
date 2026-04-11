@@ -1,294 +1,356 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import Form10Table, { type Form10Data } from "@/components/Form10Table";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Download } from "lucide-react";
 
-const initialFormState: Form10Data = {
-  senderNameAddress: "",
-  senderPhone: "",
-  senderEmail: "",
-  senderAuthorizationNo: "",
-  manifestDocumentNo: "",
-  transporterNameAddress: "",
-  transporterPhone: "",
-  transporterEmail: "",
-  vehicleType: "",
-  transporterRegistrationNo: "",
-  vehicleRegistrationNo: "",
-  receiverNameAddress: "",
-  receiverPhone: "",
-  receiverEmail: "",
-  receiverAuthorizationNo: "",
-  wasteDescription: "",
-  totalQuantity: "",
-  quantityUnit: "m3",
-  noOfContainers: "",
-  physicalForm: "",
-  specialHandlingInfo: "",
-  senderNameStamp: "",
-  senderSignature: "",
-  senderMonth: "",
-  senderDay: "",
-  senderYear: "",
-  transporterNameStamp: "",
-  transporterSignature: "",
-  transporterMonth: "",
-  transporterDay: "",
-  transporterYear: "",
-  receiverNameStamp: "",
-  receiverSignature: "",
-  receiverMonth: "",
-  receiverDay: "",
-  receiverYear: "",
+type Form10Row = {
+  ID?: string | number | null;
+  IDDID?: string | number | null;
+  WasteCategory?: string | null;
+  Waste?: string | null;
+  TotalQty?: string | number | null;
+  CrDt?: string | null;
+  ReceiverName?: string | null;
+  TransporterName?: string | null;
 };
 
-const getFirstValue = (row: Record<string, unknown>, keys: string[]) => {
-  for (const key of keys) {
-    const value = row?.[key];
-    if (value !== null && value !== undefined && String(value).trim() !== "") {
-      return String(value).trim();
-    }
-  }
-
-  return "";
+type ApiResponse = {
+  success?: boolean;
+  data?: Form10Row[];
+  message?: string;
+  error?: string;
 };
 
-const mapVehicleType = (value: string) => {
-  if (value === "1" || value.toLowerCase() === "truck") return "Truck";
-  if (value === "2" || value.toLowerCase() === "tanker") return "Tanker";
-  if (value === "3" || value.toLowerCase() === "special vehicle") return "Special Vehicle";
-  return value;
+type ApprovalStatusResponse = {
+  success?: boolean;
+  data?: {
+    FDDID?: string | number | null;
+    IDDID?: string | number | null;
+    StsCode?: string | number | null;
+  } | Array<{
+    FDDID?: string | number | null;
+    IDDID?: string | number | null;
+    StsCode?: string | number | null;
+  }>;
+  message?: string;
+  error?: string;
 };
 
-const mapPhysicalForm = (value: string) => {
-  if (value === "1" || value.toLowerCase() === "solid") return "Solid";
-  if (value === "2" || value.toLowerCase() === "semi-solid" || value.toLowerCase() === "semisolid") return "Semi-solid";
-  if (value === "3" || value.toLowerCase() === "sludge") return "Sludge";
-  if (value === "4" || value.toLowerCase() === "oily") return "Oily";
-  if (value === "5" || value.toLowerCase() === "tarry") return "Tarry";
-  if (value === "6" || value.toLowerCase() === "slurry") return "Slurry";
-  if (value === "7" || value.toLowerCase() === "liquid") return "Liquid";
-  return value;
+const PAGE_SIZE = 10;
+
+const toText = (value: unknown): string => {
+  if (value === null || value === undefined) return "";
+  return String(value);
+};
+
+const formatDate = (value: unknown): string => {
+  const text = toText(value);
+  if (!text) return "";
+  return text.split("T")[0];
 };
 
 export default function Form10Page() {
-  const params = useSearchParams();
-  const fddid = params.get("fddid") ?? "";
-  const iddid = params.get("iddid") ?? "";
+  const router = useRouter();
 
-
-
-  const [form, setForm] = useState<Form10Data>(initialFormState);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [status, setStatus] = useState<string>("");
+  const [rows, setRows] = useState<Form10Row[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const [form10Availability, setForm10Availability] = useState<Record<string, boolean>>({});
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
 
   useEffect(() => {
-    const loadForm10Details = async () => {
-      if (!fddid) {
-        setStatus("Missing final disposal id.");
-        return;
-      }
-
-      if (!iddid) {
-        setStatus("Missing disposal id.");
-        return;
-      }
-      console.log("fddid:", fddid);
-      console.log("iddid:", iddid);
+    const loadRows = async () => {
+      setLoading(true);
+      setError(null);
 
       try {
-        const statusRes = await fetch("/api/GetData/GetDisposalApprovalStatus", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ FDDID: fddid }),
+        const res = await fetch("/api/GetData/GetForm10DisposalList", {
+          method: "GET",
+          cache: "no-store",
         });
 
+        const payload = (await res.json()) as ApiResponse;
 
-        const statusData = await statusRes.json();
-        if (!statusRes.ok || !statusData.success) {
-          setStatus(statusData.message || "Failed to check disposal approval status.");
+        if (!res.ok || !payload.success || !Array.isArray(payload.data)) {
+          setRows([]);
+          setError(payload.message || payload.error || "Failed to load Form 10 records");
           return;
         }
 
-        const statusRow = Array.isArray(statusData.data) ? statusData.data[0] : statusData.data;
-        const stsCode = Number(statusRow?.StsCode ?? 0);
-
-        if (stsCode === 5) {
-          setStatus("Form 10 is rejected.");
-          return;
-        }
-
-        if (stsCode !== 3) {
-          setStatus("Form 10 is available only after disposal approval.");
-          return;
-        }
-
-        const fetchRow = async (url: string, body: Record<string, string>) => {
-          const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-          });
-
-
-          const data = await res.json();
-          if (!res.ok || !data.success) {
-            return null;
-          }
-
-          const row = (Array.isArray(data.data) ? data.data[0] : data.data) as
-            | Record<string, unknown>
-            | undefined;
-
-          return row && Object.keys(row).length > 0 ? row : null;
-        };
-
-        const row =
-          (await fetchRow("/api/GetData/GetForm10Details", { ID: iddid })) ??
-          (await fetchRow("/api/GetData/GetSelectedVendorDetails", { ID: iddid }));
-
-
-        if (!row) {
-          setStatus("Failed to load Form 10 details.");
-          return;
-        }
-
-        const transporterName = getFirstValue(row, ["TransporterName"]);
-        const transporterAddress = getFirstValue(row, ["TransporterAddress"]);
-        const receiverName = getFirstValue(row, ["ReceiverName"]);
-        const receiverAddress = getFirstValue(row, ["ReceiverAddress"]);
-
-        setForm({
-          senderNameAddress: getFirstValue(row, [
-            "SenderNameAddress",
-            "UnitDesc",
-            "NAME",
-            "SenderName",
-          ]),
-          senderPhone: getFirstValue(row, ["SenderPhone", "Phone", "PHONE"]),
-          senderEmail: getFirstValue(row, ["SenderEmail", "EMAIL", "Email"]),
-          senderAuthorizationNo: getFirstValue(row, ["SenderAuthorizationNo", "SenderAuthNo"]),
-          manifestDocumentNo: getFirstValue(row, ["ManifestDocumentNo", "IDDID", "ID"]),
-          transporterNameAddress: [transporterName, transporterAddress].filter(Boolean).join(" "),
-          transporterPhone: getFirstValue(row, ["TransporterPhone"]),
-          transporterEmail: getFirstValue(row, ["TransporterEmail"]),
-          vehicleType: mapVehicleType(getFirstValue(row, ["VehicleType", "VTID"])),
-          transporterRegistrationNo: getFirstValue(row, ["TransporterRegNo", "TransporterRegistrationNo"]),
-          vehicleRegistrationNo: getFirstValue(row, ["VehicleRegNo", "VehicleRegistrationNo"]),
-          receiverNameAddress: [receiverName, receiverAddress].filter(Boolean).join(" "),
-          receiverPhone: getFirstValue(row, ["ReceiverPhone"]),
-          receiverEmail: getFirstValue(row, ["ReceiverEmail"]),
-          receiverAuthorizationNo: getFirstValue(row, ["ReceiverAuthorizationNo", "ReceiverAuthNo"]),
-          wasteDescription: getFirstValue(row, ["WasteDescription", "Waste"]),
-          totalQuantity: getFirstValue(row, ["TotalQuantity", "TotalQty"]),
-          quantityUnit: getFirstValue(row, ["QuantityUnit"]) || "m3",
-          noOfContainers: getFirstValue(row, ["NoOfContainers"]),
-          physicalForm: mapPhysicalForm(getFirstValue(row, ["PhysicalForm", "PSID"])),
-          specialHandlingInfo: getFirstValue(row, ["SpecialHandlingInfo", "SpecialHandlingInstructions"]),
-          senderNameStamp: getFirstValue(row, ["SenderNameStamp"]),
-          senderSignature: getFirstValue(row, ["SenderSignature"]),
-          senderMonth: getFirstValue(row, ["SenderMonth"]),
-          senderDay: getFirstValue(row, ["SenderDay"]),
-          senderYear: getFirstValue(row, ["SenderYear"]),
-          transporterNameStamp: getFirstValue(row, ["TransporterNameStamp"]),
-          transporterSignature: getFirstValue(row, ["TransporterSignature"]),
-          transporterMonth: getFirstValue(row, ["TransporterMonth"]),
-          transporterDay: getFirstValue(row, ["TransporterDay"]),
-          transporterYear: getFirstValue(row, ["TransporterYear"]),
-          receiverNameStamp: getFirstValue(row, ["ReceiverNameStamp"]),
-          receiverSignature: getFirstValue(row, ["ReceiverSignature"]),
-          receiverMonth: getFirstValue(row, ["ReceiverMonth"]),
-          receiverDay: getFirstValue(row, ["ReceiverDay"]),
-          receiverYear: getFirstValue(row, ["ReceiverYear"]),
-        });
-
-        setStatus("Form 10 details loaded successfully.");
-      } catch (error) {
-        console.error("Failed to load Form 10 details", error);
-        setStatus("Failed to load Form 10 details.");
+        setRows(payload.data);
+      } catch {
+        setRows([]);
+        setError("Request failed while loading Form 10 records");
+      } finally {
+        setLoading(false);
       }
     };
 
-    void loadForm10Details();
-  }, [fddid, iddid]);
+    void loadRows();
+  }, []);
 
+  useEffect(() => {
+    const checkAvailability = async () => {
+      if (rows.length === 0) {
+        setForm10Availability({});
+        return;
+      }
 
-  const updateField = <K extends keyof Form10Data>(key: K, value: Form10Data[K]) => {
-    setForm((prev) => ({ ...prev, [key]: value }));
-    setErrors((prev) => {
-      if (!prev[key]) return prev;
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
+      setCheckingAvailability(true);
+
+      try {
+        const results = await Promise.all(
+          rows.map(async (row) => {
+            const fddid = toText(row.ID).trim();
+
+            if (!fddid) {
+              return [fddid, false] as const;
+            }
+
+            try {
+              const res = await fetch("/api/GetData/GetDisposalApprovalStatus", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ FDDID: fddid }),
+              });
+
+              const payload = (await res.json()) as ApprovalStatusResponse;
+
+              if (!res.ok || !payload.success) {
+                return [fddid, false] as const;
+              } 
+
+              const statusRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
+              return [fddid, Number(statusRow?.StsCode ?? 0) === 3] as const;
+            } catch {
+              return [fddid, false] as const;
+            }
+          }),
+        );
+
+        setForm10Availability(Object.fromEntries(results));
+      } finally {
+        setCheckingAvailability(false);
+      }
+    };
+
+    void checkAvailability();
+  }, [rows]);
+
+  const filteredRows = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return rows;
+
+    return rows.filter((row) =>
+      [
+        toText(row.ID),
+        toText(row.IDDID),
+        toText(row.WasteCategory),
+        toText(row.Waste),
+        toText(row.TotalQty),
+        toText(row.TransporterName),
+        toText(row.ReceiverName),
+      ]
+        .join(" ")
+        .toLowerCase()
+        .includes(query),
+    );
+  }, [rows, searchTerm]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+
+  const pagedRows = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filteredRows.slice(start, start + PAGE_SIZE);
+  }, [filteredRows, currentPage]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, rows.length]);
+
+  const canViewForm10 = (row: Form10Row) => {
+    const fddid = toText(row.ID).trim();
+    if (!fddid) return false;
+    return Boolean(form10Availability[fddid]);
   };
 
-  const validate = (): Record<string, string> => {
-    const nextErrors: Record<string, string> = {};
-    if (!form.senderNameAddress.trim()) nextErrors.senderNameAddress = "Sender name and address is required.";
-    if (!form.manifestDocumentNo.trim()) nextErrors.manifestDocumentNo = "Manifest document number is required.";
-    if (!form.transporterNameAddress.trim()) nextErrors.transporterNameAddress = "Transporter name and address is required.";
-    if (!form.receiverNameAddress.trim()) nextErrors.receiverNameAddress = "Receiver name and address is required.";
-    if (!form.wasteDescription.trim()) nextErrors.wasteDescription = "Waste description is required.";
-    return nextErrors;
-  };
+  const openForm10 = (row: Form10Row) => {
+    const iddid = toText(row.IDDID).trim();
 
-  const onSaveDraft = () => {
-    const nextErrors = validate();
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) {
-      setStatus("Please fix the required fields before saving.");
+    if (!iddid) {
+      alert("IDDID is missing.");
       return;
     }
-    setStatus("Draft saved locally. Backend integration will be added later.");
+    // console.log("hii")
+    
+    router.push(
+        `/Form/Form10/Form10List?fddid=${encodeURIComponent(toText(row.ID))}&iddid=${encodeURIComponent(iddid)}`
+      );
+
   };
 
-  const onReset = () => {
-    if (!window.confirm("Reset all Form 10 fields?")) return;
-    setForm(initialFormState);
-    setErrors({});
-    setStatus("");
+  const downloadForm10 = (row: Form10Row) => {
+    const iddid = toText(row.IDDID).trim();
+
+    if (!iddid) {
+      alert("IDDID is missing.");
+      return;
+    }
+
+   window.open(
+      `/Form/Form10/Form10List?fddid=${encodeURIComponent(toText(row.ID))}&iddid=${encodeURIComponent(iddid)}&mode=print`,
+      "_blank"
+    );
+
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
-      <Form10Table form={form} editable errors={errors} onFieldChange={updateField} />
-
-      {status && (
-        <p
-          className={`mt-4 text-sm ${status.toLowerCase().includes("fail") || status.toLowerCase().includes("fix")
-            ? "text-red-600"
-            : "text-green-700"
-            }`}
-        >
-          {status}
+    <section className="mx-auto max-w-7xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-slate-900">FORM 10 LIST</h1>
+        <p className="mt-1 text-sm text-slate-600">
+          Disposal records available for Form 10 view and download.
         </p>
-      )}
-
-      <div className="mt-5 flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={onSaveDraft}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
-        >
-          Save Draft
-        </button>
-        <button
-          type="button"
-          onClick={onReset}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
-        >
-          Reset
-        </button>
-        <button
-          type="button"
-          onClick={() => window.print()}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
-        >
-          Print
-        </button>
       </div>
+
+      {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
+      {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+
+      {!loading && !error && (
+        <div className="mt-4 space-y-3">
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by ID, IDDID, waste, receiver..."
+            className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-slate-500 sm:max-w-sm"
+          />
+
+          <div className="overflow-x-auto rounded-xl border border-slate-300">
+            <table className="min-w-full border-collapse text-xs">
+              <thead>
+                <tr className="bg-slate-100">
+                  <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">ID</th>
+                  <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">IDDID</th>
+                  <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Waste Category</th>
+                  <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Waste</th>
+                  <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Quantity</th>
+                  <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Created On</th>
+                  <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Form 10</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pagedRows.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="border border-slate-300 px-2 py-3 text-center text-slate-600">
+                      No records found.
+                    </td>
+                  </tr>
+                )}
+
+                {pagedRows.map((row, index) => (
+                  <tr key={`form10-${currentPage}-${index}`} className="hover:bg-slate-50">
+                    <td className="border border-slate-300 px-2 py-2 text-slate-800">
+                      {toText(row.ID)}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-2 text-slate-800">
+                      {toText(row.IDDID)}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-2 text-slate-800">
+                      {toText(row.WasteCategory)}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-2 text-slate-800">
+                      {toText(row.Waste)}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-2 text-slate-800">
+                      {toText(row.TotalQty)}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-2 text-slate-800">
+                      {formatDate(row.CrDt)}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-2 text-slate-800">
+                      {checkingAvailability ? (
+                        <span className="text-slate-500">Checking...</span>
+                      ) : canViewForm10(row) ? (
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => openForm10(row)}
+                            className="rounded bg-blue-700 px-3 py-1 text-white hover:bg-blue-800"
+                          >
+                            View
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => downloadForm10(row)}
+                            className="inline-flex items-center gap-1 rounded bg-emerald-700 px-3 py-1 text-white hover:bg-emerald-800"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            Download
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-slate-500">N/A</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {filteredRows.length > 0 && (
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
+              <p>
+                Showing {pagedRows.length} of {filteredRows.length} records
+                {searchTerm.trim() ? " (filtered)" : ""}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPage(1)}
+                  disabled={currentPage === 1}
+                  className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                >
+                  First
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                >
+                  Prev
+                </button>
+                <span>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                >
+                  Next
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                >
+                  Last
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }

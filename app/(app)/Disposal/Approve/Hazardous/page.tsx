@@ -2,7 +2,7 @@
 
 import { POST } from "@/app/api/DownloadAttachments/route";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 type FinalDisposalRow = Record<string, unknown>;
 
@@ -13,10 +13,12 @@ const toDisplayValue = (value: unknown) => {
     return String(value);
 };
 
-export default function DisposalApproveHazardousPage() {
+export default function DisposalApproveHazardousPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const router = useRouter();
-    const params = useSearchParams();
-    const id = params.get("id") ?? "";
+    // const params = useSearchParams();
+
+    const params = React.use(searchParams);
+    const id = params.id;
 
     const [row, setRow] = useState<FinalDisposalRow | null>(null);
     const [loading, setLoading] = useState(true);
