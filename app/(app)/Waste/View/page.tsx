@@ -427,17 +427,91 @@ export default function WasteViewPage() {
   }, [rows.length, searchTerm]);
 
   const onDownload = (entry: FormEntry) => {
-    const html = createForm3Html(entry);
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `FORM3_${entry.code || "ENTRY"}.html`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    URL.revokeObjectURL(url);
+    const formHtml = createForm3Html(entry);
+
+    const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Form3_${entry.code}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 12mm;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: white;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
+    #print-box {
+      width: 100%;
+      max-width: 800px;
+      background: white;
+    }
+
+    #print-box table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #print-box th,
+    #print-box td {
+      border: 1px solid #334155;
+      padding: 8px;
+      font-size: 12px;
+      vertical-align: top;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #print-box {
+        box-shadow: none;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="print-box">
+    ${formHtml}
+  </div>
+</body>
+</html>`;
+
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    if (!printWindow) {
+      alert("Please allow popups to download Form 3 as PDF.");
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 500);
+    };
   };
+
+
 
   const fetchForm10Data = async (id: string): Promise<Form10Data> => {
     const res = await fetch("/api/GetData/GetForm10Details", {
@@ -478,17 +552,43 @@ export default function WasteViewPage() {
       return;
     }
 
-    const html = createForm10Html(form, entry.code);
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `FORM10_${entry.code || "ENTRY"}.html`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    URL.revokeObjectURL(url);
+    const formHtml = createForm10Html(form, entry.code);
+
+    const html = `
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Form10_${entry.code}</title>
+  <style>
+    @media print {
+      body { margin: 0; }
+      #print-box { margin: 0; }
+    }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+  </style>
+</head>
+<body>
+  <div id="print-box">
+    ${formHtml}
+  </div>
+</body>
+</html>`;
+
+    const printWindow = window.open("", "_blank", "width=900,height=650");
+    if (!printWindow) return;
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+
+    printWindow.onload = () => {
+      printWindow.focus();
+      printWindow.print();
+      printWindow.close();
+    };
   };
+
 
   return (
     <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
@@ -517,8 +617,11 @@ export default function WasteViewPage() {
                   <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">ID</th>
                   <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Date</th>
                   <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Waste Category</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Waste</th>
                   <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Approval Status</th>
                   <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Target Date</th>
+                  {/* <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Form 3</th> */}
+                  {/* <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Form 10</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -539,8 +642,10 @@ export default function WasteViewPage() {
                     <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.code}</td>
                     <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.date}</td>
                     <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.wasteCategory}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.waste}</td>
                     <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.approvalStatus}</td>
                     <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.targetDate}</td>
+
                   </tr>
                 ))}
               </tbody>
@@ -581,24 +686,10 @@ export default function WasteViewPage() {
                       className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
                     >
                       <Download className="h-4 w-4" />
-                      Form 3
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openForm10(selectedEntry)}
-                      className="rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
-                    >
-                      Form 10
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDownloadForm10(selectedEntry)}
-                      className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
-                    >
-                      <Download className="h-4 w-4" />
-                      Form 10 Download
+                      Form 3 PDF
                     </button>
                   </>
+
                 ) : null}
                 <button
                   type="button"
@@ -629,7 +720,7 @@ export default function WasteViewPage() {
               </table>
             </div>
 
-            <div className="mt-4 text-center">
+            {/* <div className="mt-4 text-center">
               <h1 className="text-xl font-bold text-slate-900">FORM 3</h1>
               <p className="text-xs italic text-slate-700">
                 [See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]
@@ -637,16 +728,16 @@ export default function WasteViewPage() {
               <h2 className="mt-2 text-sm font-semibold text-slate-900">
                 FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES
               </h2>
-            </div>
-            <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
+            </div> */}
+            {/* <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
               <p>1. Name and address of the facility : {selectedEntry.unitDesc}</p>
               <p>
                 2. Date of issuance of authorisation and its reference number :{" "}
                 {[selectedEntry.dateOfIssuance, selectedEntry.referenceNo].filter(Boolean).join(" ")}
               </p>
               <p>3. Description of hazardous and other wastes handled (Generated or Received)</p>
-            </div>
-            <div className="mt-3 overflow-x-auto rounded-lg border border-slate-300">
+            </div> */}
+            {/* <div className="mt-3 overflow-x-auto rounded-lg border border-slate-300">
               <table className="min-w-[760px] border-collapse text-xs sm:min-w-full sm:text-sm">
                 <thead>
                   <tr className="bg-slate-100">
@@ -671,8 +762,8 @@ export default function WasteViewPage() {
                   </tr>
                 </tbody>
               </table>
-            </div>
-
+            </div> */}
+            {/* 
             <p className="mt-4 text-xs italic text-slate-700 sm:text-sm">
               * Fill up above table separately for indigenous and imported waste.
             </p>
@@ -691,7 +782,7 @@ export default function WasteViewPage() {
                 <p className="mt-2">Place: ....................</p>
               </div>
               <p className="font-semibold">Signature of occupier</p>
-            </div>
+            </div> */}
           </div>
         </div>
       )}

@@ -45,15 +45,22 @@ const toText = (value: unknown): string => {
   return String(value);
 };
 
-const getDestinedDisplay = (entry: FormEntry): string => {
+const getDestinedDisplay = (entry: FormEntry): React.ReactNode => {
   const disposerLabel = entry.disposer?.trim() || "";
   const receiverLabel = entry.receiver?.trim() || "";
 
   if (disposerLabel && receiverLabel) {
-    return `Received From : ${disposerLabel} \n  Destined To: ${receiverLabel}`;
+    return (
+      <>
+        Destined To: {disposerLabel} <br />
+        Received From: {receiverLabel}
+      </>
+    );
   }
-  if (receiverLabel) return `Received From: ${receiverLabel}`;
-  return disposerLabel;
+
+  if (receiverLabel) return <>Received From: {receiverLabel}</>;
+
+  return <>{disposerLabel}</>;
 };
 
 const getApprovalRowClass = (status: string): string => {
@@ -64,8 +71,8 @@ const getApprovalRowClass = (status: string): string => {
   return "";
 };
 
-const esc = (value: string): string =>
-  value
+const esc = (value: unknown): string =>
+  String(value ?? "")
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -236,16 +243,88 @@ export default function Form3Page() {
   }, [rows.length, searchTerm]);
 
   const onDownload = (entry: FormEntry) => {
-    const html = createForm3Html(entry);
-    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = `FORM3_${entry.code || "ENTRY"}.html`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
-    URL.revokeObjectURL(url);
+    const formHtml = createForm3Html(entry);
+
+    const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Form3_${entry.code}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 12mm;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: white;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
+    #print-box {
+      width: 100%;
+      max-width: 800px;
+      background: white;
+    }
+
+    #print-box table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #print-box th,
+    #print-box td {
+      border: 1px solid #334155;
+      padding: 8px;
+      font-size: 12px;
+      vertical-align: top;
+    }
+
+    @media print {
+      body {
+        margin: 0;
+        padding: 0;
+      }
+
+      #print-box {
+        box-shadow: none;
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="print-box">
+    ${formHtml}
+  </div>
+</body>
+</html>`;
+
+    const printWindow = window.open("", "_blank", "width=900,height=700");
+    if (!printWindow) {
+      alert("Please allow popups to download Form 3 as PDF.");
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+
+    printWindow.onload = () => {
+      setTimeout(() => {
+        printWindow.focus();
+        printWindow.print();
+      }, 500);
+    };
   };
 
   return (
@@ -446,13 +525,13 @@ export default function Form3Page() {
                   <tr>
                     <td className="whitespace-nowrap border border-slate-300 px-2 py-2">{selectedEntry.date}</td>
                     <td className="border border-slate-300 px-2 py-2">
-                      {[selectedEntry.waste || selectedEntry.wasteType, selectedEntry.sapWasteCode]
+                      {[selectedEntry.waste || selectedEntry.wasteType]
                         .filter(Boolean)
                         .join(" / ")}
                     </td>
                     <td className="border border-slate-300 px-2 py-2">{selectedEntry.quantity}</td>
                     <td className="border border-slate-300 px-2 py-2">{selectedEntry.storageMethod}</td>
-                    <td className="border border-slate-300 px-2 py-2"><pre>{getDestinedDisplay(selectedEntry)}</pre></td>
+                    <td className="border border-slate-300 px-2 py-2">{getDestinedDisplay(selectedEntry)}</td>
                   </tr>
                 </tbody>
               </table>

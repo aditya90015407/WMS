@@ -5,12 +5,23 @@ import { useSearchParams } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import decrypt from "@/components/Decrypt";
+
 
 export default function AuctionApply({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   // const searchParams = useSearchParams();
 
   const params = React.use(searchParams);
   const auctionId = params.id;
+  // const wasteParam = params.waste;
+  // const wasteQtyParam = params.wasteQty;
+
+  // const encIddid = searchParams.get("id");
+
+
+  // console.log(params)
+  // console.log(auctionId,wasteParam,wasteQtyParam)
+  // const dec=decrypt(auctionId)
 
   const [showTransportForm, setShowTransportForm] = useState(false);
 
@@ -31,6 +42,48 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
   const employeeCode = String(session?.user?.id ?? "").trim();
   const employeeName = String(session?.user?.username ?? session?.user?.name ?? "").trim();
   const employeeEmail = String(session?.user?.email ?? "").trim();
+
+  const [auctionWaste, setAuctionWaste] = useState("");
+  const [auctionWasteQty, setAuctionWasteQty] = useState("");
+
+
+  useEffect(() => {
+    const loadAuctionDetails = async () => {
+      const encIddid = params.id;
+      const decIddid = encIddid ? await decrypt(encIddid) : "";
+
+      if (!decIddid) return;
+
+      const res = await fetch("/api/GetData/GetSelectedVendorDetails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ID: String(decIddid) }),
+      });
+
+      const data = await res.json();
+      console.log("Auction details response:", data);
+    };
+
+    void loadAuctionDetails();
+  }, [params]);
+
+
+  //  useEffect(()=>{
+  //   const loadWasteParams=async()=>{
+  //     if(wasteParam){
+  //       const decodedWaste=await decrypt(wasteParam);
+  //       // console.log(decodedWaste)
+  //       setAuctionWaste(decodedWaste ?? "")
+  //     }
+  //     if(wasteQtyParam){
+  //       const decodedWasteQty=await decrypt(wasteQtyParam)
+  //       //  console.log(decodedWasteQty)
+  //       setAuctionWasteQty(decodedWasteQty ?? "")
+  //     }
+  //   };
+  //   void loadWasteParams();
+  //  },[wasteParam,wasteQtyParam]);
+
 
   useEffect(() => {
     if (!employeeCode && !employeeName && !employeeEmail) return;
@@ -58,6 +111,8 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
   const [auctionDetails, setAuctionDetails] = useState<{
     AuctionDate: string;
     WasteCategory: string;
+    Waste: string;
+    TotalQty: string;
     Remarks: string;
     CrDt: string;
   } | null>(null);
@@ -98,6 +153,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
       const payload = await res.json();
       if (payload.success) {
         setAuctionDetails(payload.data);
+        console.log(auctionDetails)
       }
     };
 
@@ -116,7 +172,9 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
         });
 
         const payload = await res.json();
+
         const data = Array.isArray(payload?.data)
+
           ? payload.data
           : Array.isArray(payload)
             ? payload
@@ -182,13 +240,16 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
     });
 
     const headerPayload = await headerRes.json();
+
     if (!headerRes.ok || !headerPayload.success) {
       toast.error(headerPayload.message || "Failed to save header");
       return;
     }
+    console.log(headerPayload)
 
     const apid = headerPayload.data?.APID;
     const stsCode = headerPayload.data?.StsCode;
+    console.log(stsCode)
 
     const docsForm = new FormData();
     docsForm.append("APID", apid);
@@ -206,7 +267,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
       body: docsForm,
     });
 
-    if (stsCode === 2) {
+    if (stsCode === 7) {
       setShowTransportForm(true);
       setTransportForm((prev) => ({ ...prev, APID: apid }));
     }
@@ -277,6 +338,15 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
             <p className="font-medium text-slate-800">
               {auctionDetails?.Remarks ?? "N/A"}
             </p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500">Waste</p>
+            <p className="font-medium text-slate-800">{auctionDetails?.Waste}</p>
+          </div>
+
+          <div>
+            <p className="text-xs text-slate-500">Waste Qty</p>
+            <p className="font-medium text-slate-800">{auctionDetails?.TotalQty ?? "N/A"}</p>
           </div>
         </div>
 
@@ -358,7 +428,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
               type="text"
               value={vendorId}
               onChange={(e) => setVendorId(e.target.value)}
-              placeholder="Enter Vendor ID"
+              placeholder="Enter Vendor Code"
               className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
           </div>

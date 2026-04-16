@@ -373,7 +373,7 @@ export default function WasteApprove() {
                   <tr key={index}
                     onClick={async () => {
                       const encryptedID = await encrypt(row.ID!.toString());
-                      router.push(`./Select/Applicants?id=${encryptedID}`);
+                      router.push(`./Approve/Applicants?id=${encryptedID}`);
                     }}
                     className="cursor-pointer"
                   >

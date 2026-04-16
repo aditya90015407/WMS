@@ -261,6 +261,7 @@ export default function WasteApprove() {
 
     useEffect(() => {
         const loadWaste = async () => {
+
             if (!filters.categoryId) {
                 setAvailableWaste([]);
                 return;
@@ -268,11 +269,14 @@ export default function WasteApprove() {
 
             try {
                 const res = await fetch(
+
                     `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(filters.categoryId)}`,
+
                     {
                         method: "GET",
                         cache: "no-store",
                     },
+
                 );
                 const payload = (await res.json()) as { success?: boolean; data?: Option[] };
                 if (payload.success && Array.isArray(payload.data)) {
@@ -289,9 +293,13 @@ export default function WasteApprove() {
     }, [filters.categoryId]);
 
     const headers = useMemo(() => {
+
         const keySet = new Set<string>();
+
         for (const row of rows) {
+
             Object.keys(row).forEach((k) => keySet.add(k));
+
         }
         return Array.from(keySet);
     }, [rows]);

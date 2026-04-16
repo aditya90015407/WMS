@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
+
 export default function AuctionablePage() {
   // const [batchId, setBatchId] = useState("");
   const [auctionDate, setAuctionDate] = useState("");
@@ -70,17 +71,15 @@ export default function AuctionablePage() {
       return [];
     }
   }
+
   useEffect(() => {
     const loadDropdowns = async () => {
       try {
         const [physicalRes] = await Promise.all([
-
           fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
         ]);
 
         const physicalPayload = await physicalRes.json();
-
-
 
         setPhysicalOptions(
           physicalPayload.success && Array.isArray(physicalPayload.data)
@@ -88,7 +87,6 @@ export default function AuctionablePage() {
             : [],
         );
       } catch {
-
         setPhysicalOptions([]);
       }
     };
@@ -176,7 +174,7 @@ export default function AuctionablePage() {
         });
 
         const payload = await res.json();
-        console.log(payload)
+        console.log(payload);
         const raw =
           (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
           (Array.isArray(payload?.data) && payload.data) ||
@@ -232,7 +230,7 @@ export default function AuctionablePage() {
   // console.log(totalSelectedQty)
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(totalSelectedQty)
+    console.log(totalSelectedQty);
     if (
       // !batchId ||
       !auctionDate ||
@@ -295,7 +293,6 @@ export default function AuctionablePage() {
       alert("Something went wrong while saving");
     }
   };
-
 
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -422,14 +419,12 @@ export default function AuctionablePage() {
             type="text"
             readOnly
             value={Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}
-
-
             className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
           />
         </div>
+
         <div>
           <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
-
           <select
             value={physicalForm}
             onChange={(e) => setPhysicalForm(e.target.value)}
@@ -442,8 +437,8 @@ export default function AuctionablePage() {
               </option>
             ))}
           </select>
-
         </div>
+
         <div className="relative">
           <label className="mb-1 block text-sm font-semibold text-slate-700">Vendor List</label>
 
@@ -465,36 +460,59 @@ export default function AuctionablePage() {
               {displayVendorOptions.length === 0 ? (
                 <p className="px-2 py-1 text-sm text-slate-500">No vendor options</p>
               ) : (
-                displayVendorOptions.map((item) => {
-                  const checked = selectedVendorIds.includes(item.id);
-                  return (
-                    <label
-                      key={item.id}
-                      className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={(e) => {
-                          const nextIds = e.target.checked
-                            ? [...selectedVendorIds, item.id]
-                            : selectedVendorIds.filter((id) => id !== item.id);
+                <>
+                  <label className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
+                    <input
+                      type="checkbox"
+                      checked={
+                        displayVendorOptions.length > 0 &&
+                        selectedVendorIds.length === displayVendorOptions.length
+                      }
+                      onChange={(e) => {
+                        const nextIds = e.target.checked
+                          ? displayVendorOptions.map((v) => v.id)
+                          : [];
+                        setSelectedVendorIds(nextIds);
 
-                          setSelectedVendorIds(nextIds);
+                        const names = displayVendorOptions
+                          .filter((v) => nextIds.includes(v.id))
+                          .map((v) => v.name)
+                          .join(", ");
+                        setVendor(names);
+                      }}
+                    />
+                    <span className="text-sm font-semibold text-slate-700">Select All Vendors</span>
+                  </label>
 
-                          const names = displayVendorOptions
-                            .filter((v) => nextIds.includes(v.id))
-                            .map((v) => v.name)
-                            .join(", ");
-                          setVendor(names);
+                  {displayVendorOptions.map((item) => {
+                    const checked = selectedVendorIds.includes(item.id);
+                    return (
+                      <label
+                        key={item.id}
+                        className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const nextIds = e.target.checked
+                              ? [...selectedVendorIds, item.id]
+                              : selectedVendorIds.filter((id) => id !== item.id);
 
-                          setVendorDropdownOpen(false);
-                        }}
-                      />
-                      <span className="text-sm text-slate-700">{item.name}</span>
-                    </label>
-                  );
-                })
+                            setSelectedVendorIds(nextIds);
+
+                            const names = displayVendorOptions
+                              .filter((v) => nextIds.includes(v.id))
+                              .map((v) => v.name)
+                              .join(", ");
+                            setVendor(names);
+                          }}
+                        />
+                        <span className="text-sm text-slate-700">{item.name}</span>
+                      </label>
+                    );
+                  })}
+                </>
               )}
             </div>
           )}

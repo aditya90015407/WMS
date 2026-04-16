@@ -84,6 +84,8 @@ export default function AuctionApply() {
     Auctionable: string
     AuctionDate: string
     WCID: string
+    Waste?: string
+    WasteQty?: string | number
     WasteCategory: string
     Remarks: string
     CrBy: string
@@ -309,6 +311,8 @@ export default function AuctionApply() {
     return Array.from(keySet);
   }, [rows]);
 
+
+  
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return rows;
