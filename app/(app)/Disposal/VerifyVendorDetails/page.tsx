@@ -8,6 +8,7 @@ type FinalDisposalRow = {
     IDDID?: string | number;
     WCID?: string | number;
     DisType?: string;
+    VID?:string | number;
     WasteCategory?: string;
     Waste?: string;
     TotalQty?: string | number;
@@ -50,7 +51,7 @@ export default function DisposalApprovePage() {
                 });
 
                 const rawData = await res.json();
-                // console.log("GetAllFinalDisposalList rawData:", rawData);
+                console.log("GetAllFinalDisposalList rawData:", rawData);
 
                 const data = Array.isArray(rawData)
                     ? rawData
@@ -72,6 +73,7 @@ export default function DisposalApprovePage() {
         };
 
         void loadRows();
+
     }, []);
 
     return (
@@ -131,25 +133,21 @@ export default function DisposalApprovePage() {
                                     <tr
                                         key={index}
                                         className="cursor-pointer hover:bg-slate-50"
-                                        onClick={() => {
-                                            const finalId = String(row.ID ?? "").trim();
-                                            const wcid = String(row.WCID ?? "").trim();
-                                            const disType = String(row.DisType ?? "").trim().toLowerCase();
+                                       onClick={() => {
+                                            const iddid = String(row.IDDID ?? "").trim();
+                                            const vid = String(row.VID ?? "").trim();
 
-                                            console.log("Clicked approval row:", row);
-                                            console.log("Routing with final ID:", finalId);
+                                            console.log("Clicked row:", row);
+                                            console.log("Routing with IDDID:", iddid, "VID:", vid);
 
-                                            if (!finalId) return;
+                                            if (!iddid || !vid) return;
 
-                                            const target =
-                                                disType === "internal"
-                                                    ? `/Disposal/VerifyVendorDetails/Internal?id=${encodeURIComponent(finalId)}`
-                                                    : wcid === "1"
-                                                        ? `/Disposal/VerifyVendorDetails/Hazardous?id=${encodeURIComponent(finalId)}`
-                                                        : `/Disposal/VerifyVendorDetails/NonHazardous?id=${encodeURIComponent(finalId)}`;
-
-                                            router.push(target);
+                                            router.push(
+                                                `/Disposal/VerifyVendorDetails/Act?iddid=${encodeURIComponent(iddid)}&vid=${encodeURIComponent(vid)}`
+                                            );
                                         }}
+
+
                                     >
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.ID ?? "")}
