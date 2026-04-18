@@ -5,12 +5,15 @@ import * as sql from "mssql";
 export async function POST(req : Request)
 {
     try{
-       const body=req.json();
+       const body=await req.json();
+
+        // return NextResponse.json({success:true})
+
        const iddid=body?.IDDID??"";
        const vid=body?.VID??"";
        if(!iddid || !vid)
        {
-        return NextResponse(
+        return NextResponse.json(
             {success: false, message: "Missing required field: IDDID & VID" },
         { status: 400});
        
@@ -29,13 +32,13 @@ export async function POST(req : Request)
                 .input("VID",sql.Int,vid)
                  .execute("PRO-WMS_GET");
 
-    return NextResponse(
+    return NextResponse.json(
         {success:true,data:result}
     )
 
 }
     catch(err : any)
     {
-        return NextResponse
+       return NextResponse.json({success:false})
     }
 }
