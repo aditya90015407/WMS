@@ -32,8 +32,10 @@ type VehicleType = {
   name: string;
 };
 
-export default function SelectedEntriesActPage() {
-  const params = useSearchParams();
+export default function SelectedEntriesActPage({ searchParams }: { searchParams: Promise<{ id?: string, apid: string, iddid?: string }> }) {
+  // const params = useSearchParams();
+
+  const params = React.use(searchParams)
 
   const [decodedId, setDecodedId] = useState("");
   const [decodedApid, setDecodedApid] = useState("");
@@ -70,9 +72,13 @@ export default function SelectedEntriesActPage() {
       try {
         setLoading(true);
 
-        const encId = params.get("id") ?? "";
-        const encApid = params.get("apid") ?? "";
-        const encIddid = params.get("iddid") ?? "";
+        // const encId = params.get("id") ?? "";
+        // const encApid = params.get("apid") ?? "";
+        // const encIddid = params.get("iddid") ?? "";
+        const encId = params.id
+        const encApid = params?.apid
+        const encIddid = params.iddid
+
 
         const id = encId ? String(await decrypt(encId)) : "";
         const apid = encApid ? String(await decrypt(encApid)) : "";
@@ -87,17 +93,17 @@ export default function SelectedEntriesActPage() {
           APID: apid,
         }));
 
+
         if (iddid) {
           const detailsRes = await fetch("/api/GetData/GetAuctionDetailsById", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              flag: "GetAuctionDetailsByID",
-              id: iddid,
-            }),
+            body: JSON.stringify({ id: encIddid }),
           });
 
+
           const detailsPayload = await detailsRes.json();
+          console.log(detailsPayload)
           if (detailsPayload?.success) {
             setAuctionDetails(detailsPayload.data ?? null);
           }
@@ -112,8 +118,8 @@ export default function SelectedEntriesActPage() {
           const wasteList = Array.isArray(wastePayload?.data)
             ? wastePayload.data
             : Array.isArray(wastePayload)
-            ? wastePayload
-            : [];
+              ? wastePayload
+              : [];
           setWasteDetails(wasteList);
         }
 
@@ -247,7 +253,7 @@ export default function SelectedEntriesActPage() {
           </div>
         </div>
 
-        <div className="mt-4">
+        {/* <div className="mt-4">
           <p className="text-xs text-slate-500 mb-2">Waste Details</p>
           {wasteDetails.length > 0 ? (
             <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
@@ -303,7 +309,7 @@ export default function SelectedEntriesActPage() {
           ) : (
             <span className="text-slate-500">N/A</span>
           )}
-        </div>
+        </div> */}
       </div>
 
       <form onSubmit={handleTransportSubmit} className="mt-6 rounded-xl border border-slate-200 bg-white p-4">

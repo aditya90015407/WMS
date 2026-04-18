@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -245,11 +245,11 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
       toast.error(headerPayload.message || "Failed to save header");
       return;
     }
-    console.log(headerPayload)
+    // console.log(headerPayload)
 
     const apid = headerPayload.data?.APID;
     const stsCode = headerPayload.data?.StsCode;
-    console.log(stsCode)
+    // console.log(stsCode)
 
     const docsForm = new FormData();
     docsForm.append("APID", apid);
@@ -262,17 +262,26 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
     if (blueBookFile) docsForm.append("BlueBookFile", blueBookFile);
     if (eprFile) docsForm.append("RegistrationCertificateFile", eprFile);
 
-    await fetch("/api/SetData/InsertAuctionParticipantsLine", {
+    const lineRes = await fetch("/api/SetData/InsertAuctionParticipantsLine", {
       method: "POST",
       body: docsForm,
     });
 
-    if (stsCode === 7) {
-      setShowTransportForm(true);
-      setTransportForm((prev) => ({ ...prev, APID: apid }));
+    // if (stsCode === 7) {
+    //   setShowTransportForm(true);
+    //   setTransportForm((prev) => ({ ...prev, APID: apid }));
+    // }
+
+    if (headerRes.ok && lineRes.ok) {
+
+      toast.success("Saved successfully!");
+      redirect("./")
+    }
+    else {
+      toast.error("Some Error Occured")
     }
 
-    toast.success("Saved successfully!");
+
   }
 
   async function handleTransportSubmit(e: React.FormEvent) {

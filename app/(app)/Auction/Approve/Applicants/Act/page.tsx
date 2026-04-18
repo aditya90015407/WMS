@@ -127,10 +127,10 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
 
     async function downloadAttachment(attachPath: any, attachName: any) {
+        const ext = attachPath.split(".").pop();
         const payload = {
             AttachPath: attachPath
         }
-        // console.log(payload)
 
         const res = await fetch(`/api/DownloadAttachments`, {
             method: "POST",
@@ -149,7 +149,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         const a = document.createElement("a")
 
         a.href = url
-        a.download = `${auctionParticipant?.VendorCode}_${attachName}.zip`
+        a.download = `${auctionParticipant?.VendorCode}_${attachName}.${ext}`
         document.body.appendChild(a)
         a.click()
 
@@ -158,7 +158,6 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
         // setDownloading(false)
     }
-
 
 
     async function handleSubmit(e: React.FormEvent) {

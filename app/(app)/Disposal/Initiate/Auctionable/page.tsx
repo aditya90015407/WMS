@@ -187,6 +187,9 @@ export default function AuctionablePage() {
           const rawQty = String(row.WasteQty ?? "").replace(",", ".");
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
+          const genDate = String(row.GenerationDate ?? "")
+            .split("T")[0]
+            .trim();
 
           const qtyLabel = qty.toFixed(2);
           const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
@@ -195,7 +198,8 @@ export default function AuctionablePage() {
             id,
             dept,
             qty,
-            label: `${dept || "Dept"} - ${qtyLabel}`,
+            genDate,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${genDate}`,
           };
         });
 
@@ -230,12 +234,12 @@ export default function AuctionablePage() {
   // console.log(totalSelectedQty)
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(totalSelectedQty);
+
     if (
-      // !batchId ||
       !auctionDate ||
       !wasteCategory ||
       !selectedWasteId ||
+      selectedUndisposedIds.length === 0 ||
       selectedVendorIds.length === 0
     ) {
       alert("Please fill all required fields and select at least one waste item and vendor.");
@@ -258,7 +262,6 @@ export default function AuctionablePage() {
       });
 
       const data = await res.json();
-      // console.log("InitiateDisposal response:", data);
 
       if (!res.ok || !data.success) {
         alert(data.message || "Save Failed");
@@ -266,7 +269,6 @@ export default function AuctionablePage() {
       }
 
       const iddid = data?.data?.WRID;
-      // console.log(iddid)
       if (!iddid) {
         alert("IDDID missing in InitiateDisposal response");
         return;
@@ -276,23 +278,49 @@ export default function AuctionablePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          IDDID: iddid, // using WRID as IDDID per your instruction
+          IDDID: iddid,
           WRID: selectedUndisposedIds,
         }),
       });
 
       const data2 = await res2.json();
+      console.log("InsertAuctionWasteDetails response:", data2);
+
       if (!res2.ok || !data2.success) {
         alert(data2.message || "InsertAuctionWasteDetails failed");
         return;
       }
 
+      const vendorInsertResults = await Promise.all(
+        selectedVendorIds.map(async (vendorId) => {
+          const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              IDDID: iddid,
+              VID: vendorId,
+            }),
+          });
+
+          const vendorData = await vendorRes.json();
+          console.log("InsertAuctionVendorDetails response:", vendorData);
+
+          if (!vendorRes.ok || !vendorData.success) {
+            throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
+          }
+
+          return vendorData;
+        }),
+      );
+
+      console.log("Vendor insert results:", vendorInsertResults);
       alert(data.message || "Saved Successfully");
     } catch (error) {
       console.error("Submit Failed", error);
       alert("Something went wrong while saving");
     }
   };
+
 
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -365,7 +393,7 @@ export default function AuctionablePage() {
 
         <div className="relative">
           <label className="mb-1 block text-sm font-semibold text-slate-700">
-            Undisposed Waste (Dept - Quantity)
+            Undisposed Waste (Dept - Quantity - Date)
           </label>
           <button
             type="button"
@@ -377,7 +405,7 @@ export default function AuctionablePage() {
               ? selectedUndisposedItems.map((x) => x.label).join(", ")
               : loadingUndisposed
                 ? "Loading..."
-                : "Select Dept - Quantity"}
+                : "Select Dept - Quantity - Date"}
           </button>
 
           {undisposedDropdownOpen && (

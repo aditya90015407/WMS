@@ -1,23 +1,23 @@
 "use client";
-
+ 
 import encrypt from "@/components/Encrypt";
 import { useRouter } from "next/navigation";
 import { normalize } from "path";
 import { useEffect, useMemo, useState } from "react";
-
+ 
 type ViewRow = Record<string, string | number | null>;
 type Option = {
   id: string;
   name: string;
 };
-
+ 
 type ApiResponse = {
   success?: boolean;
   data?: ViewRow[];
   message?: string;
   error?: string;
 };
-
+ 
 type FilterState = {
   date: string;
   categoryId: string;
@@ -27,15 +27,15 @@ type FilterState = {
   storageMethodId: string;
   receiverId: string;
 };
-
-
+ 
+ 
 const VIEW_FLAG = "GWT-ALL";
-
+ 
 const toText = (value: unknown): string => {
   if (value === null || value === undefined) return "";
   return String(value);
 };
-
+ 
 const getDisplayHeader = (header: string): string => {
   const key = header.trim().toUpperCase();
   const labelMap: Record<string, string> = {
@@ -56,27 +56,27 @@ const getDisplayHeader = (header: string): string => {
   };
   return labelMap[key] ?? header;
 };
-
+ 
 export default function WasteApprove() {
-
-
+ 
+ 
   function normalizeData<T extends Record<string, any>>(row: T) {
     return Object.fromEntries(
       Object.entries(row).map(([key, value]) => {
         if (value === null || value === undefined) {
           return [key, "NA"];
         }
-
+ 
         if (typeof value === "object") {
           // return [key, JSON.stringify(value)];
           return [key, "NA"];
         }
-
+ 
         return [key, value];
       })
     );
   }
-
+ 
   type AuctionList = {
     ID: string
     Auctionable: string
@@ -88,25 +88,25 @@ export default function WasteApprove() {
     CrDt: string
     IsActive: string
   }
-
+ 
   const [allauctionList, setAllauctionList] = useState<AuctionList[]>([])
-
-
+ 
+ 
   const [page, setPage] = useState(1);
   const pageSize = 10;
-
+ 
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
-
+ 
   const currentRows = allauctionList.slice(start, end);
   const totalPages = Math.ceil(allauctionList.length / pageSize);
-
+ 
   const [rows, setRows] = useState<ViewRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [refreshSeed, setRefreshSeed] = useState(0);
-
+ 
   const [filters, setFilters] = useState<FilterState>({
     date: "",
     categoryId: "",
@@ -122,15 +122,15 @@ export default function WasteApprove() {
   const [physicalStates, setPhysicalStates] = useState<Option[]>([]);
   const [storageMethods, setStorageMethods] = useState<Option[]>([]);
   const [receivers, setReceivers] = useState<Option[]>([]);
-
-
+ 
+ 
   const router = useRouter()
-
+ 
   useEffect(() => {
     const loadRows = async () => {
       setLoading(true);
       setError(null);
-
+ 
       try {
         const params = new URLSearchParams();
         params.set("flag", VIEW_FLAG);
@@ -141,38 +141,38 @@ export default function WasteApprove() {
         if (filters.storageMethodId) params.set("SMID", filters.storageMethodId);
         if (filters.receiverId) params.set("AID", filters.receiverId);
         if (filters.date) params.set("GenerationDate", filters.date);
-
+ 
         const res = await fetch(`/api/auth/waste/view?${params.toString()}`, {
           method: "GET",
           cache: "no-store",
         });
-
+ 
         const payload = (await res.json()) as ApiResponse;
         // console.log(payload)
-
+ 
         if (!res.ok || !payload.success) {
           setRows([]);
           setError(payload.message || payload.error || "Failed to load records");
           return;
         }
-
+ 
         if (!Array.isArray(payload.data)) {
           setRows([]);
           setError("Invalid response data format");
           return;
         }
-
+ 
         setRows(payload.data);
-
+ 
         const res2 = await fetch(`/api/GetData/GetAllAuctionList`, {
           method: "POST",
         });
-
+ 
         const rawData = await res2.json()
         // console.log(rawData)
         const data = rawData.map(normalizeData)
         setAllauctionList(data)
-
+ 
       } catch {
         setRows([]);
         setError("Request failed while loading waste records");
@@ -180,10 +180,10 @@ export default function WasteApprove() {
         setLoading(false);
       }
     };
-
+ 
     void loadRows();
   }, [refreshSeed, filters]);
-
+ 
   useEffect(() => {
     const loadBaseFilters = async () => {
       try {
@@ -215,7 +215,7 @@ export default function WasteApprove() {
             cache: "no-store",
           }),
         ]);
-
+ 
         const [categoryPayload, disposerPayload, physicalPayload, storagePayload, receiverPayload] =
           (await Promise.all([
             categoryRes.json(),
@@ -224,7 +224,7 @@ export default function WasteApprove() {
             storageRes.json(),
             receiverRes.json(),
           ])) as Array<{ success?: boolean; data?: Option[] }>;
-
+ 
         setCategories(
           categoryPayload.success && Array.isArray(categoryPayload.data)
             ? categoryPayload.data
@@ -258,17 +258,17 @@ export default function WasteApprove() {
         setReceivers([]);
       }
     };
-
+ 
     void loadBaseFilters();
   }, []);
-
+ 
   useEffect(() => {
     const loadWaste = async () => {
       if (!filters.categoryId) {
         setAvailableWaste([]);
         return;
       }
-
+ 
       try {
         const res = await fetch(
           `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(filters.categoryId)}`,
@@ -287,10 +287,10 @@ export default function WasteApprove() {
         setAvailableWaste([]);
       }
     };
-
+ 
     void loadWaste();
   }, [filters.categoryId]);
-
+ 
   const headers = useMemo(() => {
     const keySet = new Set<string>();
     for (const row of rows) {
@@ -298,7 +298,7 @@ export default function WasteApprove() {
     }
     return Array.from(keySet);
   }, [rows]);
-
+ 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return rows;
@@ -306,26 +306,26 @@ export default function WasteApprove() {
       Object.values(row).some((value) => toText(value).toLowerCase().includes(q)),
     );
   }, [rows, query]);
-
+ 
   // const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
   const currentPage = Math.min(page, totalPages);
   const pagedRows = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
     return filteredRows.slice(start, start + pageSize);
   }, [filteredRows, currentPage]);
-
+ 
   useEffect(() => {
     setPage(1);
   }, [query, filters]);
-
-
+ 
+ 
   return (
     <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="w-full">
           <h1 className="text-lg text-center font-semibold text-slate-900"> Approve Auction Applicants </h1>
           <h1 className="text-sm text-center font-semibold text-slate-900"> Active Auctions List</h1>
-
+ 
         </div>
         <button
           type="button"
@@ -335,17 +335,17 @@ export default function WasteApprove() {
           Refresh
         </button>
       </div>
-
+ 
       {loading && (
         <p className="mt-4 text-sm text-slate-600">Loading Auction records...</p>
       )}
-
+ 
       {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-
+ 
       {!loading && !error && headers.length === 0 && (
         <p className="mt-4 text-sm text-slate-600">No records found.</p>
       )}
-
+ 
       {!loading && !error && headers.length > 0 && (
         <>
           {/* <p className="mt-4 text-sm text-slate-600">
@@ -365,7 +365,7 @@ export default function WasteApprove() {
                   >Remarks</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Posted On</th>
-
+ 
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -373,7 +373,7 @@ export default function WasteApprove() {
                   <tr key={index}
                     onClick={async () => {
                       const encryptedID = await encrypt(row.ID!.toString());
-                      router.push(`./Approve/Applicants?id=${encryptedID}`);
+                      router.push(`./Select/Applicants?id=${encryptedID}`);
                     }}
                     className="cursor-pointer"
                   >

@@ -1,265 +1,355 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
 import decrypt from "@/components/Decrypt";
+import React, { useEffect, useMemo, useState } from "react";
+import { redirect } from 'next/navigation';
+import toast, { Toaster } from "react-hot-toast";
+import Link from "next/link";
 
-type AuctionDetails = {
-  AuctionDate?: string | null;
-  CrDt?: string | null;
-  WasteCategory?: string | null;
-  Remarks?: string | null;
-  Waste?: string | null;
-  WasteQty?: string | number | null;
-  TotalQty?: string | number | null;
-};
 
-export default function AuctionRevertedActPage() {
-  const params = useSearchParams();
-  const router = useRouter();
+export default function AuctionApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  const params = React.use(searchParams);
 
-  const [id, setId] = useState("");
-  const [apid, setApid] = useState("");
-  const [iddid, setIddid] = useState("");
-  const [auction, setAuction] = useState<AuctionDetails | null>(null);
-
-  const [ctoFile, setCtoFile] = useState<File | null>(null);
-  const [hwAuthFile, setHwAuthFile] = useState<File | null>(null);
-  const [hwAuthSpcbFile, setHwAuthSpcbFile] = useState<File | null>(null);
-  const [blueBookFile, setBlueBookFile] = useState<File | null>(null);
-  const [eprFile, setEprFile] = useState<File | null>(null);
-
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const loadPage = async () => {
-      try {
-        setLoading(true);
-        setError("");
-
-        const encId = params.get("id") ?? "";
-        // const encApid = params.get("apid") ?? "";
-        const encIddid = params.get("iddid") ?? "";
-
-        const decId = encId ? await decrypt(encId) : "";
-        // const decApid = encApid ? await decrypt(encApid) : "";
-        const decIddid = encIddid ? await decrypt(encIddid) : "";
-
-        setId(String(decId ?? ""));
-        // setApid(String(decApid ?? ""));
-        setIddid(String(decIddid ?? ""));
-
-        if (decIddid) {
-          const detailsRes = await fetch("/api/GetData/GetSelectedVendorDetails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ID: String(decIddid) }),
-          });
-
-          const detailsPayload = await detailsRes.json();
-          const detailsRow = Array.isArray(detailsPayload?.data)
-            ? detailsPayload.data[0]
-            : detailsPayload?.data;
-
-          setAuction(detailsRow ?? null);
+  function normalizeData<T extends Record<string, any>>(row: T) {
+    return Object.fromEntries(
+      Object.entries(row).map(([key, value]) => {
+        if (value === null || value === undefined) {
+          return [key, "NA"];
         }
-      } catch (err) {
-        console.error(err);
-        setError("Failed to load reverted auction details.");
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    void loadPage();
-  }, [params]);
+        if (typeof value === "object") {
+          // return [key, JSON.stringify(value)];
+          return [key, "NA"];
+        }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const encId = params.get("id") ?? "";
-    const decId = encId ? await decrypt(encId) : "";
-    if (!decId) {
-      setError("APID is missing.");
-      return;
-    }
-
-    try {
-      setSaving(true);
-      setError("");
-
-      const docsForm = new FormData();
-      docsForm.append("APID", id);
-      docsForm.append("ID", id);
-      docsForm.append("IDDID", iddid);
-      docsForm.append("Reapply", "1");
-
-      if (ctoFile) docsForm.append("CtoRespectiveFile", ctoFile);
-      if (hwAuthFile) docsForm.append("HwAuthorizationOspcbFile", hwAuthFile);
-      if (hwAuthSpcbFile) docsForm.append("HwAuthorizationSpcbFile", hwAuthSpcbFile);
-      if (blueBookFile) docsForm.append("BlueBookFile", blueBookFile);
-      if (eprFile) docsForm.append("RegistrationCertificateFile", eprFile);
-
-      const res = await fetch("/api/SetData/InsertAuctionParticipantsLine", {
-        method: "POST",
-        body: docsForm,
-      });
-
-      const payload = await res.json();
-
-      if (!res.ok || !payload.success) {
-        setError(payload.message || "Failed to save reapply documents.");
-        return;
-      }
-
-      alert("Documents re-uploaded successfully.");
-      router.push("/Auction/RevertedEntries");
-    } catch (err) {
-      console.error(err);
-      setError("Failed to save reapply documents.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <section className="mx-auto max-w-5xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <p className="text-sm text-slate-600">Loading reverted form...</p>
-      </section>
+        return [key, value];
+      })
     );
   }
 
+  type AuctionParticipant = {
+    ID: string
+    NAME: string
+    EMAIL: string
+    StsCode: string
+    CrBy: string
+    CrDt: string
+    UpBy: string
+    UpDt: string
+    IsActive: string
+    VendorCode: string
+  }
+
+  type AuctionParticipantLine = {
+    ID: string
+    APID: string
+    CTO_AttachPath: string
+    OSPCB_HW_Auth_AttachPath: string
+    SPCB_HW_Auth_AttachPath: string
+    BlueBook_AttachPath: string
+    EPR_Cert_AttachPath: string
+    Remarks: string
+    CrBy: string
+    CrDt: string
+    IsActive: string
+  }
+
+  type ApprovalRejectionHistory = {
+    ID: string
+    AprvType: string
+    Remarks: string
+    AprvStage: string
+    AprvStageDesc: string
+    LastApprvRejBy: string
+    CreatedBy: string
+    CreatedDate: string
+    Status: string
+  }
+
+  const [auctionParticipant, setAuctionParticipant] = useState<AuctionParticipant>()
+  const [auctionParticipantLine, setAuctionParticipantLine] = useState<AuctionParticipantLine[]>([])
+
+  const [approvalRejectionHistory, setApprovalRejectionHistory] = useState<ApprovalRejectionHistory[]>([])
+
+  const [remarks, setRemarks] = useState("")
+  const [acceptance, setAcceptance] = useState("")
+
+
+  async function fetchDetails() {
+
+    const encoded = params.id;
+    const id = await decrypt(encoded!)
+
+    const res = await fetch("/api/GetData/GetAuctionParticipantDetails", {
+      method: "POST",
+      body: JSON.stringify({ "ID": id })
+    })
+
+    const rawData = await res.json()
+    // console.log(rawData)
+    const HeaderData = rawData.HeaderDetails.map(normalizeData)
+    setAuctionParticipant(HeaderData[0])
+
+    const LineData = rawData.LineDetails.map(normalizeData)
+    setAuctionParticipantLine(LineData)
+
+    // console.log(rawData)
+    // console.log(data[0])
+
+  }
+
+  async function fetchHistory() {
+
+    const encoded = params.id;
+    const id = await decrypt(encoded!)
+
+    const res = await fetch("/api/GetData/GetApprovalRejectionHistory", {
+      method: "POST",
+      body: JSON.stringify({ "ID": id })
+    })
+
+    const rawData = await res.json()
+    const data = rawData.map(normalizeData)
+
+    setApprovalRejectionHistory(data)
+
+    // console.log(rawData)
+    // console.log(data[0])
+
+  }
+
+
+  useEffect(() => {
+    fetchDetails()
+    fetchHistory()
+  }, [])
+
+
+
+  async function downloadAttachment(attachPath: any, attachName: any) {
+    const ext = attachPath.split(".").pop();
+    const payload = {
+      AttachPath: attachPath
+    }
+
+    const res = await fetch(`/api/DownloadAttachments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) {
+      toast.error("File Not Found")
+      return
+    }
+
+    const blob = await res.blob()
+
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+
+    a.href = url
+    a.download = `${auctionParticipant?.VendorCode}_${attachName}.${ext}`
+    document.body.appendChild(a)
+    a.click()
+
+    a.remove()
+    window.URL.revokeObjectURL(url)
+
+    // setDownloading(false)
+  }
+
+
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+
+    const res = await fetch("/api/SetData/SetAuctionApproval", {
+      method: "POST",
+      body: JSON.stringify({
+        "APID": auctionParticipant?.ID,
+        "APLID": auctionParticipantLine.at(-1)?.ID,
+        "Remarks": remarks,
+        "Acceptance": acceptance
+      })
+    })
+
+    const data = await res.json()
+    // console.log(data)
+
+    if (data.STATUS == 'Response Recorded Successfully!') {
+      toast.success("Response Recorded Successfully!")
+      // redirect("./")
+      return
+    }
+
+    else {
+      toast.success("Some error occured !")
+      // redirect("./")
+      return
+    }
+
+  }
+
   return (
-    <section className="mx-auto max-w-5xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="border-b border-slate-200 pb-4">
-        <h1 className="text-2xl font-semibold text-slate-900">Reapply Auction Documents</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Re-upload the required documents for the same auction participant entry.
-        </p>
+
+    <div className="bg-white h-fit px-8 py-4 relative">
+      <Toaster />
+      {/* <div className="text-center text-sm">Act on Waste</div> */}
+
+      <div>
+        <div className="text-center text-orange-600 mb-5">
+          Participant's Details
+        </div>
+        {/* <Link href="./">
+ 
+                    <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
+                </Link> */}
       </div>
 
-      {error && (
-        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Auction Date</p>
-          <p className="mt-1 text-sm text-slate-900">{auction?.AuctionDate ?? "N/A"}</p>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Posted On</p>
-          <p className="mt-1 text-sm text-slate-900">
-            {auction?.CrDt ? String(auction.CrDt).split("T")[0] : "N/A"}
-          </p>
+      <form onSubmit={handleSubmit} action="">
+        <div className="grid grid-cols-2 text-sm">
+          <div className="px-2 py-2 font-semibold text-xs">Vendor Code : <span className="font-normal text-sm"> {auctionParticipant?.VendorCode}</span></div>
+          <div className="px-2 py-2 font-semibold text-xs">Name : <span className="font-normal text-sm"> {auctionParticipant?.NAME}</span></div>
+          <div className="px-2 py-2 font-semibold text-xs">Email : <span className="font-normal text-sm"> {auctionParticipant?.EMAIL}</span></div>
+          <div className="px-2 py-2 font-semibold text-xs">Applied On : <span className="font-normal text-sm"> {auctionParticipant?.CrDt?.split('T')[0]} {auctionParticipant?.CrDt?.split('T')[1]?.split('.')[0]} </span></div>
+          {/* <div className="px-2 py-2 font-semibold text-xs">CTO for respective SPCB : <span className="font-normal text-sm"> {auctionParticipant?.CTO_AttachPath}</span></div>
+                    <div className="px-2 py-2 font-semibold text-xs">HW authorization from OSPCB : <span className="font-normal text-sm"> {auctionParticipant?.OSPCB_HW_Auth_AttachPath}</span></div>
+                    <div className="px-2 py-2 font-semibold text-xs">HW authorization from respective SPCB : <span className="font-normal text-sm"> {auctionParticipant?.SPCB_HW_Auth_AttachPath}</span></div>
+                    <div className="px-2 py-2 font-semibold text-xs">Copy of blue book : <span className="font-normal text-sm"> {auctionParticipant?.BlueBook_AttachPath}</span></div>
+                    <div className="px-2 py-2 font-semibold text-xs">EPR registration certificate for Plastic/oil/tyre : <span className="font-normal text-sm"> {auctionParticipant?.EPR_Cert_AttachPath}</span></div> */}
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Waste Category</p>
-          <p className="mt-1 text-sm text-slate-900">{auction?.WasteCategory ?? "N/A"}</p>
+        <hr className="border border-gray-200 my-4" />
+
+        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
+          <div className="py-1 text-center text-sm">Documents Upload History</div>
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
+              <tr >
+                {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                >ID</th> */}
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >ID</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >CTO for respective SPCB</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >HW authorization from OSPCB</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >HW authorization from respective SPCB</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >Copy of blue book</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >EPR registration certificate for Plastic/oil/tyre</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >Remarks</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >Apply Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 bg-white">
+              {auctionParticipantLine?.map((row, index) => (
+                <tr key={index}>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >{row.ID}
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >
+                    <img src="/downloadicon.png" alt="" className="h-5"
+                      onClick={() => downloadAttachment(row.CTO_AttachPath, "CTO Attachment")}
+                    />
+                  </td>
+
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >
+                    <img src="/downloadicon.png" alt="" className="h-5"
+                      onClick={() => downloadAttachment(row.OSPCB_HW_Auth_AttachPath, "OSPCB_HW_Auth_AttachPath")}
+                    />
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >
+                    <img src="/downloadicon.png" alt="" className="h-5"
+                      onClick={() => downloadAttachment(row.SPCB_HW_Auth_AttachPath, "SPCB_HW_Auth_AttachPath")}
+                    />
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >
+                    <img src="/downloadicon.png" alt="" className="h-5"
+                      onClick={() => downloadAttachment(row.BlueBook_AttachPath, "BlueBook_AttachPath")}
+                    />
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >
+                    <img src="/downloadicon.png" alt="" className="h-5"
+                      onClick={() => downloadAttachment(row.EPR_Cert_AttachPath, "EPR_Cert_AttachPath")}
+                    />
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >{row.Remarks}
+                  </td>
+                  {/* <td
+                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                    >{row.IsActive}
+                                    </td> */}
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >{row.CrDt?.split("T")[0]}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Remarks</p>
-          <p className="mt-1 text-sm text-slate-900">{auction?.Remarks ?? "N/A"}</p>
-        </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Waste</p>
-          <p className="mt-1 text-sm text-slate-900">{auction?.Waste ?? "N/A"}</p>
-        </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Waste Qty</p>
-          <p className="mt-1 text-sm text-slate-900">
-            {auction?.WasteQty ?? auction?.TotalQty ?? "N/A"}
-          </p>
-        </div>
-      </div>
+        <hr className="border border-gray-200 my-4" />
 
-      <form onSubmit={handleSubmit} className="mt-8 grid gap-4 md:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            CTO Respective File
-          </label>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => setCtoFile(e.target.files?.[0] ?? null)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
+        <div className="grid grid-cols-2 text-sm">
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            HW Authorization OSPCB File
-          </label>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => setHwAuthFile(e.target.files?.[0] ?? null)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
+          <div>
+            <label className="font-semibold">Action <span className="text-red-600 font-semibold text-sm pr-2">* </span></label>
+            <select
+              required
+              onChange={(e) => setAcceptance(e.target.value)}
+              className="w-[40%] border border-gray-200 cursor-pointer p-2 mt-1 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-400">
+              <option value="">Select </option>
+              <option value="1">Approve</option>
+              <option value="2">Revert</option>
+            </select>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            HW Authorization SPCB File
-          </label>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => setHwAuthSpcbFile(e.target.files?.[0] ?? null)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Blue Book File
-          </label>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => setBlueBookFile(e.target.files?.[0] ?? null)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
+          </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">
-            Registration Certificate File
-          </label>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => setEprFile(e.target.files?.[0] ?? null)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          />
-        </div>
+          <div>
+            <label className="font-semibold">Remarks</label>
+            <textarea
+              // type="text"
+              rows={1}
+              placeholder=""
+              // value={complaint.date}
+              // readOnly
+              onChange={(e) => { setRemarks(e.target.value) }}
+              className=" border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+            />
+          </div>
 
-        <div className="md:col-span-2 flex justify-end gap-3">
-          <button
-            type="button"
-            onClick={() => router.push("/Auction/RevertedEntries")}
-            className="rounded-lg border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-lg bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-60"
-          >
-            {saving ? "Saving..." : "Reapply"}
-          </button>
         </div>
+        <button
+          type="submit"
+          className="text-sm cursor-pointer px-4 py-1.5 rounded-md bg-green-700 text-white hover:bg-green-800"
+        >
+          Submit
+        </button>
+
       </form>
-    </section>
+    </div>
   );
 }
