@@ -14,6 +14,7 @@ declare module "next-auth" {
       loginDate?: string;
       WMSUnit?: string
       WMSDept?: string
+      roleId?: string
     };
   }
 
@@ -29,5 +30,6 @@ declare module "next-auth" {
     loginDate?: string;
     WMSUnit?: string
     WMSDept?: string
+    roleId?: string
   }
 }

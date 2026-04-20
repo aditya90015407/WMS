@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
         .input("FLAG", "GetSelectedAuctionListByVendorCode")
         .input("EmpCode", EmpCode)
         .execute("PRO-WMS_GET");
-    console.log(result)
+    // console.log(result)
 
     return NextResponse.json(result.recordset);
 }

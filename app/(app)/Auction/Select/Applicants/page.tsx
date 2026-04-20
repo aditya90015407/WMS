@@ -102,7 +102,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
         if (!encoded) return;
         const id = await decrypt(encoded);
 
-        const res2 = await fetch("/api/GetData/GetApprovedAuctionParticipantsByID", {
+        const res2 = await fetch("/api/GetData/GetLevel2ApprovedAuctionParticipantsByID", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ID: encoded }),

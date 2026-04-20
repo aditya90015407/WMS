@@ -16,6 +16,7 @@ export async function getCurrentUser() {
     roles: session.user.roles || [],
     WMSUnit: session.user.WMSUnit,
     WMSDept: session.user.WMSDept,
-    id: session.user.id
+    id: session.user.id,
+    roleId: session.user.roleId
   };
 }

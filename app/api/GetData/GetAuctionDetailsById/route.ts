@@ -34,6 +34,8 @@ export async function POST(req: NextRequest) {
                 AuctionDate: row.AuctionDate,
                 WasteCategory: row.WasteCategory,
                 Remarks: row.Remarks,
+                TotalQty: row.TotalQty,
+                Waste: row.Waste,
                 CrDt: row.CrDt,
             },
         });

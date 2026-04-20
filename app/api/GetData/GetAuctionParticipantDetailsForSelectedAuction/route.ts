@@ -5,8 +5,8 @@ import * as sql from "mssql";
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const iddid = body?.IDDID ?? "";
-        const vid = body?.VID ?? "";
+        const iddid = Number(body?.IDDID ?? 0);
+        const vid = Number(body?.VID ?? 0);
         if (!iddid || !vid) {
             return NextResponse.json(
                 { success: false, message: "Missing required field: IDDID & VID" },
@@ -25,13 +25,21 @@ export async function POST(req: Request) {
             .input("IDDID", sql.Int, iddid)
             .input("VID", sql.Int, vid)
             .execute("PRO-WMS_GET");
+        console.log(result);
 
-        return NextResponse.json(
-            { success: true, data: result }
-        )
+        return NextResponse.json({
+            success: true,
+            data: result.recordset ?? [],
+        });
 
     }
     catch (err: any) {
-        return NextResponse
+        return NextResponse.json(
+            {
+                success: false,
+                message: err?.message || "Failed to fetch approval rejection history",
+            },
+            { status: 500 },
+        );
     }
 }

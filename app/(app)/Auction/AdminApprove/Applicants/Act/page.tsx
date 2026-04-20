@@ -170,7 +170,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                 "APLID": auctionParticipantLine.at(-1)?.ID,
                 "Remarks": remarks,
                 "Acceptance": acceptance,
-                "ApprovalLevel": 1
+                "ApprovalLevel": 2
             })
         })
 

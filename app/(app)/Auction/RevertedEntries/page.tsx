@@ -15,10 +15,39 @@ type RejectedRow = {
   Remarks?: string;
   AuctionID?: string;
   APID?: string;
-  IDDID?:string;
+  IDDID?: string;
+  AuctionDate: string
+  Waste: string
+  WasteCategory: string
+  VID: string
+  DiposalType: string
+  DisType: string
+  TotalQty: string
+  CrBy: string
+  IsActive: string
 };
 
 export default function AuctionRejectedEntriesPage() {
+
+
+  function normalizeData<T extends Record<string, any>>(row: T) {
+    return Object.fromEntries(
+      Object.entries(row).map(([key, value]) => {
+        if (value === null || value === undefined) {
+          return [key, "NA"];
+        }
+
+        if (typeof value === "object") {
+          // return [key, JSON.stringify(value)];
+          return [key, "NA"];
+        }
+
+        return [key, value];
+      })
+    );
+  }
+
+
   const router = useRouter();
   const [rows, setRows] = useState<RejectedRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,56 +55,57 @@ export default function AuctionRejectedEntriesPage() {
 
 
   const { data: session, status } = useSession();
-const empCode = String(session?.user?.id ?? "").trim();
+  const empCode = String(session?.user?.id ?? "").trim();
 
 
   useEffect(() => {
-  const loadRejectedEntries = async () => {
-    if (!empCode) return;
+    const loadRejectedEntries = async () => {
+      if (!empCode) return;
 
-    try {
-      setLoading(true);
-      setError("");
+      try {
+        setLoading(true);
+        setError("");
 
-      const res = await fetch("/api/GetData/GetRejectedAuctionListByVendorCode", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ EmpCode: empCode }),
-      });
+        const res = await fetch("/api/GetData/GetRejectedAuctionListByVendorCode", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ EmpCode: empCode }),
+        });
 
-      const raw = await res.json();
+        const raw = await res.json();
 
-      if (!res.ok) {
+        if (!res.ok) {
+          setRows([]);
+          setError(raw?.message || "Failed to load rejected entries.");
+          return;
+        }
+
+        const rawdata = Array.isArray(raw) ? raw : raw?.data ?? [];
+        // console.log(rawdata)
+        const data = rawdata.map(normalizeData)
+        setRows(data);
+      } catch (err) {
+        // console.error(err);
         setRows([]);
-        setError(raw?.message || "Failed to load rejected entries.");
-        return;
+        setError("Failed to load rejected entries.");
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const data = Array.isArray(raw) ? raw : raw?.data ?? [];
-      console.log(data[0])
-      setRows(data);
-    } catch (err) {
-      console.error(err);
-      setRows([]);
-      setError("Failed to load rejected entries.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  void loadRejectedEntries();
-}, [empCode]);
+    void loadRejectedEntries();
+  }, [empCode]);
 
   const openReapplyForm = async (row: RejectedRow) => {
-  const encryptedId = await encrypt(String(row.ID ?? ""));
-  const encryptedApid = await encrypt(String(row.APID ?? ""));
-  const encryptedIddid = await encrypt(String(row.IDDID ?? ""));
+    const encryptedId = await encrypt(String(row.ID ?? ""));
+    const encryptedApid = await encrypt(String(row.APID ?? ""));
+    const encryptedIddid = await encrypt(String(row.IDDID ?? ""));
 
-router.push(
-  `/Auction/RevertedEntries/Act?id=${encodeURIComponent(encryptedId)}&apid=${encodeURIComponent(
-    encryptedApid,
-  )}&iddid=${encodeURIComponent(encryptedIddid)}&reapply=1`,
-);
+    router.push(
+      `/Auction/RevertedEntries/Act?id=${encodeURIComponent(encryptedId)}&apid=${encodeURIComponent(
+        encryptedApid,
+      )}&iddid=${encodeURIComponent(encryptedIddid)}&reapply=1`,
+    );
 
   };
 
@@ -96,11 +126,12 @@ router.push(
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">ID</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Name</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Email</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Remarks</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Rejected On</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">IDDID</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Auction Date</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste Category</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Total Qty</th>
+                {/* <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Rejected On</th> */}
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Action</th>
               </tr>
             </thead>
@@ -114,11 +145,12 @@ router.push(
               ) : (
                 rows.map((row, index) => (
                   <tr key={`${row.ID}-${index}`}>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.ID}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.NAME}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.EMAIL}</td>
-                    <td className="px-3 py-2 text-sm text-red-700">{row.Remarks || "N/A"}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.CrDt?.split("T")[0] || "N/A"}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.IDDID}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.AuctionDate}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.WasteCategory}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.Waste}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.TotalQty}</td>
+                    {/* <td className="px-3 py-2 text-sm text-slate-700">{row.CrDt?.split("T")[0] || "N/A"}</td> */}
                     <td className="px-3 py-2">
                       <button
                         type="button"

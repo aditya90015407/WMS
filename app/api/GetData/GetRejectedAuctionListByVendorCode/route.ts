@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const EmpCode = String(body?.EmpCode ?? body?.empCode ?? "").trim();
     console.log(EmpCode)
-    
+
     if (!EmpCode) {
         return NextResponse.json(
             { success: false, message: "EmpCode is required" },
@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
         .input("FLAG", "GetRejectedAuctionListByVendorCode")
         .input("EmpCode", EmpCode)
         .execute("PRO-WMS_GET");
-        console.log(result)
+    // console.log(result)
 
     return NextResponse.json(result.recordset);
 }

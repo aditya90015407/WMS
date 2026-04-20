@@ -2,16 +2,15 @@ import { getConnection } from "@/lib/dbConnect";
 import { NextResponse } from "next/server";
 import sql from "mssql";
 
-export async function POST(req:Request) {
+export async function POST(req: Request) {
 
-    try{
-      const pool=await getConnection()
-      if(!pool || !pool.connected)
-      {
-        throw new Error("Could Not Connect to DataBase")
-      }
+  try {
+    const pool = await getConnection()
+    if (!pool || !pool.connected) {
+      throw new Error("Could Not Connect to DataBase")
+    }
 
-     const {
+    const {
       APID,
       TransporterName,
       TransporterAddress,
@@ -32,7 +31,7 @@ export async function POST(req:Request) {
       );
     }
 
-    const result=await pool
+    const result = await pool
       .request()
       .input("FLAG", sql.VarChar, "InsertTransportationDetails")
       .input("APID", sql.Int, Number(APID)) // change to VarChar if APID is string
@@ -47,7 +46,7 @@ export async function POST(req:Request) {
       .input("ReceiverAddress", sql.VarChar, ReceiverAddress ?? "")
       .input("ReceiverAuthNo", sql.VarChar, ReceiverAuthNo ?? "")
       .execute("PRO-WMS_SET");
-      console.log(result)
+    // console.log(result)
 
     return NextResponse.json({ success: true, message: "Transporter saved" });
   } catch (err: any) {
@@ -59,4 +58,4 @@ export async function POST(req:Request) {
 }
 
 
-    
+

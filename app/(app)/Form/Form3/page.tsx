@@ -45,22 +45,19 @@ const toText = (value: unknown): string => {
   return String(value);
 };
 
-const getDestinedDisplay = (entry: FormEntry): React.ReactNode => {
+const getDestinedDisplay = (entry: FormEntry): string => {
   const disposerLabel = entry.disposer?.trim() || "";
   const receiverLabel = entry.receiver?.trim() || "";
 
   if (disposerLabel && receiverLabel) {
-    return (
-      <>
-        Destined To: {disposerLabel} <br />
-        Received From: {receiverLabel}
-      </>
-    );
+    return `Destined To: ${disposerLabel}\nReceived From: ${receiverLabel}`;
   }
 
-  if (receiverLabel) return <>Received From: {receiverLabel}</>;
+  if (receiverLabel) {
+    return `Received From: ${receiverLabel}`;
+  }
 
-  return <>{disposerLabel}</>;
+  return disposerLabel;
 };
 
 const getApprovalRowClass = (status: string): string => {

@@ -28,7 +28,7 @@ export async function POST(req: Request) {
       .input("FLAG", sql.VarChar, "GetApprovalRejectionHistoryByVendorCode")
       .input("ID", sql.VarChar, APID)
       .execute("PRO-WMS_GET");
-     console.log(result)
+    //  console.log(result)
     return NextResponse.json({
       success: true,
       data: result.recordset ?? [],
