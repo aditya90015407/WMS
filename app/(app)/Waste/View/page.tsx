@@ -96,11 +96,11 @@ const buildDetailRows = (entry: FormEntry) => [
   ["Date Of Issuance", entry.dateOfIssuance],
   ["Reference No.", entry.referenceNo],
   ["Disposer ID", entry.dispId],
-  ["Department ID", entry.deptId],
+  // ["Department ID", entry.deptId],
   ["Department", entry.dept],
   ["Receiver ID", entry.receiverId],
-  ["Waste Category ID", entry.wcid],
-  ["Status Code", entry.stsCode],
+  // ["Waste Category ID", entry.wcid],
+  // ["Status Code", entry.stsCode],
 ].filter(([, value]) => String(value ?? "").trim() !== "");
 
 const getFirstValue = (row: Record<string, unknown>, keys: string[]) => {
@@ -658,7 +658,7 @@ export default function WasteViewPage() {
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
           <p>
             Showing {pagedRows.length} of {filteredRows.length} records
-            {searchTerm.trim() ? " (filtered)" : ""} (Code Ascending)
+            {searchTerm.trim() ? " (filtered)" : ""}
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setPage(1)} disabled={currentPage === 1} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">First</button>
