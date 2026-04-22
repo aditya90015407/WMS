@@ -121,7 +121,7 @@ export default function Form10Page() {
 
               if (!res.ok || !payload.success) {
                 return [fddid, false] as const;
-              } 
+              }
 
               const statusRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
               return [fddid, Number(statusRow?.StsCode ?? 0) === 3] as const;
@@ -186,10 +186,10 @@ export default function Form10Page() {
       return;
     }
     // console.log("hii")
-    
+
     router.push(
-        `/Form/Form10/Form10List?fddid=${encodeURIComponent(toText(row.ID))}&iddid=${encodeURIComponent(iddid)}`
-      );
+      `/Form/Form10/Form10List?fddid=${encodeURIComponent(toText(row.ID))}&iddid=${encodeURIComponent(iddid)}`
+    );
 
   };
 
@@ -201,7 +201,7 @@ export default function Form10Page() {
       return;
     }
 
-   window.open(
+    window.open(
       `/Form/Form10/Form10List?fddid=${encodeURIComponent(toText(row.ID))}&iddid=${encodeURIComponent(iddid)}&mode=print`,
       "_blank"
     );
@@ -211,10 +211,10 @@ export default function Form10Page() {
   return (
     <section className="mx-auto max-w-7xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-slate-900">FORM 10 LIST</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <h1 className="text-xl font-bold text-teal-600">Form 10 </h1>
+        {/* <p className="mt-1 text-sm text-slate-600">
           Disposal records available for Form 10 view and download.
-        </p>
+        </p> */}
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}

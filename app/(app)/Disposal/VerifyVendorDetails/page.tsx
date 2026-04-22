@@ -8,7 +8,7 @@ type FinalDisposalRow = {
     IDDID?: string | number;
     WCID?: string | number;
     DisType?: string;
-    VID?:string | number;
+    VID?: string | number;
     WasteCategory?: string;
     Waste?: string;
     TotalQty?: string | number;
@@ -80,12 +80,12 @@ export default function DisposalApprovePage() {
         <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="w-full">
-                    <h1 className="text-lg text-center font-semibold text-slate-900">
-                        Approve Final Disposal
+                    <h1 className="text-lg text-center font-semibold text-teal-600">
+                        Verify Vendor Details
                     </h1>
-                    <h2 className="text-sm text-center font-semibold text-slate-900">
+                    {/* <h2 className="text-sm text-center font-semibold text-slate-900">
                         Submitted Final Disposal List
-                    </h2>
+                    </h2> */}
                 </div>
             </div>
 
@@ -133,7 +133,7 @@ export default function DisposalApprovePage() {
                                     <tr
                                         key={index}
                                         className="cursor-pointer hover:bg-slate-50"
-                                       onClick={() => {
+                                        onClick={() => {
                                             const iddid = String(row.IDDID ?? "").trim();
                                             const vid = String(row.VID ?? "").trim();
 

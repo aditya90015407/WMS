@@ -60,6 +60,10 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
     CrBy: string
     CrDt: string
     IsActive: string
+    ApproverRemarks: string
+    UpBy: string
+    UpDt: string
+    ApproverName: string
   }
 
   type ApprovalRejectionHistory = {
@@ -379,7 +383,13 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                 >Remarks</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                >Apply Date</th>
+                >Uploaded On</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >Approver Remarks</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >Rejected By</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >Rejected On</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
@@ -436,6 +446,18 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
                   <td
                     className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                   >{row.CrDt?.split("T")[0]}
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >{row.ApproverRemarks}
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >{row.ApproverName}
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >{row.UpDt?.split("T")[0]}
                   </td>
                 </tr>
               ))}
@@ -550,14 +572,14 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
           <button
             type="button"
             onClick={() => router.push("/Auction/RevertedEntries")}
-            className="rounded-lg border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="cursor-pointer rounded-lg border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-60"
+            className="cursor-pointer rounded-lg bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-60"
           >
             {saving ? "Saving..." : "Reapply"}
           </button>

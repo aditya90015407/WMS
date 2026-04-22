@@ -112,10 +112,10 @@ export default function AuctionRejectedEntriesPage() {
   return (
     <section className="max-w-6xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="text-center">
-        <h1 className="text-xl font-semibold text-slate-900">Rejected Auction Entries</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <h1 className="text-lg font-semibold text-teal-600">Rejected Auction Entries</h1>
+        {/* <p className="mt-1 text-sm text-slate-600">
           Vendors can review remarks and submit corrected documents again.
-        </p>
+        </p> */}
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading rejected entries...</p>}
@@ -155,7 +155,7 @@ export default function AuctionRejectedEntriesPage() {
                       <button
                         type="button"
                         onClick={() => void openReapplyForm(row)}
-                        className="rounded-md bg-blue-700 px-3 py-1.5 text-xs text-white hover:bg-blue-800"
+                        className="cursor-pointer rounded-md bg-blue-700 px-3 py-1.5 text-xs text-white hover:bg-blue-800"
                       >
                         Re-Apply
                       </button>

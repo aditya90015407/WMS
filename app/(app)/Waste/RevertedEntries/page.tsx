@@ -336,8 +336,8 @@ export default function WasteApprove() {
     return (
         <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-lg font-semibold text-slate-900">Update Rejected Entries</h1>
+                <div className="w-full">
+                    <h1 className="text-lg text-center font-semibold text-teal-600">Update Rejected Waste Entries</h1>
 
                 </div>
                 <button

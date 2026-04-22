@@ -78,12 +78,12 @@ export default function DisposalApprovePage() {
         <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="w-full">
-                    <h1 className="text-lg text-center font-semibold text-slate-900">
+                    <h1 className="text-lg text-center font-semibold text-teal-600">
                         Approve Final Disposal
                     </h1>
-                    <h2 className="text-sm text-center font-semibold text-slate-900">
+                    {/* <h2 className="text-sm text-center font-semibold text-slate-900">
                         Submitted Final Disposal List
-                    </h2>
+                    </h2> */}
                 </div>
             </div>
 

@@ -593,7 +593,7 @@ export default function WasteViewPage() {
   return (
     <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-slate-900">WASTE DETAILS</h1>
+        <h1 className="text-xl font-semibold text-teal-600">View Waste Details</h1>
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}

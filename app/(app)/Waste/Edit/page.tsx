@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type ViewRow = Record<string, string | number | null>;
@@ -183,11 +184,23 @@ export default function WasteEditPage() {
     void loadBaseFilters();
   }, []);
 
+  const [sessionUid, setSessionUid] = useState("")
+
+
+  const { data: session } = useSession()
+  useEffect(() => {
+
+    setSessionUid(session?.user.uid!)
+  }, [session])
+
   const loadWasteByCategory = async (categoryId: string): Promise<Option[]> => {
     if (!categoryId) return [];
     try {
+
+      // if (!sessionUid) return;
+
       const res = await fetch(
-        `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(categoryId)}`,
+        `/api/auth/Waste/generate?type=drop-waste-for-unit&wcid=${encodeURIComponent(categoryId)}&uid=${encodeURIComponent(sessionUid)}`,
         {
           method: "GET",
           cache: "no-store",
@@ -318,11 +331,11 @@ export default function WasteEditPage() {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Waste Edit</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Edit existing waste records from the database.
-          </p>
+        <div className="w-full">
+          <h1 className="text-xl font-semibold text-teal-600 text-center">Edit Generated Waste</h1>
+          {/* <p className="mt-1 text-sm text-slate-600 text-center">
+            Edit existing waste records.
+          </p> */}
         </div>
         <button
           type="button"
@@ -360,7 +373,7 @@ export default function WasteEditPage() {
               <thead className="bg-slate-50">
                 <tr>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700">
-                    Code
+                    ID
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700">
                     Category
@@ -460,11 +473,11 @@ export default function WasteEditPage() {
 
       {editState && (
         <div className="fixed inset-x-3 top-2 z-50 mx-auto w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-2xl md:inset-x-auto md:right-4 md:left-auto md:w-[min(94vw,64rem)] md:p-4">
-          <h3 className="text-sm font-semibold text-slate-800">Edit Entry</h3>
+          <h3 className="text-sm font-semibold text-slate-800 text-center">Edit Waste Entry</h3>
           <form onSubmit={onSave} className="mt-2 grid grid-cols-1 gap-2 md:mt-3 md:grid-cols-2 md:gap-3">
             <div className="md:col-span-2">
               <label className="mb-0.5 block text-xs font-semibold text-slate-700">
-                Code
+                ID
               </label>
               <input
                 type="text"

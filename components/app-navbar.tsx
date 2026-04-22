@@ -64,8 +64,8 @@ export default function AppNavbar() {
   const pathSegments = (pathname || "/")
     .split("/")
     .filter(Boolean)
-    .filter((segment) => segment.toLowerCase() !== "home");
-  const breadcrumbParts = ["Home", ...pathSegments.map(formatSegment)];
+  // .filter((segment) => segment.toLowerCase() !== "home");
+  const breadcrumbParts = [...pathSegments.map(formatSegment)];
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -86,7 +86,7 @@ export default function AppNavbar() {
   };
 
   return (
-    <header className="w-full sticky z-40 border-b border-slate-200 bg-white backdrop-blur">
+    <header className="w-full sticky z-40 border-b border-slate-200 bg-gradient-to-r from-emerald-200 via-green-300 to-emerald-200  backdrop-blur">
       <div className="relative flex h-16 w-full items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-3">
           <Image
@@ -100,7 +100,7 @@ export default function AppNavbar() {
         </div>
 
         <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-center">
-          <h1 className="text-lg font-extrabold tracking-wide text-slate-800 drop-shadow-sm md:text-2xl">
+          <h1 className="text-lg font-extrabold font-[eco] tracking-wide text-slate-800 drop-shadow-sm md:text-2xl">
             WASTE MANAGEMENT SYSTEM
           </h1>
         </div>
@@ -116,7 +116,7 @@ export default function AppNavbar() {
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-2 w-70 rounded-xl border border-slate-200 bg-white py-4 px-6 shadow-lg">
+            <div className="absolute right-0 mt-2 w-80 rounded-xl border border-emerald-400 border-dashed bg-white py-4 px-6 shadow-lg">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Profile
               </p>
@@ -150,7 +150,12 @@ export default function AppNavbar() {
                   <span className="font-semibold">Department :</span>{" "}
                   {wmsDept}
                 </p>
+
                 <p className="text-slate-800">
+                  <span className="font-semibold">Assigned Role :</span>{" "}
+                  {assignedRole}
+                </p>
+                {/* <p className="text-slate-800">
                   <span className="font-semibold">Assigned Role :</span>
                 </p>
                 {assignedRole ? (
@@ -161,7 +166,7 @@ export default function AppNavbar() {
                   </div>
                 ) : !assignedRole ? (
                   <p className="text-sm text-slate-600">Not assigned yet</p>
-                ) : null}
+                ) : null} */}
                 <div className="pt-3">
                   <button
                     type="button"
@@ -180,7 +185,7 @@ export default function AppNavbar() {
           )}
         </div>
       </div>
-      <div className="border-t border-slate-200 bg-slate-50 px-4 py-2">
+      <div className="border-t border-slate-200 bg-emerald-400 px-4 py-2">
         <div className="flex w-full justify-start">
           <div className="inline-flex flex-wrap items-center justify-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5">
             {breadcrumbParts.map((part, index) => (

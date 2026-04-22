@@ -122,8 +122,8 @@ export default function LoginPage() {
       <Toaster position="top-right" />
       <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
         <div className="grid md:grid-cols-2 gap-16 items-center">
-          <div className="space-y-8">
-            <div className="flex gap-4 align-center justify-center">
+          <div className="space-y-8 place-self-center">
+            <div className="flex gap-4 align-center justify-center ">
               <div className="h-auto w-64 md:w-55 rounded-2xl backdrop-blur-sm flex items-center justify-center">
                 <Image
                   src="/jsl-logo.png"
@@ -137,13 +137,13 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-4">
-              <h1 className="text-3xl md:text-4xl font-bold text-emerald-700 leading-tight">
+              <h1 className="font-[eco] text-3xl md:text-4xl font-bold text-emerald-700 leading-tight">
                 Waste Management System
               </h1>
             </div>
           </div>
 
-          <div className="bg-white backdrop-blur-md rounded-3xl shadow-2xl p-10 border border-white/50">
+          <div className="w-full items-right place-self-end justify-self-end bg-white backdrop-blur-md rounded-3xl shadow-2xl p-10 border border-white/50">
             <form
               onSubmit={(e) => {
                 e.preventDefault();

@@ -327,11 +327,11 @@ export default function Form3Page() {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6 max-w-4xl mx-auto">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-slate-900">FORM 3</h1>
-        <p className="text-sm italic text-slate-700">[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</p>
+        <h1 className="text-2xl font-bold text-teal-600">Form 3</h1>
+        {/* <p className="text-sm italic text-slate-700">[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</p>
         <h2 className="mt-2 text-base font-semibold text-slate-900">
           FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES
-        </h2>
+        </h2> */}
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
@@ -436,7 +436,7 @@ export default function Form3Page() {
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
           <p>
             Showing {pagedRows.length} of {filteredRows.length} records
-            {searchTerm.trim() ? " (filtered)" : ""} (Code Ascending)
+            {searchTerm.trim() ? " (filtered)" : ""}
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <button

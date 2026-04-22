@@ -19,6 +19,7 @@ type SavePayload = {
   date?: string;
   categoryId?: string;
   wasteId?: string;
+  unitId?: string;
   receiver?: string;
   disposer?: string;
   physicalState?: string;
@@ -30,10 +31,32 @@ type SavePayload = {
   // DID: string
 };
 
-const toOption = (row: MasterOptionRow) => ({
-  id: String(row.ID ?? ""),
-  name: String(row.NAME ?? ""),
-});
+const toOption = (row: MasterOptionRow) => {
+  const id = getMappedId(row, [
+    "ID",
+    "MUID",
+    "QUID",
+    "UID",
+    "UnitID",
+    "QuantityUnitID",
+    "WTID",
+  ]);
+  const name = getMappedId(row, [
+    "NAME",
+    "MUnit",
+    "Unit",
+    "UNIT",
+    "UnitName",
+    "QuantityUnit",
+    "QuantityUnitName",
+    "Description",
+  ]);
+
+  return {
+    id: String(id ?? ""),
+    name: String(name ?? ""),
+  };
+};
 
 const getMappedId = (
   row: MasterOptionRow,
@@ -100,18 +123,19 @@ export async function handleGenerateGet(request: Request) {
       });
     }
 
-    if (type === "drop-waste") {
-      if (!wcid) {
+    if (type === "drop-waste-for-unit") {
+      if (!wcid || !uid) {
         return NextResponse.json(
-          { success: false, message: "Missing wcid" },
+          { success: false, message: "Missing wcid or uid" },
           { status: 400 },
         );
       }
 
       const result = await pool
         .request()
-        .input("FLAG", "DROP-WASTE")
+        .input("FLAG", "DROP-WASTE-For-Unit")
         .input("WCID", wcid)
+        .input("UID", uid)
         .execute("PRO-WMS_GET");
 
       return NextResponse.json({
@@ -119,6 +143,7 @@ export async function handleGenerateGet(request: Request) {
         data: (result.recordset as MasterOptionRow[]).map(toWasteOption),
       });
     }
+
 
     if (type === "drop-item-select") {
       if (!wid && !waid && !optionId) {
@@ -171,6 +196,20 @@ export async function handleGenerateGet(request: Request) {
         success: true,
         data: (result.recordset as MasterOptionRow[]).map(toOption),
       });
+    }
+
+    if (type === "drop-quantityunit") {
+
+
+      const result = await pool.request().input("FLAG", "DROP-QUANTITYUNIT").execute("PRO-WMS_GET");
+      console.log(result.recordset)
+      return NextResponse.json({
+        success: true,
+        data: (result.recordset as MasterOptionRow[])
+          .map(toOption)
+          .filter((item) => item.id.trim().length > 0 && item.name.trim().length > 0),
+      });
+
     }
 
     if (type === "drop-dispo") {
@@ -232,7 +271,8 @@ export async function handleGenerateGet(request: Request) {
       {
         success: false,
         message:
-          "Unsupported type. Use type=drop-wc, type=drop-waste&wcid=<id>, type=drop-item-select&wid=<id>, type=drop-rcvr, type=drop-dispo, type=drop-phstate, type=drop-smethod or type=getDisposer&<wid,uid,wcid>",
+          "Unsupported type. Use type=drop-wc, type=drop-waste&wcid=<id>, type=drop-waste-for-unit&wcid=<id>&uid=<id>, type=drop-item-select&wid=<id>, type=DROP-QUANTITYUNIT, type=drop-rcvr, type=drop-dispo, type=drop-phstate, type=drop-smethod or type=getDisposer&<wid,uid,wcid>",
+
       },
       { status: 400 },
     );
@@ -269,6 +309,7 @@ export async function handleGeneratePost(request: Request) {
       "date",
       "categoryId",
       "wasteId",
+      "unitId",
       "receiver",
       "disposer",
       "physicalState",
@@ -333,7 +374,8 @@ export async function handleGeneratePost(request: Request) {
       .input("FLAG", sql.NVarChar(20), "GWT-INS")
       .input("WCID", sql.NVarChar(20), body.categoryId as string)
       .input("WID", sql.NVarChar(20), body.wasteId as string)
-      .input("WTID", sql.NVarChar(20), "1")
+      .input("WTID", sql.NVarChar(20), body.unitId as string)
+      .input("MUID", sql.NVarChar(20), body.unitId as string)
       .input("PSID", sql.NVarChar(20), body.physicalState as string)
       .input("UID", sql.NVarChar(20), body.UID as string)
       .input("DeptID", sql.NVarChar(20), body.DeptID as string)

@@ -5,16 +5,10 @@ export default async function decrypt(encr: string) {
     const encryptionIV = "d78c12a7f93158cab68aedfe4a05fdfb"
     const key = Buffer.from(encryptionKey, "hex");
     const iv = Buffer.from(encryptionIV, "hex");
-    if(!encr)
-        return
-    const encryptedText = encr?.replace(/-/g, "+").replace(/_/g, "/");
-    const paddedText = encryptedText.padEnd(
-        encryptedText.length + ((4 - (encryptedText.length % 4)) % 4),
-        "="
-    );
+    const encryptedText = encr.replace(/-/g, "+").replace(/_/g, "/");
     // const key = Buffer.from(process.env.ENCRYPTION_KEY!, "hex");
     // const iv = Buffer.from(process.env.ENCRYPTION_IV!, "hex");
-    const encrypted = Buffer.from(paddedText, "base64");
+    const encrypted = Buffer.from(encryptedText, "base64");
     const decipher = createDecipheriv("aes-256-cbc", key, iv);
     const decrypted = Buffer.concat([
         decipher.update(encrypted),

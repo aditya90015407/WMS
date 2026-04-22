@@ -24,6 +24,7 @@ type GenerateFormState = {
   date: string;
   categoryId: string;
   wasteId: string;
+  unitId: string;
   receiver: string;
   disposer: string;
   physicalState: string;
@@ -39,6 +40,7 @@ const initialState: GenerateFormState = {
   date: "",
   categoryId: "",
   wasteId: "",
+  unitId: "",
   receiver: "",
   disposer: "",
   physicalState: "",
@@ -82,6 +84,7 @@ export default function GenerateForm({
   const [message, setMessage] = useState("");
   const [categories, setCategories] = useState<Option[]>([]);
   const [availableWaste, setAvailableWaste] = useState<Option[]>([]);
+  const [units, setUnits] = useState<Option[]>([]);
   const [receivers, setReceivers] = useState<Option[]>([]);
   const [disposers, setDisposers] = useState<Option[]>([]);
   const [form3Search, setForm3Search] = useState("");
@@ -90,10 +93,12 @@ export default function GenerateForm({
   const [storageMethods, setStorageMethods] = useState<Option[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [loadingWaste, setLoadingWaste] = useState(false);
+  const [loadingUnits, setLoadingUnits] = useState(false);
   const [loadingReceivers, setLoadingReceivers] = useState(false);
   const [loadingDisposers, setLoadingDisposers] = useState(false);
   const [loadingPhysicalStates, setLoadingPhysicalStates] = useState(false);
   const [loadingStorageMethods, setLoadingStorageMethods] = useState(false);
+  const [unitError, setUnitError] = useState<string | null>(null);
   const [receiverError, setReceiverError] = useState<string | null>(null);
   const [disposerError, setDisposerError] = useState<string | null>(null);
   const [physicalStateError, setPhysicalStateError] = useState<string | null>(
@@ -131,6 +136,58 @@ export default function GenerateForm({
     };
 
     void loadCategories();
+  }, []);
+
+  useEffect(() => {
+    const loadUnits = async () => {
+      setLoadingUnits(true);
+      setUnitError(null);
+      try {
+        const res = await fetch("/api/auth/Waste/generate?type=DROP-QUANTITYUNIT", {
+          method: "GET",
+          cache: "no-store",
+        });
+        const payload = (await res.json()) as {
+          success?: boolean;
+          data?: Option[];
+          message?: string;
+          error?: string;
+        };
+        console.log(payload);
+        if (!res.ok || !payload.success) {
+          setUnits([]);
+          setUnitError(payload.message || payload.error || "Failed to load units");
+          return;
+        }
+        if (Array.isArray(payload.data)) {
+          const normalizedUnits = payload.data
+            .map((item, index) => ({
+              id: String(item?.id ?? "").trim(),
+              name: String(item?.name ?? "").trim(),
+              wid: item?.wid,
+              waid: item?.waid,
+              receiverId: item?.receiverId,
+              disposerId: item?.disposerId,
+            }))
+            .filter((item) => item.id.length > 0 && item.name.length > 0);
+
+          setUnits(normalizedUnits);
+          if (normalizedUnits.length === 0) {
+            setUnitError("No active units found");
+          }
+        } else {
+          setUnits([]);
+          setUnitError("Unit API returned invalid data");
+        }
+      } catch {
+        setUnits([]);
+        setUnitError("Unit API request failed");
+      } finally {
+        setLoadingUnits(false);
+      }
+    };
+
+    void loadUnits();
   }, []);
 
   useEffect(() => {
@@ -392,19 +449,24 @@ export default function GenerateForm({
 
     if (!value) return;
 
+    const sessionUid = String(session?.user?.uid ?? "").trim();
+    if (!sessionUid) return;
+
     setLoadingWaste(true);
     try {
       const res = await fetch(
-        `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(value)}`,
+        `/api/auth/Waste/generate?type=drop-waste-for-unit&wcid=${encodeURIComponent(value)}&uid=${encodeURIComponent(sessionUid)}`,
         {
           method: "GET",
           cache: "no-store",
         },
       );
+
       const payload = (await res.json()) as {
         success?: boolean;
         data?: Option[];
       };
+
       if (payload.success && Array.isArray(payload.data)) {
         setAvailableWaste(
           payload.data.map((item) => ({
@@ -416,6 +478,8 @@ export default function GenerateForm({
             disposerId: item.disposerId,
           })),
         );
+      } else {
+        setAvailableWaste([]);
       }
     } catch {
       setAvailableWaste([]);
@@ -423,6 +487,7 @@ export default function GenerateForm({
       setLoadingWaste(false);
     }
   };
+
 
   // "WID":wasteId
 
@@ -618,7 +683,7 @@ export default function GenerateForm({
       <div />
 
       <div>
-        <label className="mb-1 block text-sm font-bold text-slate-700">Category</label>
+        <label className="mb-1 block text-sm font-bold text-slate-700">Waste Category</label>
         <select
           value={form.categoryId}
           onChange={(e) => {
@@ -669,7 +734,7 @@ export default function GenerateForm({
           value={form.receiver}
           onChange={(e) => updateField("receiver", e.target.value)}
           className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
-          disabled={loadingReceivers || isMappedPairLocked}
+          disabled={loadingReceivers}
           required
         >
           <option value="">
@@ -697,7 +762,7 @@ export default function GenerateForm({
           value={form.disposer}
           onChange={(e) => updateField("disposer", e.target.value)}
           className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
-          disabled={loadingDisposers || isMappedPairLocked}
+          disabled={loadingDisposers}
           required
         >
           <option value="">
@@ -795,6 +860,29 @@ export default function GenerateForm({
         />
       </div>
 
+      <div>
+        <label className="mb-1 block text-sm font-bold text-slate-700">Unit</label>
+        <select
+          value={form.unitId}
+          onChange={(e) => updateField("unitId", e.target.value)}
+          className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
+          disabled={loadingUnits}
+          required
+        >
+          <option value="">
+            {loadingUnits ? "Loading units..." : "Select unit"}
+          </option>
+          {units.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+            </option>
+          ))}
+        </select>
+        {unitError && (
+          <p className="mt-1 text-xs text-red-600">{unitError}</p>
+        )}
+      </div>
+
       <div className="md:col-span-2 flex items-center gap-3">
         <button
           type="submit"
@@ -820,6 +908,7 @@ export default function GenerateForm({
             <p><span className="font-medium">Date:</span> {form.date || "-"}</p>
             <p><span className="font-medium">Category:</span> {getOptionName(categories, form.categoryId) || "-"}</p>
             <p><span className="font-medium">Waste:</span> {getOptionName(availableWaste, form.wasteId) || "-"}</p>
+            <p><span className="font-medium">Unit:</span> {getOptionName(units, form.unitId) || "-"}</p>
             <p><span className="font-medium">Receiver:</span> {getOptionName(receivers, form.receiver) || "-"}</p>
             <p><span className="font-medium">Disposer:</span> {getOptionName(disposers, form.disposer) || "-"}</p>
             <p><span className="font-medium">Phy- State:</span> {getOptionName(physicalStates, form.physicalState) || "-"}</p>

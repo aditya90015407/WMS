@@ -103,7 +103,7 @@ export default function SelectedEntriesPage() {
   return (
     <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="text-center">
-        <h1 className="text-lg font-semibold text-slate-900">Selected Auction Entries</h1>
+        <h1 className="text-lg font-semibold text-teal-600">Selected Auction Entries</h1>
         <p className="mt-1 text-sm text-slate-600">Auctions selected for the logged-in vendor</p>
       </div>
 
