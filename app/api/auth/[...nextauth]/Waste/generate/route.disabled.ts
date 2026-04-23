@@ -202,7 +202,7 @@ export async function handleGenerateGet(request: Request) {
 
 
       const result = await pool.request().input("FLAG", "DROP-QUANTITYUNIT").execute("PRO-WMS_GET");
-      console.log(result.recordset)
+      // console.log(result.recordset)
       return NextResponse.json({
         success: true,
         data: (result.recordset as MasterOptionRow[])
