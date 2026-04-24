@@ -27,7 +27,7 @@ export default async function GeneratePage() {
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-teal-600 text-center">Generate Waste</h1>
+      <h1 className="text-xl font-semibold text-teal-600 text-center">Generate Waste</h1>
       {/* <p className="mt-2 text-sm text-slate-600 text-center">
         Enter waste generation details below.
       </p> */}

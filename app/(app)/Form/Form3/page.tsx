@@ -50,7 +50,7 @@ const getDestinedDisplay = (entry: FormEntry): string => {
   const receiverLabel = entry.receiver?.trim() || "";
 
   if (disposerLabel && receiverLabel) {
-    return `Destined To: ${disposerLabel}\nReceived From: ${receiverLabel}`;
+    return `Destined To :  ${receiverLabel} , Received From : ${disposerLabel}`;
   }
 
   if (receiverLabel) {
@@ -116,7 +116,7 @@ const createForm3Html = (entry: FormEntry): string => {
     <thead>
       <tr>
         <th>Date</th>
-        <th>Type of waste with category</th>
+        <th>Type of waste with category as per Schedules I,II and III of these rules</th>
         <th>Total quantity(MT)</th>
         <th>Method of Storage</th>
         <th>Destined to or received from</th>
@@ -502,7 +502,7 @@ export default function Form3Page() {
               <p>1. Name and address of the facility : {selectedEntry.unitDesc}</p>
               <p>
                 2. Date of issuance of authorisation and its reference number :{" "}
-                {[selectedEntry.dateOfIssuance, selectedEntry.referenceNo].filter(Boolean).join(" ")}
+                {[selectedEntry.dateOfIssuance, "and", selectedEntry.referenceNo].filter(Boolean).join(" ")}
               </p>
               <p>3. Description of hazardous and other wastes handled (Generated or Received)</p>
             </div>
@@ -512,7 +512,7 @@ export default function Form3Page() {
                 <thead>
                   <tr className="bg-slate-100">
                     <th className="min-w-[110px] whitespace-nowrap border border-slate-300 px-2 py-2 text-left">Date</th>
-                    <th className="border border-slate-300 px-2 py-2 text-left">Type of waste with category</th>
+                    <th className="border border-slate-300 px-2 py-2 text-left">Type of waste with category as per Schedules I,II and III of these rules</th>
                     <th className="border border-slate-300 px-2 py-2 text-left">Total quantity(MT)</th>
                     <th className="border border-slate-300 px-2 py-2 text-left">Method of Storage</th>
                     <th className="border border-slate-300 px-2 py-2 text-left">Destined to or received from</th>
@@ -522,9 +522,10 @@ export default function Form3Page() {
                   <tr>
                     <td className="whitespace-nowrap border border-slate-300 px-2 py-2">{selectedEntry.date}</td>
                     <td className="border border-slate-300 px-2 py-2">
-                      {[selectedEntry.waste || selectedEntry.wasteType]
+                      {[selectedEntry.waste, selectedEntry.sapWasteCode]
                         .filter(Boolean)
-                        .join(" / ")}
+                        .join(" / ")
+                      }
                     </td>
                     <td className="border border-slate-300 px-2 py-2">{selectedEntry.quantity}</td>
                     <td className="border border-slate-300 px-2 py-2">{selectedEntry.storageMethod}</td>

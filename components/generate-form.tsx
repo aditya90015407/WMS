@@ -680,7 +680,7 @@ export default function GenerateForm({
           required
         />
       </div>
-      <div />
+      {/* <div /> */}
 
       <div>
         <label className="mb-1 block text-sm font-bold text-slate-700">Waste Category</label>
@@ -749,11 +749,11 @@ export default function GenerateForm({
         {receiverError && (
           <p className="mt-1 text-xs text-red-600">{receiverError}</p>
         )}
-        {isMappedPairLocked && (
+        {/* {isMappedPairLocked && (
           <p className="mt-1 text-xs text-slate-500">
             Auto-mapped from selected category and waste.
           </p>
-        )}
+        )} */}
       </div>
 
       <div>
@@ -777,15 +777,15 @@ export default function GenerateForm({
         {disposerError && (
           <p className="mt-1 text-xs text-red-600">{disposerError}</p>
         )}
-        {isMappedPairLocked && (
+        {/* {isMappedPairLocked && (
           <p className="mt-1 text-xs text-slate-500">
             Auto-mapped from selected category and waste.
           </p>
-        )}
+        )} */}
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-bold text-slate-700">Phy- State</label>
+        <label className="mb-1 block text-sm font-bold text-slate-700">Physical State</label>
         <select
           value={form.physicalState}
           onChange={(e) => updateField("physicalState", e.target.value)}

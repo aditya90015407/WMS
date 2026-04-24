@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 type ParticipantDetails = {
-    APID?: string |number;
+  APID?: string | number;
   IDDID?: string | number;
   VID?: string | number;
   WasteCategory?: string;
@@ -33,8 +33,8 @@ export default function VerifyVendorDetailsActPage() {
 
   const iddid = params.get("iddid") ?? "";
   const vid = params.get("vid") ?? "";
-//    const apid;
-   
+  //    const apid;
+
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -66,7 +66,7 @@ export default function VerifyVendorDetailsActPage() {
 
   useEffect(() => {
     const loadDetails = async () => {
-         console.log(iddid,vid);
+      console.log(iddid, vid);
       if (!iddid || !vid) {
         setLoading(false);
         setError("Missing IDDID or VID");
@@ -139,12 +139,12 @@ export default function VerifyVendorDetailsActPage() {
     }));
   };
 
-  
+
   const handleSave = async () => {
     try {
       setSaving(true);
       setDecision("");
-       console.log(formValues)
+      console.log(formValues)
       const res = await fetch("/api/SetData/SetTransportationDetails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -170,9 +170,9 @@ export default function VerifyVendorDetailsActPage() {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Verify Vendor Details</h1>
-          <p className="mt-2 text-sm text-slate-600">
+        <div className="w-full">
+          <h1 className="text-2xl font-semibold text-teal-600 text-center">Verify Vendor Details</h1>
+          <p className="mt-2 text-sm text-slate-600 text-center">
             Review and edit the selected auction participant details.
           </p>
         </div>
@@ -180,7 +180,7 @@ export default function VerifyVendorDetailsActPage() {
         <button
           type="button"
           onClick={() => router.push("/Disposal/VerifyVendorDetails")}
-          className="rounded border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+          className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50"
         >
           Back to List
         </button>

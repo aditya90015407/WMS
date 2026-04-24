@@ -123,6 +123,26 @@ export async function handleGenerateGet(request: Request) {
       });
     }
 
+    if (type === "drop-waste") {
+      if (!wcid) {
+        return NextResponse.json(
+          { success: false, message: "Missing wcid" },
+          { status: 400 },
+        );
+      }
+
+      const result = await pool
+        .request()
+        .input("FLAG", "DROP-WASTE")
+        .input("WCID", wcid)
+        .execute("PRO-WMS_GET");
+
+      return NextResponse.json({
+        success: true,
+        data: (result.recordset as MasterOptionRow[]).map(toWasteOption),
+      });
+    }
+
     if (type === "drop-waste-for-unit") {
       if (!wcid || !uid) {
         return NextResponse.json(

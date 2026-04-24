@@ -174,7 +174,7 @@ export default function AuctionablePage() {
         });
 
         const payload = await res.json();
-        console.log(payload);
+        // console.log(payload);
         const raw =
           (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
           (Array.isArray(payload?.data) && payload.data) ||
@@ -324,7 +324,7 @@ export default function AuctionablePage() {
 
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-900">Auctionable Disposal</h1>
+      <h1 className="text-2xl font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         {/* <div>
