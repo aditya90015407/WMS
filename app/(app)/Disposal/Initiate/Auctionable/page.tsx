@@ -1,20 +1,35 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
 
 export default function AuctionablePage() {
   // const [batchId, setBatchId] = useState("");
+  const router = useRouter();
+
   const [auctionDate, setAuctionDate] = useState("");
   const [physicalOptions, setPhysicalOptions] = useState<Option1[]>([]);
   const [wasteCategory, setWasteCategory] = useState("");
   const [wasteOptions, setWasteOptions] = useState<Option[]>([]);
   const [selectedWasteId, setSelectedWasteId] = useState("");
   const [undisposedOptions, setUndisposedOptions] = useState<
-    Array<{ id: string; dept: string; qty: number; label: string }>
+    Array<{
+      id: string;
+      dept: string;
+      qty: number;
+      genDate: string;
+      targetDate: string;
+      todayDate: string;
+      daysLeft: string;
+      label: string;
+    }>
   >([]);
+
+
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
   const [loadingUndisposed, setLoadingUndisposed] = useState(false);
 
@@ -174,7 +189,7 @@ export default function AuctionablePage() {
         });
 
         const payload = await res.json();
-        // console.log(payload);
+        console.log(payload);
         const raw =
           (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
           (Array.isArray(payload?.data) && payload.data) ||
@@ -187,9 +202,19 @@ export default function AuctionablePage() {
           const rawQty = String(row.WasteQty ?? "").replace(",", ".");
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
-          const genDate = String(row.GenerationDate ?? "")
-            .split("T")[0]
-            .trim();
+
+          const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
+          const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
+          const todayDate = new Date().toISOString().split("T")[0];
+
+          let daysLeft = "";
+          if (targetDate) {
+            const today = new Date(todayDate);
+            const target = new Date(targetDate);
+            const diffTime = target.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            daysLeft = String(diffDays);
+          }
 
           const qtyLabel = qty.toFixed(2);
           const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
@@ -199,7 +224,10 @@ export default function AuctionablePage() {
             dept,
             qty,
             genDate,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${genDate}`,
+            targetDate,
+            todayDate,
+            daysLeft,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft}`,
           };
         });
 
@@ -284,7 +312,7 @@ export default function AuctionablePage() {
       });
 
       const data2 = await res2.json();
-      console.log("InsertAuctionWasteDetails response:", data2);
+      // console.log("InsertAuctionWasteDetails response:", data2);
 
       if (!res2.ok || !data2.success) {
         alert(data2.message || "InsertAuctionWasteDetails failed");
@@ -303,7 +331,7 @@ export default function AuctionablePage() {
           });
 
           const vendorData = await vendorRes.json();
-          console.log("InsertAuctionVendorDetails response:", vendorData);
+          // console.log("InsertAuctionVendorDetails response:", vendorData);
 
           if (!vendorRes.ok || !vendorData.success) {
             throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
@@ -315,6 +343,8 @@ export default function AuctionablePage() {
 
       console.log("Vendor insert results:", vendorInsertResults);
       alert(data.message || "Saved Successfully");
+
+      router.back()
     } catch (error) {
       console.error("Submit Failed", error);
       alert("Something went wrong while saving");
@@ -393,7 +423,7 @@ export default function AuctionablePage() {
 
         <div className="relative">
           <label className="mb-1 block text-sm font-semibold text-slate-700">
-            Undisposed Waste (Dept - Quantity - Date)
+            Undisposed Waste (Dept - Quantity - Days Left)
           </label>
           <button
             type="button"
@@ -405,7 +435,7 @@ export default function AuctionablePage() {
               ? selectedUndisposedItems.map((x) => x.label).join(", ")
               : loadingUndisposed
                 ? "Loading..."
-                : "Select Dept - Quantity - Date"}
+                : "Select Dept - Quantity - Days left"}
           </button>
 
           {undisposedDropdownOpen && (
@@ -430,7 +460,14 @@ export default function AuctionablePage() {
                           setSelectedUndisposedIds(nextIds);
                         }}
                       />
-                      <span className="text-sm text-slate-700">{item.label}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-slate-700">
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                        </span>
+                        <span className="text-sm font-semibold text-red-600">
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
+                        </span>
+                      </div>
                     </label>
                   );
                 })

@@ -3,7 +3,7 @@
 import { POST } from "@/app/api/DownloadAttachments/route";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
-
+import decrypt from "@/components/Decrypt";
 type FinalDisposalRow = Record<string, unknown>;
 
 const toDisplayValue = (value: unknown) => {
@@ -16,10 +16,22 @@ const toDisplayValue = (value: unknown) => {
 export default function DisposalApproveHazardousPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const router = useRouter();
     // const params = useSearchParams();
+    const [id, setId] = useState("");
+    const [ready, setReady] = useState(false);
 
     const params = React.use(searchParams);
-    const id = params.id;
+    const encryptedId = params.id ?? "";
+    // const id = encryptedId ? await decrypt(encryptedId) : "";
+    useEffect(() => {
+        const handleDecrypt = async () => {
+            const decryptedId: string = encryptedId ? (await decrypt(encryptedId)) ?? "" : "";
+            setId(decryptedId);
+            setReady(true);
+            // use id here (set state, etc.)
+        };
 
+        void handleDecrypt();
+    }, [encryptedId]);
     const [row, setRow] = useState<FinalDisposalRow | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -70,6 +82,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
 
     useEffect(() => {
         const loadRow = async () => {
+            if (!ready) return;
             if (!id) {
 
                 setLoading(false);
@@ -109,7 +122,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
         };
 
         void loadRow();
-    }, [id]);
+    }, [id, ready]);
 
     useEffect(() => {
         const loadForm10Details = async () => {
@@ -175,11 +188,11 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-semibold text-slate-900">
+                <div className="w-full ">
+                    <h1 className="text-2xl font-semibold text-teal-600 text-center">
                         Disposal Approval - Hazardous
                     </h1>
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-slate-600 text-center">
                         Verify the submitted hazardous disposal form before taking action.
                     </p>
                 </div>
@@ -187,7 +200,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                 <button
                     type="button"
                     onClick={() => router.push("/Disposal/Approve")}
-                    className="rounded border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                    className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50"
                 >
                     Back to Queue
                 </button>

@@ -159,6 +159,7 @@ export default function VerifyVendorDetailsActPage() {
       }
 
       setDecision("Details updated successfully");
+      router.back()
     } catch (err) {
       console.error(err);
       setDecision("Failed to save details");

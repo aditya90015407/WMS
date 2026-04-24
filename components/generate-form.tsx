@@ -914,7 +914,7 @@ export default function GenerateForm({
             <p><span className="font-medium">Phy- State:</span> {getOptionName(physicalStates, form.physicalState) || "-"}</p>
             <p><span className="font-medium">Storage:</span> {getOptionName(storageMethods, form.storage) || "-"}</p>
             <p><span className="font-medium">Dis-Target:</span> {form.disposalTarget || "-"}</p>
-            <p><span className="font-medium">Quantity:</span> {form.quantity || "-"}</p>
+            <p><span className="font-medium">Quantity:</span> {`${form.quantity} ${getOptionName(units, form.unitId)}` || "-"}</p>
           </div>
           <div className="mt-4 flex items-center gap-2">
             <button
@@ -927,14 +927,15 @@ export default function GenerateForm({
             </button>
             <button
               type="button"
-              onClick={() => setShowReview(false)}
+              onClick={() => { setShowReview(false); router.back() }}
               className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
             >
               Edit
             </button>
           </div>
         </div>
-      )}
-    </form>
+      )
+      }
+    </form >
   );
 }

@@ -2,6 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
+import decrypt from "@/components/Encrypt";
+
 
 type FinalDisposalRow = Record<string, string | number | boolean | null>;
 
@@ -27,8 +29,8 @@ const fields = [
 
 export default function DisposalApproveInternalPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const router = useRouter();
-    const params = React.use(searchParams)
-    const id = params.id;
+    // const params = React.use(searchParams)
+    // const id = params.id;
     // const id = params.get("id") ?? "";
     const [row, setRow] = useState<FinalDisposalRow | null>(null);
     const [loading, setLoading] = useState(true);
@@ -36,9 +38,27 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
     const [remarks, setRemarks] = useState("");
     const [decision, setDecision] = useState("");
     const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+    const [id, setId] = useState("");
+    const [ready, setReady] = useState(false);
+
+    const params = React.use(searchParams);
+    const encryptedId = params.id ?? "";
+    // const id = encryptedId ? await decrypt(encryptedId) : "";
+    useEffect(() => {
+        const handleDecrypt = async () => {
+            const decryptedId: string = encryptedId ? (await decrypt(encryptedId)) ?? "" : "";
+            setId(decryptedId);
+            setReady(true);
+            // use id here (set state, etc.)
+        };
+
+        void handleDecrypt();
+    }, [encryptedId]);
+
 
     useEffect(() => {
         const loadRow = async () => {
+            if (!ready) return;
             if (!id) {
                 setLoading(false);
                 setError("Missing record id");
@@ -62,16 +82,16 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
         };
 
         void loadRow();
-    }, [id]);
+    }, [id, ready]);
 
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-semibold text-slate-900">Disposal Approval - Internal</h1>
+                <div className="w-full text-center">
+                    <h1 className="text-2xl font-semibold text-teal-600">Disposal Approval - Internal</h1>
                     <p className="mt-2 text-sm text-slate-600">Verify the submitted internal disposal form before taking action.</p>
                 </div>
-                <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50">
                     Back to Queue
                 </button>
             </div>

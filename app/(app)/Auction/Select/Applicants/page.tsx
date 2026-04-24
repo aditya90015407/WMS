@@ -174,6 +174,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
       }
 
       toast.success("Selected vendor saved!");
+      router.back()
     } catch (err) {
       console.error("Select submit failed:", err);
       toast.error(err instanceof Error ? err.message : "Error while saving selected vendor");

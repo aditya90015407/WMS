@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
@@ -9,6 +11,8 @@ type Option2 = { IRID: string; IRName: string };
 export default function DisposalRecycleForm() {
   const [disposalDate, setDisposalDate] = useState("");
   const [disposedTo, setDisposedTo] = useState("");
+  const router = useRouter();
+
   const [physicalForm, setPhysicalForm] = useState("");
   const [docFile, setDocFile] = useState<File | null>(null);
   const [disposedOptions, setDisposedOptions] = useState<Option2[]>([]);
@@ -19,9 +23,17 @@ export default function DisposalRecycleForm() {
   const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
   const [wasteOptions, setWasteOptions] = useState<Option[]>([]);
   const [selectedWasteId, setSelectedWasteId] = useState("");
-
   const [undisposedOptions, setUndisposedOptions] = useState<
-    Array<{ id: string; dept: string; qty: number; label: string }>
+    Array<{
+      id: string;
+      dept: string;
+      qty: number;
+      genDate: string;
+      targetDate: string;
+      todayDate: string;
+      daysLeft: string;
+      label: string;
+    }>
   >([]);
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
   const [undisposedDropdownOpen, setUndisposedDropdownOpen] = useState(false);
@@ -146,10 +158,38 @@ export default function DisposalRecycleForm() {
 
         const options = raw.map((row: any, index: number) => {
           const dept = String(row.Dept ?? "").trim();
-          const qty = Number(row.WasteQty ?? 0);
+          const rawQty = String(row.WasteQty ?? "").replace(",", ".");
+          const qtyNum = Number.parseFloat(rawQty);
+          const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
+
+          const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
+          const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
+          const todayDate = new Date().toISOString().split("T")[0];
+
+          let daysLeft = "";
+          if (targetDate) {
+            const today = new Date(todayDate);
+            const target = new Date(targetDate);
+            const diffTime = target.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            daysLeft = String(diffDays);
+          }
+
+          const qtyLabel = qty.toFixed(2);
           const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
-          return { id, dept, qty, label: `${dept || "Dept"} - ${qty}` };
+
+          return {
+            id,
+            dept,
+            qty,
+            genDate,
+            targetDate,
+            todayDate,
+            daysLeft,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft}`,
+          };
         });
+
 
         setUndisposedOptions(options);
         setSelectedUndisposedIds([]);
@@ -223,6 +263,7 @@ export default function DisposalRecycleForm() {
       }
 
       alert("Saved Successfully");
+      router.back();
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
@@ -232,7 +273,7 @@ export default function DisposalRecycleForm() {
   return (
     <section className="max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="border-b border-slate-200 pb-4">
-        <h1 className="text-2xl font-semibold text-slate-900">Disposal / Recycling</h1>
+        <h1 className="text-2xl font-semibold text-teal-600">Disposal / Recycling</h1>
         <p className="mt-1 text-sm text-slate-600">
           Fill the form below for internal disposal & recycling approval.
         </p>
@@ -304,7 +345,7 @@ export default function DisposalRecycleForm() {
 
         <div className="relative">
           <label className="block text-sm font-semibold text-slate-700">
-            Undisposed Waste (Dept - Quantity)
+            Undisposed Waste (Dept - Quantity - Days Left)
           </label>
           <button
             type="button"
@@ -316,7 +357,7 @@ export default function DisposalRecycleForm() {
               ? selectedUndisposedItems.map((x) => x.label).join(", ")
               : loadingUndisposed
                 ? "Loading..."
-                : "Select Dept - Quantity"}
+                : "Select Dept - Quantity - Days Left"}
           </button>
 
           {undisposedDropdownOpen && (
@@ -338,7 +379,14 @@ export default function DisposalRecycleForm() {
                           setSelectedUndisposedIds(nextIds);
                         }}
                       />
-                      <span className="text-sm text-slate-700">{item.label}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-slate-700">
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                        </span>
+                        <span className="text-sm font-semibold text-red-600">
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
+                        </span>
+                      </div>
                     </label>
                   );
                 })

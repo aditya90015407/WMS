@@ -1,8 +1,10 @@
 "use client";
 
+import encrypt from "@/components/Encrypt";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
+import decrypt from "@/components/Decrypt";
+import React from "react";
 type FinalDisposalRow = {
     ID: string | number;
     IDDID?: string | number;
@@ -25,7 +27,7 @@ function normalizeData<T extends Record<string, unknown>>(row: T) {
     );
 }
 
-export default function DisposalApprovePage() {
+export default function DisposalApprovePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -38,8 +40,26 @@ export default function DisposalApprovePage() {
     const start = (currentPage - 1) * pageSize;
     const currentRows = rows.slice(start, start + pageSize);
 
+    const [id, setId] = useState("");
+    const [ready, setReady] = useState(false);
+
+    const params = React.use(searchParams);
+    const encryptedId = params.id ?? "";
+    // const id = encryptedId ? await decrypt(encryptedId) : "";
+    useEffect(() => {
+        const handleDecrypt = async () => {
+            const decryptedId: string = encryptedId ? (await decrypt(encryptedId)) ?? "" : "";
+            setId(decryptedId);
+            setReady(true);
+            // use id here (set state, etc.)
+        };
+
+        void handleDecrypt();
+    }, [encryptedId]);
+
     useEffect(() => {
         const loadRows = async () => {
+            if (!ready) return;
             setLoading(true);
             setError(null);
 
@@ -59,7 +79,7 @@ export default function DisposalApprovePage() {
                         : [];
 
                 const normalized = data.map(normalizeData) as FinalDisposalRow[];
-                console.log("Normalized final disposal rows:", normalized);
+                // console.log("Normalized final disposal rows:", normalized);
 
                 setRows(normalized);
             } catch (err) {
@@ -72,7 +92,7 @@ export default function DisposalApprovePage() {
         };
 
         void loadRows();
-    }, []);
+    }, [ready]);
 
     return (
         <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -131,13 +151,14 @@ export default function DisposalApprovePage() {
                                     <tr
                                         key={index}
                                         className="cursor-pointer hover:bg-slate-50"
-                                        onClick={() => {
-                                            const finalId = String(row.ID ?? "").trim();
+                                        onClick={async () => {
+                                            const rawId = String(row.ID ?? "").trim();
+                                            const finalId = rawId ? await encrypt(rawId) : "";
                                             const wcid = String(row.WCID ?? "").trim();
                                             const disType = String(row.DisType ?? "").trim().toLowerCase();
 
-                                            console.log("Clicked approval row:", row);
-                                            console.log("Routing with final ID:", finalId);
+                                            // console.log(row.TotalQty);
+                                            // console.log("Routing with final ID:", finalId);
 
                                             if (!finalId) return;
 

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import decrypt from "@/components/Decrypt";
 import Form10Table, { type Form10Data } from "@/components/Form10Table";
 
 const initialFormState: Form10Data = {
@@ -76,8 +77,35 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
   // const params = useSearchParams();
 
   const params = React.use(searchParams);
-  const fddid = params.fddid;
-  const iddid = params.iddid;
+  // const fddid = params.fddid;
+  // const iddid = params.iddid;
+
+  const [fddid, setFddid] = useState("");
+  const [iddid, setIddid] = useState("");
+  const [ready, setReady] = useState(false);
+
+  // useEffect(()=>{
+
+  //    const fddid1 = params.fddid;
+  //     const iddid1 = params.iddid;
+
+
+  // })
+
+  useEffect(() => {
+    const handleDecrypt = async () => {
+      const fddid1 = params.fddid;
+      const iddid1 = params.iddid;
+      const a: string = fddid1 ? (await decrypt(fddid1)) ?? "" : "";
+      const b: string = iddid1 ? (await decrypt(iddid1)) ?? "" : "";
+      setIddid(b);
+      setFddid(a);
+      setReady(true);
+
+    };
+
+    void handleDecrypt();
+  }, [fddid, iddid]);
 
   // console.log(fddid, iddid)
 
@@ -88,6 +116,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
 
   useEffect(() => {
     const loadForm10Details = async () => {
+      if (!ready) return;
       if (!fddid) {
         setStatus("Missing final disposal id.");
         return;
@@ -101,31 +130,32 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
       console.log("iddid:", iddid);
 
       try {
-        const statusRes = await fetch("/api/GetData/GetDisposalApprovalStatus", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ FDDID: fddid }),
-        });
+        // const statusRes = await fetch("/api/GetData/GetDisposalApprovalStatus", {
+        //   method: "POST",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify({ FDDID: fddid }),
+        // });
 
+        // console.log(statusRes)
+        // const statusData = await statusRes.json();
+        // if (!statusRes.ok || !statusData.success) {
+        //   setStatus(statusData.message || "Failed to check disposal approval status.");
+        //   return;
+        // }
 
-        const statusData = await statusRes.json();
-        if (!statusRes.ok || !statusData.success) {
-          setStatus(statusData.message || "Failed to check disposal approval status.");
-          return;
-        }
+        // const statusRow = Array.isArray(statusData.data) ? statusData.data[0] : statusData.data;
+        // const stsCode = Number(statusRow?.StsCode ?? 0);
+        // console.log(stsCode)
 
-        const statusRow = Array.isArray(statusData.data) ? statusData.data[0] : statusData.data;
-        const stsCode = Number(statusRow?.StsCode ?? 0);
+        // if (stsCode === 5) {
+        //   setStatus("Form 10 is rejected.");
+        //   return;
+        // }
 
-        if (stsCode === 5) {
-          setStatus("Form 10 is rejected.");
-          return;
-        }
-
-        if (stsCode !== 3) {
-          setStatus("Form 10 is available only after disposal approval.");
-          return;
-        }
+        // if (stsCode !== 3) {
+        //   setStatus("Form 10 is available only after disposal approval.");
+        //   return;
+        // }
 
         const fetchRow = async (url: string, body: Record<string, string>) => {
           const res = await fetch(url, {
@@ -133,7 +163,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
           });
-
+          // console.log(fetchRow)
 
           const data = await res.json();
           if (!res.ok || !data.success) {
@@ -146,7 +176,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
 
           return row && Object.keys(row).length > 0 ? row : null;
         };
-
+        // console.log(iddid)
         const row =
           (await fetchRow("/api/GetData/GetForm10Details", { ID: iddid })) ??
           (await fetchRow("/api/GetData/GetSelectedVendorDetails", { ID: iddid }));
@@ -156,7 +186,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
           setStatus("Failed to load Form 10 details.");
           return;
         }
-
+        // console.log(fetchRow)
         const transporterName = getFirstValue(row, ["TransporterName"]);
         const transporterAddress = getFirstValue(row, ["TransporterAddress"]);
         const receiverName = getFirstValue(row, ["ReceiverName"]);
@@ -214,7 +244,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
     };
 
     void loadForm10Details();
-  }, [fddid, iddid]);
+  }, [fddid, iddid, ready]);
 
 
   const updateField = <K extends keyof Form10Data>(key: K, value: Form10Data[K]) => {
