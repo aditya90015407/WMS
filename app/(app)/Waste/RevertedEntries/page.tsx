@@ -178,10 +178,11 @@ export default function WasteApprove() {
 
                 setRows(payload.data);
 
-                const res2 = await fetch(`/api/GetData/GetRejectedApprovalWaste`, {
+                const res2 = await fetch(`/api/GetData/GetRejectedApprovalWasteByDept`, {
                     method: "POST",
                 });
 
+                // console.log(res2)
                 const rawData = await res2.json()
                 // console.log(rawData)
                 const data = rawData.map(normalizeData)

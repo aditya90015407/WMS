@@ -1,12 +1,13 @@
 "use client";
-
+ 
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
-import decrypt from "@/components/Encrypt";
-
-
+import decrypt from "@/components/Decrypt";
+ 
+ 
+ 
 type FinalDisposalRow = Record<string, string | number | boolean | null>;
-
+ 
 const fields = [
     ["ID", "Final Disposal Ref No."],
     ["IDDID", "Original Disposal ID"],
@@ -26,7 +27,7 @@ const fields = [
     ["CrDt", "Created On"],
     ["UpDt", "Updated On"],
 ] as const;
-
+ 
 export default function DisposalApproveInternalPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const router = useRouter();
     // const params = React.use(searchParams)
@@ -36,26 +37,68 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [remarks, setRemarks] = useState("");
+ 
+    const [saving, setSaving] = useState(false);
+   
     const [decision, setDecision] = useState("");
     const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
-    const [id, setId] = useState("");
-    const [ready, setReady] = useState(false);
-
-    const params = React.use(searchParams);
-    const encryptedId = params.id ?? "";
-    // const id = encryptedId ? await decrypt(encryptedId) : "";
-    useEffect(() => {
-        const handleDecrypt = async () => {
-            const decryptedId: string = encryptedId ? (await decrypt(encryptedId)) ?? "" : "";
-            setId(decryptedId);
-            setReady(true);
+    const[id,setId]=useState("");
+           const [ready, setReady] = useState(false);
+       
+            const params = React.use(searchParams);
+            const encryptedId = params.id ?? "";
+            console.log("encryptedId",encryptedId)
+            // const id = encryptedId ? await decrypt(encryptedId) : "";
+           useEffect(() => {
+          const handleDecrypt = async () => {
+           const decryptedId: string = encryptedId ? (await decrypt(encryptedId)) ?? "" : "";
+                setId(decryptedId);
+                console.log("decryptedID",decryptedId)
+                    setReady(true);
             // use id here (set state, etc.)
-        };
-
-        void handleDecrypt();
-    }, [encryptedId]);
-
-
+                };
+       
+                void handleDecrypt();
+                }, [encryptedId]);
+ 
+ 
+       const saveDecision= async (stsCode: 3 | 5, label: "Accepted" | "Rejected")=>{
+                         
+        if(!row?.id) return;
+        setSaving(true);
+        try{
+            const res=await fetch("/api/SetData/SetDisposalApproval",{
+                method : "POST",
+                headers : {"Content-Type":"application/json"},
+                body : JSON.stringify({
+                   FDDID : Number(row.id),
+                   StsCode : stsCode,
+                   Remarks : remarks,
+                }),
+            });
+             const payload = await res.json();
+ 
+            if(!res.ok || !payload.success){
+                setDecision(payload.message || "Failed to save disposal approval")
+                return ;
+            }
+ 
+            setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`)
+            if(stsCode==3 && row?.id)
+            {
+               router.back();
+            }
+        }catch (err) {
+            console.error("Failed to save disposal approval", err);
+            setDecision("Failed to save disposal approval");
+        } finally {
+            setSaving(false);
+        }
+ 
+        }
+     
+ 
+ 
     useEffect(() => {
         const loadRow = async () => {
             if (!ready) return;
@@ -80,25 +123,25 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
                 setLoading(false);
             }
         };
-
+ 
         void loadRow();
-    }, [id, ready]);
-
+    }, [id,ready]);
+ 
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div className="w-full text-center">
-                    <h1 className="text-2xl font-semibold text-teal-600">Disposal Approval - Internal</h1>
+                <div>
+                    <h1 className="text-2xl font-semibold text-slate-900">Disposal Approval - Internal</h1>
                     <p className="mt-2 text-sm text-slate-600">Verify the submitted internal disposal form before taking action.</p>
                 </div>
-                <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50">
+                <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
                     Back to Queue
                 </button>
             </div>
-
+ 
             {loading && <p className="mt-4 text-sm text-slate-600">Loading submitted form...</p>}
             {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-
+ 
             {!loading && !error && row && (
                 <>
                     <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -119,7 +162,7 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
                             </tbody>
                         </table>
                     </div>
-
+ 
                     <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
                         <h2 className="text-sm font-semibold text-slate-900">Accept / Reject</h2>
                         <p className="mt-1 text-xs text-slate-600">Add remarks and choose the action for this submitted form.</p>
@@ -132,10 +175,20 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
                             className="mt-3 w-full rounded border border-slate-300 px-3 py-2 text-sm"
                         />
                         <div className="mt-4 flex flex-wrap gap-3">
-                            <button type="button" onClick={() => setDecision(`Accepted${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`)} className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800">
+                            <button
+                                type="button"
+                                disabled={saving}
+                                onClick={() => void saveDecision(3, "Accepted")}
+                                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                            >
                                 Accept
                             </button>
-                            <button type="button" onClick={() => setDecision(`Rejected${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`)} className="rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800">
+                            <button
+                                type="button"
+                                disabled={saving}
+                                onClick={() => void saveDecision(5, "Rejected")}
+                                className="rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800 disabled:opacity-60"
+                            >
                                 Reject
                             </button>
                         </div>

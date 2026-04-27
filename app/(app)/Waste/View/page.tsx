@@ -2,8 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Download } from "lucide-react";
-import { toForm3Entry } from "@/lib/form3-columns";
+// import { toForm3Entry } from "@/lib/form3-columns";
 import { type Form10Data } from "@/components/Form10Table";
+import { Session } from "next-auth";
+import { useSession } from "next-auth/react";
+import { toForm3Entry, type FormEntry } from "@/lib/form3-columns";
+
+
 
 type ViewRow = Record<string, string | number | null>;
 
@@ -23,6 +28,7 @@ type FormEntry = {
   wasteCategory: string;
   disposalType: string;
   wasteType: string;
+  Unit: string;
   waste: string;
   quantity: string;
   manifestDocumentNo: string;
@@ -70,21 +76,27 @@ const getDestinedDisplay = (entry: FormEntry): string => {
 
 const getApprovalRowClass = (status: string): string => {
   const normalized = status.trim().toLowerCase();
-  if (normalized === "approval completed") return "bg-green-100";
-  if (normalized === "approval inprogress") return "bg-yellow-100";
+  console.log(normalized)
+  if (normalized === "completed") return "bg-green-100";
+  if (normalized === "in progress") return "bg-yellow-100";
   if (normalized === "rejected") return "bg-red-100";
   return "";
 };
 
+// const { data: session, status } = useSession();
+
+
 const buildDetailRows = (entry: FormEntry) => [
+
   ["ID", entry.code],
   ["Date", entry.date],
   ["Target Date", entry.targetDate],
   ["Waste Category", entry.wasteCategory],
   ["Waste Approval Status", entry.approvalStatus],
-  ["SAP Waste Code", entry.sapWasteCode],
+  ["Category Code", entry.sapWasteCode],
   ["Disposal Type", entry.disposalType],
-  ["Waste Type", entry.wasteType],
+
+  // ["Waste Type", entry.wasteType],
   ["Waste", entry.waste],
   ["Quantity", entry.quantity],
   ["Storage Method", entry.storageMethod],
@@ -96,11 +108,11 @@ const buildDetailRows = (entry: FormEntry) => [
   ["Date Of Issuance", entry.dateOfIssuance],
   ["Reference No.", entry.referenceNo],
   ["Disposer ID", entry.dispId],
-  // ["Department ID", entry.deptId],
-  ["Department", entry.dept],
+  ["Department ID", entry.deptId],
+  // ["Department", entry.dept],
   ["Receiver ID", entry.receiverId],
-  // ["Waste Category ID", entry.wcid],
-  // ["Status Code", entry.stsCode],
+  ["Waste Category ID", entry.wcid],
+  ["Status Code", entry.stsCode],
 ].filter(([, value]) => String(value ?? "").trim() !== "");
 
 const getFirstValue = (row: Record<string, unknown>, keys: string[]) => {
@@ -223,6 +235,10 @@ const createForm3Html = (entry: FormEntry): string => {
     .filter(Boolean)
     .join(" / ");
 
+  const quantUnit = [entry.quantity, entry.Unit]
+    .filter(Boolean)
+    .join(" / ");
+
   return `<!doctype html>
 <html>
 <head>
@@ -268,7 +284,7 @@ const createForm3Html = (entry: FormEntry): string => {
       <tr>
         <td>${esc(entry.date)}</td>
         <td>${esc(typeWithCategory)}</td>
-        <td>${esc(entry.quantity)}</td>
+        <td>${esc(quantUnit)}</td>
         <td>${esc(entry.storageMethod)}</td>
         <td>${esc(getDestinedDisplay(entry))}</td>
       </tr>
@@ -346,7 +362,11 @@ export default function WasteViewPage() {
   const [selectedEntry, setSelectedEntry] = useState<FormEntry | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
+  const { data: session } = useSession();
+  const department = session?.user?.department ?? "";
 
+
+  console.log(department)
   useEffect(() => {
     const loadRows = async () => {
       setLoading(true);
@@ -439,30 +459,30 @@ export default function WasteViewPage() {
       size: A4;
       margin: 12mm;
     }
-
+ 
     html, body {
       margin: 0;
       padding: 0;
       background: white;
       font-family: Arial, sans-serif;
     }
-
+ 
     body {
       display: flex;
       justify-content: center;
     }
-
+ 
     #print-box {
       width: 100%;
       max-width: 800px;
       background: white;
     }
-
+ 
     #print-box table {
       width: 100%;
       border-collapse: collapse;
     }
-
+ 
     #print-box th,
     #print-box td {
       border: 1px solid #334155;
@@ -470,13 +490,13 @@ export default function WasteViewPage() {
       font-size: 12px;
       vertical-align: top;
     }
-
+ 
     @media print {
       body {
         margin: 0;
         padding: 0;
       }
-
+ 
       #print-box {
         box-shadow: none;
         margin: 0;
@@ -593,7 +613,7 @@ export default function WasteViewPage() {
   return (
     <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
       <div className="text-center">
-        <h1 className="text-xl font-semibold text-teal-600">View Waste Details</h1>
+        <h1 className="text-2xl font-bold text-teal-600">View Waste Details</h1>
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
@@ -658,7 +678,7 @@ export default function WasteViewPage() {
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
           <p>
             Showing {pagedRows.length} of {filteredRows.length} records
-            {searchTerm.trim() ? " (filtered)" : ""}
+            {searchTerm.trim() ? " (filtered)" : ""} (Code Ascending)
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <button type="button" onClick={() => setPage(1)} disabled={currentPage === 1} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">First</button>
@@ -763,11 +783,11 @@ export default function WasteViewPage() {
                 </tbody>
               </table>
             </div> */}
-            {/* 
+            {/*
             <p className="mt-4 text-xs italic text-slate-700 sm:text-sm">
               * Fill up above table separately for indigenous and imported waste.
             </p>
-
+ 
             <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
               <p>
                 4. Date wise description of management of hazardous and other wastes including products sent and to whom in case of
@@ -775,7 +795,7 @@ export default function WasteViewPage() {
               </p>
               <p>5. Date of environmental monitoring (as per authorisation or guidelines of Central Pollution Control Board):</p>
             </div>
-
+ 
             <div className="mt-8 flex flex-col gap-3 text-xs text-slate-900 sm:flex-row sm:items-end sm:justify-between sm:text-sm">
               <div>
                 <p>Date: {selectedEntry.date || "...................."}</p>

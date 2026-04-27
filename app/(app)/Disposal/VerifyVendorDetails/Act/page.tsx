@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type ParticipantDetails = {
   APID?: string | number;
@@ -27,12 +27,13 @@ type ParticipantDetails = {
   Remarks?: string;
 };
 
-export default function VerifyVendorDetailsActPage() {
+export default function VerifyVendorDetailsActPage({ searchParams }: { searchParams: Promise<{ iddid?: string, vid: string }> }) {
   const router = useRouter();
-  const params = useSearchParams();
+  // const params = useSearchParams();
+  const params = React.use(searchParams)
 
-  const iddid = params.get("iddid") ?? "";
-  const vid = params.get("vid") ?? "";
+  const iddid = params.iddid;
+  const vid = params.vid;
   //    const apid;
 
 
@@ -94,7 +95,7 @@ export default function VerifyVendorDetailsActPage() {
         }
 
         const row = Array.isArray(payload.data) ? payload.data[0] : payload.data;
-        console.log(payload)
+        // console.log(payload)
         // const apid=row?.APID;
 
         setFormValues({
@@ -181,9 +182,10 @@ export default function VerifyVendorDetailsActPage() {
         <button
           type="button"
           onClick={() => router.push("/Disposal/VerifyVendorDetails")}
-          className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50"
+          className="rounded  px-1 py-2 text-xs text-slate-700 cursor-pointer hover:bg-slate-50"
         >
-          Back to List
+          <img src="/goback.png" alt="" className="h-5 " />
+
         </button>
       </div>
 
@@ -193,10 +195,10 @@ export default function VerifyVendorDetailsActPage() {
       {!loading && !error && (
         <div className="mt-6 space-y-6">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h2 className="text-sm font-semibold text-slate-900">Waste Details</h2>
+            <h2 className="text-sm font-semibold text-slate-900">Auction Details</h2>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">IDDID</label>
+                <label className="mb-1 block text-sm font-medium text-slate-900">Auction ID</label>
                 <input
                   value={String(formValues.IDDID ?? "")}
                   readOnly
@@ -217,6 +219,7 @@ export default function VerifyVendorDetailsActPage() {
                 <label className="mb-1 block text-sm font-medium text-slate-900">Waste Category</label>
                 <input
                   value={String(formValues.WasteCategory ?? "")}
+                  readOnly
                   onChange={(e) => updateField("WasteCategory", e.target.value)}
                   className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
                 />
@@ -227,6 +230,7 @@ export default function VerifyVendorDetailsActPage() {
                 <input
                   value={String(formValues.Waste ?? "")}
                   onChange={(e) => updateField("Waste", e.target.value)}
+                  readOnly
                   className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
@@ -236,6 +240,7 @@ export default function VerifyVendorDetailsActPage() {
                 <input
                   value={String(formValues.TotalQty ?? "")}
                   onChange={(e) => updateField("TotalQty", e.target.value)}
+                  readOnly
                   className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
@@ -390,7 +395,7 @@ export default function VerifyVendorDetailsActPage() {
                 type="button"
                 disabled={saving}
                 onClick={() => void handleSave()}
-                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
               >
                 Save Details
               </button>

@@ -886,14 +886,14 @@ export default function GenerateForm({
       <div className="md:col-span-2 flex items-center gap-3">
         <button
           type="submit"
-          className="rounded-lg bg-[#ff7b00ef] px-5 py-2 text-sm font-medium text-white"
+          className="cursor-pointer rounded-lg bg-[#ff7b00ef] px-5 py-2 text-sm font-medium text-white"
         >
           Save
         </button>
         <button
           type="button"
           onClick={() => router.back()}
-          className="rounded-lg border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700"
+          className="cursor-pointer rounded-lg border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700"
         >
           Back
         </button>
@@ -921,14 +921,14 @@ export default function GenerateForm({
               type="button"
               onClick={confirmSave}
               disabled={saving}
-              className="rounded-lg bg-[#ff7b00ef] px-4 py-2 text-sm font-medium text-white"
+              className="cursor-pointer rounded-lg bg-[#ff7b00ef] px-4 py-2 text-sm font-medium text-white"
             >
               {saving ? "Saving..." : "Confirm Save"}
             </button>
             <button
               type="button"
               onClick={() => { setShowReview(false); router.back() }}
-              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
+              className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
             >
               Edit
             </button>

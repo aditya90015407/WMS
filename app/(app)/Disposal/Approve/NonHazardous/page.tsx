@@ -38,6 +38,8 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
     const [error, setError] = useState<string | null>(null);
     const [remarks, setRemarks] = useState("");
     const [decision, setDecision] = useState("");
+    const [saving, setSaving] = useState(false);
+
 
     const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
@@ -58,6 +60,43 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
 
         void handleDecrypt();
     }, [encryptedId]);
+
+
+    const saveDecision = async (stsCode: 3 | 5, label: "Accepted" | "Rejected") => {
+        if (!row?.id) {
+            return;
+        }
+        setSaving(true)
+        try {
+            const res = await fetch("api/SetData/SetDisposalApproval", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    FDDID: Number(row.id),
+                    StsCode: stsCode,
+                    Remarks: remarks,
+
+
+                }),
+            });
+            const payload = await res.json()
+            if (!res.ok || !payload.success) {
+                setDecision(payload.message || "Failed to save disposal approval")
+                return;
+            }
+            setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`)
+            if (stsCode == 3 && row?.id) {
+                router.back();
+            }
+        } catch (err: any) {
+            console.error("Failed to save disposal approval", err);
+            setDecision("Failed to save disposal approval");
+        } finally {
+            setSaving(false);
+        }
+
+    }
+
 
     useEffect(() => {
         const loadRow = async () => {
@@ -94,7 +133,7 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                     <h1 className="text-2xl font-semibold text-teal-600">Disposal Approval - Non Hazardous</h1>
                     <p className="mt-2 text-sm text-slate-600">Verify the submitted non-hazardous disposal form before taking action.</p>
                 </div>
-                <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50">
+                <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-1 py-2 text-sm text-slate-700 hover:bg-slate-50">
                     Back to Queue
                 </button>
             </div>

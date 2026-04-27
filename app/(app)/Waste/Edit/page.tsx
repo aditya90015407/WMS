@@ -62,6 +62,50 @@ export default function WasteEditPage() {
   const [physicalStates, setPhysicalStates] = useState<Option[]>([]);
   const [storageMethods, setStorageMethods] = useState<Option[]>([]);
 
+
+  type RegisteredWaste = {
+    ID: string
+    UID: string
+    Unit: string
+    GenDeptID: string
+    GenDept: string
+    UnitDesc: string
+    DeptID: string
+    Dept: string
+    ReferenceNo: string
+    DateofIssuance: string
+    UnitAuthDesc: string
+    WasteCategory: string
+    WCID: string
+    Waste: string
+    SapWasteCode: string
+    Schedule: string
+    Storage: string
+    StorageMethod: string
+    PhysicalState: string
+    MUnit: string
+    Receiver: string
+    WasteQty: string
+    GenerationDate: string
+    TargetDate: string
+  }
+
+  const [waste, setWaste] = useState<RegisteredWaste[]>([])
+
+  const { data: session } = useSession()
+
+  async function fetchWaste() {
+    const res = await fetch("/api/GetData/GetWasteGeneratedByDept", {
+      method: "POST"
+    })
+    const data = await res.json()
+    setWaste(data)
+    // console.log(data)
+  }
+  useEffect(() => {
+    fetchWaste()
+  }, [refreshSeed])
+
   useEffect(() => {
     const loadRows = async () => {
       setLoading(true);
@@ -187,7 +231,8 @@ export default function WasteEditPage() {
   const [sessionUid, setSessionUid] = useState("")
 
 
-  const { data: session } = useSession()
+  // const { data: session } = useSession()
+
   useEffect(() => {
 
     setSessionUid(session?.user.uid!)
@@ -220,8 +265,13 @@ export default function WasteEditPage() {
 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter((row) =>
+    // if (!q) return rows;
+    // return rows.filter((row) =>
+    //   Object.values(row).some((value) => toText(value).toLowerCase().includes(q)),
+    // );
+
+    if (!q) return waste;
+    return waste.filter((row) =>
       Object.values(row).some((value) => toText(value).toLowerCase().includes(q)),
     );
   }, [rows, query]);
@@ -385,7 +435,10 @@ export default function WasteEditPage() {
                     Quantity
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700">
-                    Entry Date
+                    Gen Dept
+                  </th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700">
+                    Gen Date
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700">
                     Target Date
@@ -402,19 +455,22 @@ export default function WasteEditPage() {
                       {toText(row.ID)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.WC)}
+                      {toText(row.WasteCategory)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.WW)}
+                      {toText(row.Waste)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.WQ)}
+                      {toText(row.WasteQty)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.GD)}
+                      {toText(row.GenDept)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.TD)}
+                      {toText(row.GenerationDate)}
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                      {toText(row.TargetDate)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                       <button

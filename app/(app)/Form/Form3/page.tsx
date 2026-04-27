@@ -1,26 +1,28 @@
 "use client";
-
+ 
 import { useEffect, useMemo, useState } from "react";
 import { Download } from "lucide-react";
 import { toForm3Entry } from "@/lib/form3-columns";
-
+ 
 type ViewRow = Record<string, string | number | null>;
-
+ 
 type ApiResponse = {
   success?: boolean;
   data?: ViewRow[];
   message?: string;
   error?: string;
 };
-
+ 
 type FormEntry = {
   code: string;
   date: string;
   targetDate: string;
+  Schedule:string;
   sapWasteCode: string;
   wasteCategory: string;
   wasteType: string;
   waste: string;
+  Unit:string;
   quantity: string;
   storageMethod: string;
   physicalState: string;
@@ -37,29 +39,29 @@ type FormEntry = {
   wcid: string;
   stsCode: string;
 };
-
+ 
 const PAGE_SIZE = 10;
-
+ 
 const toText = (value: unknown): string => {
   if (value === null || value === undefined) return "";
   return String(value);
 };
-
+ 
 const getDestinedDisplay = (entry: FormEntry): string => {
   const disposerLabel = entry.disposer?.trim() || "";
   const receiverLabel = entry.receiver?.trim() || "";
-
+ 
   if (disposerLabel && receiverLabel) {
     return `Destined To :  ${receiverLabel} , Received From : ${disposerLabel}`;
   }
-
+ 
   if (receiverLabel) {
     return `Received From: ${receiverLabel}`;
   }
-
+ 
   return disposerLabel;
 };
-
+ 
 const getApprovalRowClass = (status: string): string => {
   const normalized = status.trim().toLowerCase();
   if (normalized === "approval completed") return "bg-green-100";
@@ -67,7 +69,7 @@ const getApprovalRowClass = (status: string): string => {
   if (normalized === "rejected") return "bg-red-100";
   return "";
 };
-
+ 
 const esc = (value: unknown): string =>
   String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -75,12 +77,17 @@ const esc = (value: unknown): string =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-
+ 
 const createForm3Html = (entry: FormEntry): string => {
-  const typeWithCategory = [entry.waste || entry.wasteType, entry.sapWasteCode]
+ 
+  const typeWithCategory = [entry.waste || entry.wasteType, entry.sapWasteCode,entry.Schedule]
     .filter(Boolean)
     .join(" / ");
-
+  const quantUnit=[entry.quantity,entry.Unit]
+    .filter(Boolean)
+    .join(" / ");
+    // console.log(entry.Schedule)
+ 
   return `<!doctype html>
 <html>
 <head>
@@ -103,7 +110,7 @@ const createForm3Html = (entry: FormEntry): string => {
     <p class="small"><i>[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</i></p>
     <h2 class="mt2">FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES</h2>
   </div>
-
+ 
   <div class="mt4 small">
     <p>1. Name and address of the facility : ${esc(entry.unitDesc)}</p>
     <p class="mt2">2. Date of issuance of authorisation and its reference number : ${esc(
@@ -111,7 +118,7 @@ const createForm3Html = (entry: FormEntry): string => {
   )}</p>
     <p class="mt2">3. Description of hazardous and other wastes handled (Generated or Received)</p>
   </div>
-
+ 
   <table>
     <thead>
       <tr>
@@ -126,20 +133,20 @@ const createForm3Html = (entry: FormEntry): string => {
       <tr>
         <td>${esc(entry.date)}</td>
         <td>${esc(typeWithCategory)}</td>
-        <td>${esc(entry.quantity)}</td>
+        <td>${esc(quantUnit)}</td>
         <td>${esc(entry.storageMethod)}</td>
         <td>${esc(getDestinedDisplay(entry))}</td>
       </tr>
     </tbody>
   </table>
-
+ 
   <p class="mt4 small"><i>* Fill up above table separately for indigenous and imported waste.</i></p>
-
+ 
   <div class="mt4 small">
     <p>4. Date wise description of management of hazardous and other wastes including products sent and to whom in case of recyclers or pre-processor or utiliser:</p>
     <p class="mt2">5. Date of environmental monitoring (as per authorisation or guidelines of Central Pollution Control Board):</p>
   </div>
-
+ 
   <div class="mt10 small" style="display:flex;justify-content:space-between;align-items:flex-end;">
     <div>
       <p>Date: ${esc(entry.date)}</p>
@@ -150,7 +157,7 @@ const createForm3Html = (entry: FormEntry): string => {
 </body>
 </html>`;
 };
-
+ 
 export default function Form3Page() {
   const [rows, setRows] = useState<ViewRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -158,7 +165,7 @@ export default function Form3Page() {
   const [selectedEntry, setSelectedEntry] = useState<FormEntry | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-
+ 
   useEffect(() => {
     const loadRows = async () => {
       setLoading(true);
@@ -171,6 +178,7 @@ export default function Form3Page() {
           cache: "no-store",
         });
         const payload = (await res.json()) as ApiResponse;
+        console.log(payload)
         if (!res.ok || !payload.success || !Array.isArray(payload.data)) {
           setRows([]);
           setError(payload.message || payload.error || "Failed to load Form 3 data");
@@ -184,10 +192,10 @@ export default function Form3Page() {
         setLoading(false);
       }
     };
-
+ 
     void loadRows();
   }, []);
-
+ 
   const tableRows = useMemo<FormEntry[]>(() => {
     const sortedRows = [...rows].sort((a, b) => {
       const aCode = toText(a.ID ?? a.Code).trim();
@@ -197,14 +205,14 @@ export default function Form3Page() {
       if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
       return aCode.localeCompare(bCode, undefined, { numeric: true, sensitivity: "base" });
     });
-
+ 
     return sortedRows.map((row) => toForm3Entry(row as Record<string, unknown>) as FormEntry);
   }, [rows]);
-
+ 
   const filteredRows = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
     if (!query) return tableRows;
-
+ 
     return tableRows.filter((item) =>
       [
         item.code,
@@ -226,22 +234,22 @@ export default function Form3Page() {
         .includes(query),
     );
   }, [tableRows, searchTerm]);
-
+ 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-
+ 
   const pagedRows = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredRows.slice(start, start + PAGE_SIZE);
   }, [filteredRows, currentPage]);
-
+ 
   useEffect(() => {
     setPage(1);
   }, [rows.length, searchTerm]);
-
+ 
   const onDownload = (entry: FormEntry) => {
     const formHtml = createForm3Html(entry);
-
+      // console.log(entry.Schedule)
     const html = `<!doctype html>
 <html>
 <head>
@@ -252,30 +260,30 @@ export default function Form3Page() {
       size: A4;
       margin: 12mm;
     }
-
+ 
     html, body {
       margin: 0;
       padding: 0;
       background: white;
       font-family: Arial, sans-serif;
     }
-
+ 
     body {
       display: flex;
       justify-content: center;
     }
-
+ 
     #print-box {
       width: 100%;
       max-width: 800px;
       background: white;
     }
-
+ 
     #print-box table {
       width: 100%;
       border-collapse: collapse;
     }
-
+ 
     #print-box th,
     #print-box td {
       border: 1px solid #334155;
@@ -283,13 +291,13 @@ export default function Form3Page() {
       font-size: 12px;
       vertical-align: top;
     }
-
+ 
     @media print {
       body {
         margin: 0;
         padding: 0;
       }
-
+ 
       #print-box {
         box-shadow: none;
         margin: 0;
@@ -305,17 +313,17 @@ export default function Form3Page() {
   </div>
 </body>
 </html>`;
-
+ 
     const printWindow = window.open("", "_blank", "width=900,height=700");
     if (!printWindow) {
       alert("Please allow popups to download Form 3 as PDF.");
       return;
     }
-
+ 
     printWindow.document.open();
     printWindow.document.write(html);
     printWindow.document.close();
-
+ 
     printWindow.onload = () => {
       setTimeout(() => {
         printWindow.focus();
@@ -323,7 +331,9 @@ export default function Form3Page() {
       }, 500);
     };
   };
-
+ 
+  // console.log(selectedEntry)
+ 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6 max-w-4xl mx-auto">
       <div className="text-center">
@@ -333,10 +343,10 @@ export default function Form3Page() {
           FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES
         </h2> */}
       </div>
-
+ 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
       {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-
+ 
       {!loading && !error && (
         <div className="mt-4 space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -349,7 +359,7 @@ export default function Form3Page() {
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-slate-500 sm:max-w-sm"
             />
           </div>
-
+ 
           <div className="overflow-x-auto rounded-xl border border-slate-300">
             <table className="w-[80%] border-collapse text-xs">
               <thead>
@@ -357,7 +367,7 @@ export default function Form3Page() {
                   <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">ID</th>
                   <th className="min-w-[110px] whitespace-nowrap border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Date</th>
                   <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste Category</th>
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste Type</th>
+                  {/* <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste Type</th> */}
                   <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste</th>
                   <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Quantity</th>
                   <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Storage</th>
@@ -382,7 +392,7 @@ export default function Form3Page() {
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.code}</td>
                     <td className="whitespace-nowrap border border-slate-300 px-2 py-0.5 text-slate-800">{item.date}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.wasteCategory}</td>
-                    <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.wasteType}</td>
+                    {/* <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.wasteType}</td> */}
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.waste}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.quantity}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.storageMethod}</td>
@@ -414,11 +424,11 @@ export default function Form3Page() {
                             </button>
                           </>
                         )}
-
+ 
                         {item.wcid === "1" && item.stsCode === "2" && (
                           <div className="text-center">Download requires approval.</div>
                         )}
-
+ 
                         {item.wcid == "1" && item.stsCode != "3" && item.stsCode != "2" && (
                           <div className="text-center">Not Applicable.</div>
                         )}
@@ -431,7 +441,7 @@ export default function Form3Page() {
           </div>
         </div>
       )}
-
+ 
       {!loading && !error && filteredRows.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
           <p>
@@ -475,7 +485,7 @@ export default function Form3Page() {
           </div>
         </div>
       )}
-
+ 
       {selectedEntry && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-2 md:p-4">
           <div className="max-h-[96vh] w-full max-w-5xl overflow-y-auto rounded-xl bg-white p-3 md:p-6 shadow-2xl">
@@ -489,7 +499,7 @@ export default function Form3Page() {
                 Close
               </button>
             </div>
-
+ 
             <div className="mt-4 text-center">
               <h1 className="text-xl font-bold text-slate-900">FORM 3</h1>
               <p className="text-xs italic text-slate-700">[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</p>
@@ -497,7 +507,7 @@ export default function Form3Page() {
                 FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES
               </h2>
             </div>
-
+ 
             <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
               <p>1. Name and address of the facility : {selectedEntry.unitDesc}</p>
               <p>
@@ -506,14 +516,14 @@ export default function Form3Page() {
               </p>
               <p>3. Description of hazardous and other wastes handled (Generated or Received)</p>
             </div>
-
+ 
             <div className="mt-3 overflow-x-auto rounded-lg border border-slate-300">
               <table className="min-w-[760px] border-collapse text-xs sm:min-w-full sm:text-sm">
                 <thead>
                   <tr className="bg-slate-100">
                     <th className="min-w-[110px] whitespace-nowrap border border-slate-300 px-2 py-2 text-left">Date</th>
                     <th className="border border-slate-300 px-2 py-2 text-left">Type of waste with category as per Schedules I,II and III of these rules</th>
-                    <th className="border border-slate-300 px-2 py-2 text-left">Total quantity(MT)</th>
+                    <th className="border border-slate-300 px-2 py-2 text-left">Total quantity</th>
                     <th className="border border-slate-300 px-2 py-2 text-left">Method of Storage</th>
                     <th className="border border-slate-300 px-2 py-2 text-left">Destined to or received from</th>
                   </tr>
@@ -522,23 +532,26 @@ export default function Form3Page() {
                   <tr>
                     <td className="whitespace-nowrap border border-slate-300 px-2 py-2">{selectedEntry.date}</td>
                     <td className="border border-slate-300 px-2 py-2">
-                      {[selectedEntry.waste, selectedEntry.sapWasteCode]
+                      {[selectedEntry.waste || selectedEntry.wasteType, selectedEntry.sapWasteCode,selectedEntry.Schedule]
                         .filter(Boolean)
-                        .join(" / ")
-                      }
+                        .join(" / ")}
+                     
                     </td>
-                    <td className="border border-slate-300 px-2 py-2">{selectedEntry.quantity}</td>
+ 
+                    <td className="border border-slate-300 px-2 py-2">{[selectedEntry.quantity, selectedEntry.Unit]
+                        .filter(Boolean)
+                        .join("  ")}</td>
                     <td className="border border-slate-300 px-2 py-2">{selectedEntry.storageMethod}</td>
                     <td className="border border-slate-300 px-2 py-2">{getDestinedDisplay(selectedEntry)}</td>
                   </tr>
                 </tbody>
               </table>
             </div>
-
+ 
             <p className="mt-4 text-xs italic text-slate-700 sm:text-sm">
               * Fill up above table separately for indigenous and imported waste.
             </p>
-
+ 
             <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
               <p>
                 4. Date wise description of management of hazardous and other wastes including products sent and to whom in case of
@@ -546,7 +559,7 @@ export default function Form3Page() {
               </p>
               <p>5. Date of environmental monitoring (as per authorisation or guidelines of Central Pollution Control Board):</p>
             </div>
-
+ 
             <div className="mt-8 flex flex-col gap-3 text-xs text-slate-900 sm:flex-row sm:items-end sm:justify-between sm:text-sm">
               <div>
                 <p>Date: {selectedEntry.date || "...................."}</p>
@@ -554,7 +567,7 @@ export default function Form3Page() {
               </div>
               <p className="font-semibold">Signature of occupier</p>
             </div>
-
+ 
             <div className="mt-4 flex justify-end">
               <button
                 type="button"
@@ -571,3 +584,4 @@ export default function Form3Page() {
     </section>
   );
 }
+ 

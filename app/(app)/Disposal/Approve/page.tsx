@@ -154,6 +154,7 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                         onClick={async () => {
                                             const rawId = String(row.ID ?? "").trim();
                                             const finalId = rawId ? await encrypt(rawId) : "";
+                                            const iddid = await encrypt(String(row.IDDID))
                                             const wcid = String(row.WCID ?? "").trim();
                                             const disType = String(row.DisType ?? "").trim().toLowerCase();
 
@@ -164,7 +165,7 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
 
                                             const target =
                                                 disType === "internal"
-                                                    ? `/Disposal/Approve/Internal?id=${encodeURIComponent(finalId)}`
+                                                    ? `/Disposal/Approve/Internal?id=${encodeURIComponent(finalId)}&iddid=${encodeURIComponent(iddid)}`
                                                     : wcid === "1"
                                                         ? `/Disposal/Approve/Hazardous?id=${encodeURIComponent(finalId)}`
                                                         : `/Disposal/Approve/NonHazardous?id=${encodeURIComponent(finalId)}`;

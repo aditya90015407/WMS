@@ -108,10 +108,7 @@ export default function DisposalApprovePage() {
                             <thead className="bg-slate-50">
                                 <tr>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
-                                        Final Ref ID
-                                    </th>
-                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
-                                        Original ID
+                                        Auction ID
                                     </th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Waste Category
@@ -149,9 +146,6 @@ export default function DisposalApprovePage() {
 
 
                                     >
-                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                                            {String(row.ID ?? "")}
-                                        </td>
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.IDDID ?? "")}
                                         </td>

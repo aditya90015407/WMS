@@ -56,7 +56,7 @@ export async function handleViewGet(request: Request) {
     }
 
     const result = await viewRequest.execute("PRO-WMS_GET");
-    // console.log(result)
+    // console.log(result.recordset)
 
     return NextResponse.json({
       success: true,

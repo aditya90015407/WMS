@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     const rows = Array.isArray(result.recordset)
       ? result.recordset
       : [];
-     console.log("GetSelectedVendorDetails rows:", result);
+    //  console.log("GetSelectedVendorDetails rows:", result);
 
     return NextResponse.json({
       success: true,
