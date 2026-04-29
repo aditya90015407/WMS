@@ -116,7 +116,7 @@ export default function AppNavbar() {
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-xl border border-emerald-400 border-dashed bg-white py-4 px-6 shadow-lg">
+            <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white py-4 px-6 shadow-lg">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Profile
               </p>

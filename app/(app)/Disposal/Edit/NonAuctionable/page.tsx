@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Newspaper } from "lucide-react";
 
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
@@ -15,6 +16,7 @@ type UndisposedOption = {
   todayDate: string;
   daysLeft: string;
   label: string;
+  unit: string
 };
 
 export default function NonAuctionablePage() {
@@ -35,6 +37,7 @@ export default function NonAuctionablePage() {
 
   const [undisposedOptions, setUndisposedOptions] = useState<UndisposedOption[]>([]);
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
+  const [alreadySelectedUndisposedIds, setAlreadySelectedUndisposedIds] = useState<string[]>([]);
   const [savedUndisposedIds, setSavedUndisposedIds] = useState<string[]>([]);
 
   const [loadingBase, setLoadingBase] = useState(false);
@@ -186,12 +189,12 @@ export default function NonAuctionablePage() {
 
         const selectedRows: UndisposedOption[] = rows.map((row: any) => {
           const qty = Number(row.WasteQty ?? 0);
-          console.log("rows:",rows)
+          console.log("rows:", rows)
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           console.log(genDate)
           const todayDate = new Date().toISOString().split("T")[0];
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
-         
+
 
           let daysLeft = "";
           if (targetDate) {
@@ -265,6 +268,7 @@ export default function NonAuctionablePage() {
           const rawQty = String(row.WasteQty ?? "").replace(",", ".");
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
+          const unit = String(row.MUnit ?? "").trim();
 
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
@@ -277,9 +281,9 @@ export default function NonAuctionablePage() {
             const diffTime = target.getTime() - today.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             daysLeft = String(diffDays);
-            
+
           }
-         console.log(daysLeft)
+          console.log(daysLeft)
           const qtyLabel = qty.toFixed(2);
           const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
 
@@ -291,7 +295,8 @@ export default function NonAuctionablePage() {
             targetDate,
             todayDate,
             daysLeft,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft || "N/A"}`,
+            unit,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
 
@@ -308,6 +313,7 @@ export default function NonAuctionablePage() {
         console.error("loadUndisposed failed", err);
         setUndisposedOptions([]);
         setSelectedUndisposedIds([]);
+        setAlreadySelectedUndisposedIds([])
       } finally {
         setLoadingUndisposed(false);
       }
@@ -324,9 +330,13 @@ export default function NonAuctionablePage() {
       .filter((id) => savedUndisposedIds.includes(id));
 
     setSelectedUndisposedIds(matchedIds);
+    setAlreadySelectedUndisposedIds(matchedIds)
   }, [undisposedOptions, savedUndisposedIds]);
 
   const selectedUndisposedItems = undisposedOptions.filter((item) =>
+    selectedUndisposedIds.includes(item.id),
+  );
+  const alreadySelectedUndisposedItems = undisposedOptions.filter((item) =>
     selectedUndisposedIds.includes(item.id),
   );
 
@@ -362,7 +372,7 @@ export default function NonAuctionablePage() {
     }
 
     try {
-      const res = await fetch("/api/SetData/InitiateDisposal", {
+      const res = await fetch("/api/SetData/UpdateDisposal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -373,6 +383,7 @@ export default function NonAuctionablePage() {
           PSID: physicalForm,
           AuctionDate: disposalDate,
           Remarks: remarks,
+          IDDID: iddid
         }),
       });
 
@@ -387,19 +398,27 @@ export default function NonAuctionablePage() {
         return;
       }
 
-      const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          IDDID: wrid,
-          WRID: selectedUndisposedIds,
-        }),
-      });
+      const newSelectedIds = undisposedOptions
+        .map((item) => item.id)
+        .filter((id) => selectedUndisposedIds.includes(id))
+        .filter((id) => !alreadySelectedUndisposedIds.includes(id))
 
-      const data2 = await res2.json();
-      if (!res2.ok || !data2.success) {
-        return alert(data2.message || "InsertAuctionWasteDetails failed");
+      if (newSelectedIds.length > 0) {
+        const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            IDDID: wrid,
+            WRID: newSelectedIds,
+          }),
+        });
+
+        const data2 = await res2.json();
+        if (!res2.ok || !data2.success) {
+          return alert(data2.message || "InsertAuctionWasteDetails failed");
+        }
       }
+
 
       alert("Saved Successfully");
       router.back();
@@ -486,6 +505,7 @@ export default function NonAuctionablePage() {
               ) : (
                 sortedUndisposedOptions.map((item) => {
                   const checked = selectedUndisposedIds.includes(item.id);
+                  const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
                   return (
                     <label
                       key={item.id}
@@ -494,6 +514,7 @@ export default function NonAuctionablePage() {
                       <input
                         type="checkbox"
                         checked={checked}
+                        disabled={alreadyChecked}
                         onChange={(e) => {
                           const nextIds = e.target.checked
                             ? [...selectedUndisposedIds, item.id]
@@ -506,7 +527,8 @@ export default function NonAuctionablePage() {
                           {item.dept || "Dept"} - {item.qty.toFixed(2)}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
+                          {item.unit || "N/A"}
                         </span>
                       </div>
                     </label>

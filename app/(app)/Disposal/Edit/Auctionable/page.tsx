@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type Option = { id: string; name: string , email :string, vendorCode:string};
+type Option = { id: string; name: string, email: string, vendorCode: string };
 type Option1 = { ID: string; NAME: string };
 
 type UndisposedOption = {
@@ -15,6 +15,7 @@ type UndisposedOption = {
   todayDate: string;
   daysLeft: string;
   label: string;
+  unit: string;
 };
 
 export default function AuctionablePage() {
@@ -30,6 +31,7 @@ export default function AuctionablePage() {
   const [selectedWasteId, setSelectedWasteId] = useState("");
   const [undisposedOptions, setUndisposedOptions] = useState<UndisposedOption[]>([]);
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
+  const [alreadySelectedUndisposedIds, setAlreadySelectedUndisposedIds] = useState<string[]>([]);
   const [savedUndisposedIds, setSavedUndisposedIds] = useState<string[]>([]);
   const [loadingUndisposed, setLoadingUndisposed] = useState(false);
 
@@ -57,7 +59,7 @@ export default function AuctionablePage() {
       });
 
       const payload = await res.json();
-      console.log("payload",payload)
+      console.log("payload", payload)
       const raw =
         (Array.isArray(payload?.data) && payload.data) ||
         (Array.isArray(payload?.recordset) && payload.recordset) ||
@@ -68,18 +70,18 @@ export default function AuctionablePage() {
         id: String(row.id ?? row.ID ?? row.VID ?? row.VendorID ?? row.VENDORID ?? ""),
         name: String(
           row.name ??
-            row.NAME ??
-            row.VENDORNAME ??
-            row.VendorName ??
-            row.VENDOR ??
-            row["Vendor Name"] ??
-            row["VENDOR NAME"] ??
-            row.VENDNAME ??
-            row.VNAME ??
-            "",
+          row.NAME ??
+          row.VENDORNAME ??
+          row.VendorName ??
+          row.VENDOR ??
+          row["Vendor Name"] ??
+          row["VENDOR NAME"] ??
+          row.VENDNAME ??
+          row.VNAME ??
+          "",
         ).trim(),
-        email : String(row.Email??row.email??""),
-        vendorCode : String(row.VendorCode??row.vendorCode??""),
+        email: String(row.Email ?? row.email ?? ""),
+        vendorCode: String(row.VendorCode ?? row.vendorCode ?? ""),
       }));
 
       setVendorOptions(vendors);
@@ -177,7 +179,7 @@ export default function AuctionablePage() {
         });
 
         const payload = await res.json();
-        console.log("ppppppp",payload)
+        console.log("ppppppp", payload)
         if (!res.ok || !payload.success) {
           console.error("Failed to load edit details", payload);
           return;
@@ -232,14 +234,56 @@ export default function AuctionablePage() {
             ? [payload.data]
             : [];
 
-       const selectedIds = rows
-        .map((row: any) => String(row.WRID ?? row.Id ?? row.ID ?? "").trim())
-        .filter(Boolean);
+        const selectedIds = rows
+          .map((row: any) => String(row.WRID ?? row.Id ?? row.ID ?? "").trim())
+          .filter(Boolean);
 
-      setSavedUndisposedIds(selectedIds);
+        const selectedRows: UndisposedOption[] = rows.map((row: any) => {
+          const qty = Number(row.WasteQty ?? 0);
+          const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
+          const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
+          const todayDate = new Date().toISOString().split("T")[0];
+          const unit = String(row.MUnit ?? row.unit ?? "").trim();
 
-      console.log("Selected waste rows from GetWasteListByIDDID:", rows);
-      console.log("Selected ids from GetWasteListByIDDID:", selectedIds);
+          let daysLeft = "";
+          if (targetDate) {
+            const today = new Date(todayDate);
+            const target = new Date(targetDate);
+            const diffTime = target.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            daysLeft = String(diffDays);
+          }
+
+          const dept = String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim();
+
+          return {
+            id: String(row.WRID ?? row.Id ?? row.ID ?? "").trim(),
+            dept,
+            qty,
+            genDate,
+            targetDate,
+            todayDate,
+            daysLeft,
+            unit,
+            label: `${dept} - ${qty.toFixed(2)} - ${daysLeft || "N/A"} - ${unit || "N/A"}`,
+          };
+        });
+
+
+        setSavedUndisposedIds(selectedIds);
+
+        setUndisposedOptions((prev) => {
+          const map = new Map(prev.map((item) => [item.id, item]));
+          for (const item of selectedRows) {
+            if (!map.has(item.id)) {
+              map.set(item.id, item);
+            }
+          }
+          return Array.from(map.values());
+        });
+
+        console.log("Selected waste rows from GetWasteListByIDDID:", rows);
+        console.log("Selected ids from GetWasteListByIDDID:", selectedIds);
 
       } catch (err) {
         console.error("loadSelectedWasteDetails failed", err);
@@ -278,10 +322,11 @@ export default function AuctionablePage() {
           [];
 
         const options: UndisposedOption[] = raw.map((row: any, index: number) => {
-          const dept = String(row.Dept?? "").trim();
+          const dept = String(row.Dept ?? "").trim();
           const rawQty = String(row.WasteQty ?? "").replace(",", ".");
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
+          const unit = String(row.MUnit ?? "").trim();
 
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
@@ -307,18 +352,26 @@ export default function AuctionablePage() {
             targetDate,
             todayDate,
             daysLeft,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft}`,
+            unit,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
-         console.log("Undisposed raw rows from GetAllUndisposedWaste:", raw);
-          console.log("Mapped undisposed options:", options);
+        console.log("Undisposed raw rows from GetAllUndisposedWaste:", raw);
+        console.log("Mapped undisposed options:", options);
 
-        setUndisposedOptions(options);
+        setUndisposedOptions((prev) => {
+          const map = new Map(prev.map((item) => [item.id, item]));
+          for (const item of options) {
+            map.set(item.id, item);
+          }
+          return Array.from(map.values());
+        });
         setUndisposedDropdownOpen(false);
       } catch (err) {
         console.error("loadUndisposed failed", err);
         setUndisposedOptions([]);
         setSelectedUndisposedIds([]);
+        setAlreadySelectedUndisposedIds([])
       } finally {
         setLoadingUndisposed(false);
       }
@@ -333,11 +386,12 @@ export default function AuctionablePage() {
     const matchedIds = undisposedOptions
       .map((item) => item.id)
       .filter((id) => savedUndisposedIds.includes(id));
-         console.log("savedUndisposedIds:", savedUndisposedIds);
-          console.log("undisposed option ids:", undisposedOptions.map((item) => item.id));
-          console.log("matchedIds:", matchedIds);
+    // console.log("savedUndisposedIds:", savedUndisposedIds);
+    // console.log("undisposed option ids:", undisposedOptions.map((item) => item.id));
+    // console.log("matchedIds:", matchedIds);
 
     setSelectedUndisposedIds(matchedIds);
+    setAlreadySelectedUndisposedIds(matchedIds)
   }, [undisposedOptions, savedUndisposedIds]);
 
   const displayVendorOptions = vendorOptions.filter((v) => v.name && v.name.trim().length > 0);
@@ -351,7 +405,7 @@ export default function AuctionablePage() {
   );
 
   console.log("selectedUndisposedIds final:", selectedUndisposedIds);
-    console.log("selectedUndisposedItems final:", selectedUndisposedItems);
+  console.log("selectedUndisposedItems final:", selectedUndisposedItems);
 
 
   const sortedUndisposedOptions = useMemo(() => {
@@ -382,7 +436,7 @@ export default function AuctionablePage() {
     }
 
     try {
-      const res = await fetch("/api/SetData/InitiateDisposal", {
+      const res = await fetch("/api/SetData/UpdateDisposal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -393,6 +447,7 @@ export default function AuctionablePage() {
           AuctionDate: auctionDate,
           PSID: physicalForm,
           Remarks: remarks,
+          IDDID: iddid
         }),
       });
 
@@ -403,35 +458,46 @@ export default function AuctionablePage() {
         return;
       }
 
-      const newIddid = data?.data?.WRID;
-      if (!newIddid) {
-        alert("IDDID missing in InitiateDisposal response");
-        return;
+      // const newIddid = data?.data?.WRID;
+      // if (!newIddid) {
+      //   alert("IDDID missing in InitiateDisposal response");
+      //   return;
+      // }
+
+      const newSelectedIds = undisposedOptions
+        .map((item) => String(item.id))
+        .filter((id) => selectedUndisposedIds.map(String).includes(id))
+        .filter((id) => !alreadySelectedUndisposedIds.map(String).includes(id))
+
+      // console.log(alreadySelectedUndisposedIds, "already")
+      // console.log(selectedUndisposedIds, "saved")
+      // console.log(newSelectedIds, "new ")
+      // console.log(undisposedOptions, "undisposed")
+
+      if (newSelectedIds.length > 0) {
+        const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            IDDID: iddid,
+            WRID: newSelectedIds,
+          }),
+        });
+
+        const data2 = await res2.json();
+
+        if (!res2.ok || !data2.success) {
+          alert(data2.message || "InsertAuctionWasteDetails failed");
+          return;
+        }
       }
-
-      const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          IDDID: newIddid,
-          WRID: selectedUndisposedIds,
-        }),
-      });
-
-      const data2 = await res2.json();
-
-      if (!res2.ok || !data2.success) {
-        alert(data2.message || "InsertAuctionWasteDetails failed");
-        return;
-      }
-
       await Promise.all(
         selectedVendorIds.map(async (vendorId) => {
           const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              IDDID: newIddid,
+              IDDID: iddid,
               VID: vendorId,
             }),
           });
@@ -475,7 +541,7 @@ export default function AuctionablePage() {
             value={wasteCategory}
             onChange={(e) => setWasteCategory(e.target.value)}
             className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled={loadingBase}
+            disabled //={loadingBase}
           >
             <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
             {categoryOptions.map((item) => (
@@ -496,7 +562,7 @@ export default function AuctionablePage() {
               setWaste(name);
             }}
             className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled={!wasteCategory || loadingWaste}
+            disabled //</div>={!wasteCategory || loadingWaste}
           >
             <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
             {wasteOptions.map((item) => (
@@ -531,6 +597,7 @@ export default function AuctionablePage() {
               ) : (
                 sortedUndisposedOptions.map((item) => {
                   const checked = selectedUndisposedIds.includes(item.id);
+                  const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
                   return (
                     <label
                       key={item.id}
@@ -539,6 +606,7 @@ export default function AuctionablePage() {
                       <input
                         type="checkbox"
                         checked={checked}
+                        disabled={alreadyChecked}
                         onChange={(e) => {
                           const nextIds = e.target.checked
                             ? [...selectedUndisposedIds, item.id]
@@ -551,7 +619,8 @@ export default function AuctionablePage() {
                           {item.dept || "Dept"} - {item.qty.toFixed(2)}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
+                          {item.unit || "N/A"}
                         </span>
                       </div>
                     </label>
@@ -658,11 +727,11 @@ export default function AuctionablePage() {
                           }}
                         />
                         <span className="text-sm text-slate-700">
-                        {(item.name || "Dept")} {item.vendorCode ? `- ${item.vendorCode}` : ""}
-                      </span>
-                      <span className="text-sm font-semibold">
-                        {item.email || "-"}
-                      </span>
+                          {(item.name || "Dept")} {item.vendorCode ? `- ${item.vendorCode}` : ""}
+                        </span>
+                        <span className="text-sm font-semibold">
+                          {item.email || "-"}
+                        </span>
                       </label>
                     );
                   })}

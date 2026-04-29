@@ -33,6 +33,7 @@ export default function DisposalRecycleForm() {
       todayDate: string;
       daysLeft: string;
       label: string;
+      unit: string
     }>
   >([]);
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
@@ -161,6 +162,7 @@ export default function DisposalRecycleForm() {
           const rawQty = String(row.WasteQty ?? "").replace(",", ".");
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
+          const unit = String(row.MUnit ?? "").trim();
 
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
@@ -186,7 +188,8 @@ export default function DisposalRecycleForm() {
             targetDate,
             todayDate,
             daysLeft,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft}`,
+            unit,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
 
@@ -384,7 +387,8 @@ export default function DisposalRecycleForm() {
                           {item.dept || "Dept"} - {item.qty.toFixed(2)}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
+                          {item.unit || "N/A"}
                         </span>
                       </div>
                     </label>

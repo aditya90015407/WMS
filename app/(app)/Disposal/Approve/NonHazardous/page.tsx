@@ -62,40 +62,84 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
     }, [encryptedId]);
 
 
+
+    async function UpdateDisposedWaste() {
+        const res = await fetch("/api/GetData/GetWasteListByIDDID", {
+            method: "POST",
+            body: JSON.stringify({ "id": row?.IDDID })
+        })
+
+        const data = await res.json()
+        // console.log(data.data)
+        const wasteItems = data.data
+        // setWasteList(data.data)
+
+        // console.log("i am disposing waste")
+        // if (!wasteList) return
+        // console.log("i am here to disposing waste")
+        // console.log(wasteList)
+        wasteItems?.map(async (item: any) => {
+            const res = await fetch("/api/SetData/UpdateDisposedWaste", {
+                method: "POST",
+                body: JSON.stringify({ "WRID": item.WRID })
+            })
+
+            const data = await res.json()
+
+            // console.log(data)
+        })
+    }
+
     const saveDecision = async (stsCode: 3 | 5, label: "Accepted" | "Rejected") => {
-        if (!row?.id) {
+        if (!row?.ID) {
+            setDecision("Invalid row ID");
             return;
         }
-        setSaving(true)
+
+        setSaving(true);
+
+
+        if (stsCode == 3) {
+            UpdateDisposedWaste()
+        }
+
         try {
-            const res = await fetch("api/SetData/SetDisposalApproval", {
+            console.log("Saving:", {
+                id: row.ID,
+                remarks,
+                stsCode
+            });
+
+            const res = await fetch("/api/SetData/SetDisposalApproval", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    FDDID: Number(row.id),
+                    FDDID: Number(row.ID),
                     StsCode: stsCode,
                     Remarks: remarks,
-
-
                 }),
             });
-            const payload = await res.json()
-            if (!res.ok || !payload.success) {
-                setDecision(payload.message || "Failed to save disposal approval")
+
+            const payload = await res.json();
+
+            if (!res.ok) {
+                setDecision(payload.message || "Failed to save disposal approval");
                 return;
             }
-            setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`)
-            if (stsCode == 3 && row?.id) {
+
+            setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`);
+
+            if (stsCode === 3) {
                 router.back();
             }
-        } catch (err: any) {
-            console.error("Failed to save disposal approval", err);
+
+        } catch (err) {
+            console.error(err);
             setDecision("Failed to save disposal approval");
         } finally {
             setSaving(false);
         }
-
-    }
+    };
 
 
     useEffect(() => {
@@ -174,14 +218,24 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                             className="mt-3 w-full rounded border border-slate-300 px-3 py-2 text-sm"
                         />
                         <div className="mt-4 flex flex-wrap gap-3">
-                            <button type="button" onClick={() => setDecision(`Accepted${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`)} className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800">
+                            <button
+                                type="button"
+                                disabled={saving}
+                                onClick={() => void saveDecision(3, "Accepted")}
+                                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                            >
                                 Accept
                             </button>
-                            <button type="button" onClick={() => setDecision(`Rejected${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`)} className="rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800">
+                            <button
+                                type="button"
+                                disabled={saving}
+                                onClick={() => void saveDecision(5, "Rejected")}
+                                className="rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800 disabled:opacity-60"
+                            >
                                 Reject
                             </button>
                         </div>
-                        {decision ? <div className="mt-4 rounded border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">{decision}</div> : null}
+
                     </div>
                 </>
             )}

@@ -15,6 +15,7 @@ type UndisposedOption = {
   todayDate: string;
   daysLeft: string;
   label: string;
+  unit: string
 };
 
 export default function InternalPage() {
@@ -35,6 +36,7 @@ export default function InternalPage() {
 
   const [undisposedOptions, setUndisposedOptions] = useState<UndisposedOption[]>([]);
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
+  const [alreadySelectedUndisposedIds, setAlreadySelectedUndisposedIds] = useState<string[]>([]);
   const [savedUndisposedIds, setSavedUndisposedIds] = useState<string[]>([]);
 
   const [loadingBase, setLoadingBase] = useState(false);
@@ -186,9 +188,9 @@ export default function InternalPage() {
           const qty = Number(row.WasteQty ?? 0);
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const todayDate = new Date().toISOString().split("T")[0];
-         
+
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
-         
+
 
           let daysLeft = "";
           if (targetDate) {
@@ -208,7 +210,7 @@ export default function InternalPage() {
             targetDate: "",
             todayDate,
             daysLeft,
-            label: `${String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim()} - ${qty.toFixed(2)} - ${daysLeft??"N/A"}`,
+            label: `${String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim()} - ${qty.toFixed(2)} - ${daysLeft ?? "N/A"}`,
           };
         });
 
@@ -263,6 +265,7 @@ export default function InternalPage() {
           const rawQty = String(row.WasteQty ?? "").replace(",", ".");
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
+          const unit = String(row.MUnit ?? "").trim();
 
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
@@ -288,7 +291,8 @@ export default function InternalPage() {
             targetDate,
             todayDate,
             daysLeft,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft || "N/A"}`,
+            unit,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
 
@@ -305,6 +309,7 @@ export default function InternalPage() {
         console.error("loadUndisposed failed", err);
         setUndisposedOptions([]);
         setSelectedUndisposedIds([]);
+        setAlreadySelectedUndisposedIds([])
       } finally {
         setLoadingUndisposed(false);
       }
@@ -321,6 +326,7 @@ export default function InternalPage() {
       .filter((id) => savedUndisposedIds.includes(id));
 
     setSelectedUndisposedIds(matchedIds);
+    setAlreadySelectedUndisposedIds(matchedIds)
   }, [undisposedOptions, savedUndisposedIds]);
 
   const selectedUndisposedItems = undisposedOptions.filter((item) =>
@@ -359,7 +365,7 @@ export default function InternalPage() {
     }
 
     try {
-      const res = await fetch("/api/SetData/InitiateDisposal", {
+      const res = await fetch("/api/SetData/UpdateDisposal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -370,6 +376,7 @@ export default function InternalPage() {
           PSID: physicalForm,
           AuctionDate: disposalDate,
           Remarks: remarks,
+          IDDID: iddid
         }),
       });
 
@@ -378,24 +385,37 @@ export default function InternalPage() {
         return alert(data.message || "Save Failed");
       }
 
-      const wrid = data?.data?.WRID;
-      if (!wrid) {
-        alert("WRID missing from InitiateDisposal response");
-        return;
-      }
+      // const wrid = data?.data?.WRID;
+      // if (!wrid) {
+      //   alert("WRID missing from InitiateDisposal response");
+      //   return;
+      // }
+      const newSelectedIds = undisposedOptions
+        .map((item) => item.id)
+        .filter((id) => selectedUndisposedIds.includes(id))
+        .filter((id) => !alreadySelectedUndisposedIds.includes(id))
 
-      const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          IDDID: wrid,
-          WRID: selectedUndisposedIds,
-        }),
-      });
 
-      const data2 = await res2.json();
-      if (!res2.ok || !data2.success) {
-        return alert(data2.message || "InsertAuctionWasteDetails failed");
+      // console.log(alreadySelectedUndisposedIds, "already")
+      // console.log(selectedUndisposedIds, "saved")
+      // console.log(newSelectedIds, "new ")
+      // console.log(undisposedOptions, "undisposed")
+
+      if (newSelectedIds.length > 0) {
+        const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            IDDID: iddid,
+            WRID: newSelectedIds,
+          }),
+        });
+
+        const data2 = await res2.json();
+        if (!res2.ok || !data2.success) {
+          return alert(data2.message || "InsertAuctionWasteDetails failed");
+        }
+
       }
 
       alert("Saved Successfully");
@@ -427,7 +447,7 @@ export default function InternalPage() {
             value={wasteCategory}
             onChange={(e) => setWasteCategory(e.target.value)}
             className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled={loadingBase}
+            disabled  //={loadingBase}
           >
             <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
             {categoryOptions.map((item) => (
@@ -448,7 +468,7 @@ export default function InternalPage() {
               setWaste(name);
             }}
             className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled={!wasteCategory || loadingWaste}
+            disabled  //={!wasteCategory || loadingWaste}
           >
             <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
             {wasteOptions.map((item) => (
@@ -483,6 +503,7 @@ export default function InternalPage() {
               ) : (
                 sortedUndisposedOptions.map((item) => {
                   const checked = selectedUndisposedIds.includes(item.id);
+                  const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
                   return (
                     <label
                       key={item.id}
@@ -491,6 +512,7 @@ export default function InternalPage() {
                       <input
                         type="checkbox"
                         checked={checked}
+                        disabled={alreadyChecked}
                         onChange={(e) => {
                           const nextIds = e.target.checked
                             ? [...selectedUndisposedIds, item.id]
@@ -503,7 +525,8 @@ export default function InternalPage() {
                           {item.dept || "Dept"} - {item.qty.toFixed(2)}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
+                          {item.unit || "N/A"}
                         </span>
                       </div>
                     </label>

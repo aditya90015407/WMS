@@ -295,7 +295,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       }
     }
 
-    router.push(`/Form/Form10?id=${iddid}`);
+    // router.push(`/Form/Form10?id=${iddid}`);
 
   };
 

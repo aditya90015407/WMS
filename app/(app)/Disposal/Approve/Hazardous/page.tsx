@@ -41,13 +41,65 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
     const [form10Row, setForm10Row] = useState<Record<string, unknown> | null>(null);
     const [vendorDetail, setVendorDetails] = useState<Record<string, unknown> | null>(null);
 
+    // type WasteList = {
+    //     IDID: string
+    //     WRID: string
+    //     GenerationDate: string
+    //     WasteQty: string
+    //     Waste: string
+    //     CrDt: string
+    //     CrBy: string
+    //     UpBy: string
+    //     UpDt: string
+    //     DeptDesc: string
+    //     TargetDate: string
+    // }
+    // const [wasteList, setWasteList] = useState<WasteList[]>([])
+
 
     const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+
+    async function UpdateDisposedWaste() {
+        const res = await fetch("/api/GetData/GetWasteListByIDDID", {
+            method: "POST",
+            body: JSON.stringify({ "id": row?.IDDID })
+        })
+
+        const data = await res.json()
+        // console.log(data.data)
+        const wasteItems = data.data
+        // setWasteList(data.data)
+
+        // console.log("i am disposing waste")
+        // if (!wasteList) return
+        // console.log("i am here to disposing waste")
+        // console.log(wasteList)
+        wasteItems?.map(async (item: any) => {
+            const res = await fetch("/api/SetData/UpdateDisposedWaste", {
+                method: "POST",
+                body: JSON.stringify({ "WRID": item.WRID })
+            })
+
+            const data = await res.json()
+
+            // console.log(data)
+        })
+    }
+
+    // useEffect(() => {
+    //     UpdateDisposedWaste()
+    // }, [wasteList])
 
     const saveDecision = async (stsCode: 3 | 5, label: "Accepted" | "Rejected") => {
         if (!row?.ID) return;
 
         setSaving(true);
+
+
+        if (stsCode == 3) {
+            UpdateDisposedWaste()
+        }
+
         try {
             const res = await fetch("/api/SetData/SetDisposalApproval", {
                 method: "POST",
@@ -105,9 +157,9 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
 
                 const match =
                     rows.find((item: Record<string, unknown>) => String(item?.ID ?? "") === id) ?? null;
-                console.log("Page id:", id);
-                console.log("Rows:", rows);
-                console.log("Matched row:", match);
+                // console.log("Page id:", id);
+                // console.log("Rows:", rows);
+                // console.log("Matched row:", match);
 
                 setRow(match);
 
@@ -202,7 +254,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                     onClick={() => router.push("/Disposal/Approve")}
                     className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50"
                 >
-                    Back to Queue
+                    <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
                 </button>
             </div>
 

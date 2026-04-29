@@ -285,7 +285,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
+    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6 w-full">
       <Form10Table form={form} editable errors={errors} onFieldChange={updateField} />
 
       {status && (
@@ -303,21 +303,21 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
         <button
           type="button"
           onClick={onSaveDraft}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          className="cursor-pointer rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
         >
           Save Draft
         </button>
         <button
           type="button"
           onClick={onReset}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
+          className="cursor-pointer rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
         >
           Reset
         </button>
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
+          className="cursor-pointer rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
         >
           Print
         </button>

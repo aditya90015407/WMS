@@ -30,12 +30,14 @@ export async function POST(req: Request) {
     const remarks = String(body.Remarks ?? "").trim();
     const physicalForm = String(body.PSID ?? "").trim();
     const disposedTo = String(body.AID ?? "").trim();
+    const iddid = body.IDDID
 
     console.log(body)
 
     const result = await pool
       .request()
-      .input("FLAG", sql.NVarChar(50), "InitiateDisposal")
+      .input("FLAG", sql.NVarChar(50), "UpdateDisposal")
+      .input("IDDID", sql.NVarChar(20), iddid)
       .input("WCID", sql.NVarChar(50), wcid)
       .input("WID", sql.NVarChar(50), wid)
       .input("TotalQty", sql.Decimal(18, 3), totalQty)

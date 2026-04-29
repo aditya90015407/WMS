@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 
-type Option = { id: string; name: string };
+
+type Option = { id: string; name: string, email: string, vendorCode: string };
 type Option1 = { ID: string; NAME: string };
 
 export default function AuctionablePage() {
@@ -26,6 +27,7 @@ export default function AuctionablePage() {
       todayDate: string;
       daysLeft: string;
       label: string;
+      unit: string
     }>
   >([]);
 
@@ -80,6 +82,8 @@ export default function AuctionablePage() {
           row.VNAME ??
           ""
         ).trim(),
+        email: String(row.Email ?? row.email ?? ""),
+        vendorCode: String(row.VendorCode ?? row.vendorCode ?? ""),
       }));
     } catch (err) {
       console.error("fetchVendor failed", err);
@@ -202,6 +206,7 @@ export default function AuctionablePage() {
           const rawQty = String(row.WasteQty ?? "").replace(",", ".");
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
+          const unit = String(row.MUnit ?? "").trim();
 
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
@@ -227,7 +232,8 @@ export default function AuctionablePage() {
             targetDate,
             todayDate,
             daysLeft,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft}`,
+            unit,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
 
@@ -465,7 +471,8 @@ export default function AuctionablePage() {
                           {item.dept || "Dept"} - {item.qty.toFixed(2)}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
+                          {item.unit || "N/A"}
                         </span>
                       </div>
                     </label>
@@ -573,7 +580,12 @@ export default function AuctionablePage() {
                             setVendor(names);
                           }}
                         />
-                        <span className="text-sm text-slate-700">{item.name}</span>
+                        <span className="text-sm text-slate-700">
+                          {(item.name || "Dept")} {item.vendorCode ? `- ${item.vendorCode}` : ""}
+                        </span>
+                        <span className="text-sm font-semibold">
+                          {item.email || "-"}
+                        </span>
                       </label>
                     );
                   })}

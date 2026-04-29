@@ -105,10 +105,14 @@ export async function handleGenerateGet(request: Request) {
     const type = (searchParams.get("type") ?? "").toLowerCase();
     const wcid = searchParams.get("wcid") ?? "";
     const wid = (searchParams.get("WID") ?? searchParams.get("wid") ?? "").trim();
-    const uid = (searchParams.get("UID") ?? searchParams.get("uid") ?? "").trim();
-    const deptId = (searchParams.get("DeptID") ?? searchParams.get("DeptId") ?? "").trim();
+    // const uid = (searchParams.get("UID") ?? searchParams.get("uid") ?? "").trim();
+    // const deptId = (searchParams.get("DeptID") ?? searchParams.get("DeptId") ?? "").trim();
     const waid = (searchParams.get("WAID") ?? searchParams.get("waid") ?? "").trim();
     const optionId = (searchParams.get("ID") ?? searchParams.get("id") ?? "").trim();
+
+    const session = await getServerSession(authOptions)
+    const uid = session?.user.uid
+    const deptId = session?.user.deptId
 
     const pool = await getConnection();
     if (!pool || !pool.connected) {
@@ -336,8 +340,6 @@ export async function handleGeneratePost(request: Request) {
       "storage",
       "disposalTarget",
       "quantity",
-      "UID",
-      "DeptID"
     ];
 
     const missing = requiredFields.find((key) => {

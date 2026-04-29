@@ -1,7 +1,7 @@
 "use client";
- 
+
 import { useEffect, useState } from "react";
- 
+
 type WasteOption = {
   id: string;
   dept: string;
@@ -11,9 +11,10 @@ type WasteOption = {
   todayDate: string;
   daysLeft: string;
   label: string;
+  unit: string
 };
- 
- 
+
+
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
 export default function NonAuctionablePage() {
@@ -27,37 +28,37 @@ export default function NonAuctionablePage() {
   const [physicalForm, setPhysicalForm] = useState("");
   const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
   const [wasteOptions, setWasteOptions] = useState<Option[]>([]);
- 
+
   const [selectedWasteId, setSelectedWasteId] = useState("");
- 
-const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
+
+  const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
   const [undisposedDropdownOpen, setUndisposedDropdownOpen] = useState(false);
- 
+
   const [remarks, setRemarks] = useState("");
   useEffect(() => {
     const loadDropdowns = async () => {
       try {
         const [physicalRes] = await Promise.all([
- 
+
           fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
         ]);
- 
+
         const physicalPayload = await physicalRes.json();
- 
- 
- 
+
+
+
         setPhysicalOptions(
           physicalPayload.success && Array.isArray(physicalPayload.data)
             ? physicalPayload.data
             : [],
         );
       } catch {
- 
+
         setPhysicalOptions([]);
       }
     };
- 
+
     void loadDropdowns();
   }, []);
   useEffect(() => {
@@ -68,7 +69,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
           cache: "no-store",
         });
         const wcPayload = (await wcRes.json()) as { success?: boolean; data?: Option[] };
- 
+
         setCategoryOptions(
           wcPayload.success && Array.isArray(wcPayload.data) ? wcPayload.data : [],
         );
@@ -81,7 +82,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
     };
     void loadBase();
   }, []);
- 
+
   useEffect(() => {
     const loadWaste = async () => {
       if (!wasteCategory) {
@@ -92,7 +93,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
         setSelectedUndisposedIds([]);
         return;
       }
- 
+
       setLoadingWaste(true);
       try {
         const res = await fetch(
@@ -116,10 +117,10 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
         setLoadingWaste(false);
       }
     };
- 
+
     void loadWaste();
   }, [wasteCategory]);
- 
+
   useEffect(() => {
     const loadUndisposed = async () => {
       if (!wasteCategory || !selectedWasteId) {
@@ -127,7 +128,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
         setSelectedUndisposedIds([]);
         return;
       }
- 
+
       setLoadingUndisposed(true);
       try {
         const res = await fetch("/api/GetData/GetAllUndisposedWaste", {
@@ -139,8 +140,8 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
             WID: selectedWasteId,
           }),
         });
-   
- 
+
+
         const payload = await res.json();
         const raw =
           (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
@@ -148,42 +149,44 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
           (Array.isArray(payload?.recordset) && payload.recordset) ||
           (Array.isArray(payload) && payload) ||
           [];
- 
-       const options = raw.map((row: any, index: number) => {
-        const dept = String(row.Dept ?? "").trim();
-        const rawQty = String(row.WasteQty ?? "").replace(",", ".");
-        const qtyNum = Number.parseFloat(rawQty);
-        const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
- 
-        const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
-        const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
-        const todayDate = new globalThis.Date().toISOString().split("T")[0];
- 
-        let daysLeft = "";
-        if (targetDate) {
-          const today = new globalThis.Date(todayDate);
-         const target = new globalThis.Date(`${targetDate}`);
- 
-          const diffTime = target.getTime() - today.getTime();
-          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-          daysLeft = String(diffDays);
-        }
- 
-        const qtyLabel = qty.toFixed(2);
-        const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
- 
-        return {
-          id,
-          dept,
-          qty,
-          genDate,
-          targetDate,
-          todayDate,
-          daysLeft,
-          label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft}`,
-        };
-      });
- 
+
+        const options = raw.map((row: any, index: number) => {
+          const dept = String(row.Dept ?? "").trim();
+          const rawQty = String(row.WasteQty ?? "").replace(",", ".");
+          const qtyNum = Number.parseFloat(rawQty);
+          const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
+          const unit = String(row.MUnit ?? "").trim();
+
+          const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
+          const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
+          const todayDate = new globalThis.Date().toISOString().split("T")[0];
+
+          let daysLeft = "";
+          if (targetDate) {
+            const today = new globalThis.Date(todayDate);
+            const target = new globalThis.Date(`${targetDate}`);
+
+            const diffTime = target.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            daysLeft = String(diffDays);
+          }
+
+          const qtyLabel = qty.toFixed(2);
+          const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
+
+          return {
+            id,
+            dept,
+            qty,
+            genDate,
+            targetDate,
+            todayDate,
+            daysLeft,
+            unit,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
+          };
+        });
+
         setUndisposedOptions(options);
         setSelectedUndisposedIds([]);
       } catch {
@@ -193,10 +196,10 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
         setLoadingUndisposed(false);
       }
     };
- 
+
     void loadUndisposed();
   }, [wasteCategory, selectedWasteId]);
- 
+
   const selectedUndisposedItems = undisposedOptions.filter((item) =>
     selectedUndisposedIds.includes(item.id),
   );
@@ -204,20 +207,20 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
     (sum, item) => sum + (item.qty || 0),
     0,
   );
- 
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
- 
+
     if (!Date) {
       alert("Please select the Date");
       return;
     }
- 
+
     if (!wasteCategory || !selectedWasteId) {
       alert("Please select waste category and waste item.");
       return;
     }
- 
+
     try {
       // 1) Initiate Disposal
       const res = await fetch("/api/SetData/InitiateDisposal", {
@@ -233,18 +236,18 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
           Remarks: remarks,
         }),
       });
- 
+
       const data = await res.json();
       if (!res.ok || !data.success) {
         return alert(data.message || "Save Failed");
       }
- 
+
       const wrid = data?.data?.WRID;
       if (!wrid) {
         alert("WRID missing from InitiateDisposal response");
         return;
       }
- 
+
       // 2) Insert Auction Waste Details for ALL selected WRIDs
       const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
         method: "POST",
@@ -254,23 +257,23 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
           WRID: selectedUndisposedIds,
         }),
       });
- 
+
       const data2 = await res2.json();
       if (!res2.ok || !data2.success) {
         return alert(data2.message || "InsertAuctionWasteDetails failed");
       }
- 
+
       alert("Saved Successfully");
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
     }
   };
- 
+
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h1 className="text-2xl font-semibold text-slate-900">Non Auctionable Disposal</h1>
- 
+
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Date</label>
@@ -281,7 +284,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
             className="w-full rounded border border-slate-300 px-3 py-2"
           />
         </div>
- 
+
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Waste Category</label>
           <select
@@ -298,7 +301,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
             ))}
           </select>
         </div>
- 
+
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Waste List</label>
           <select
@@ -319,7 +322,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
             ))}
           </select>
         </div>
- 
+
         <div className="relative">
           <label className="mb-1 block text-sm font-semibold text-slate-700">
             Undisposed Waste (Dept - Quantity - Days Left)
@@ -336,7 +339,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
                 ? "Loading..."
                 : "Select Dept - Quantity - Days Left"}
           </button>
- 
+
           {undisposedDropdownOpen && (
             <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
               {undisposedOptions.length === 0 ? (
@@ -359,15 +362,16 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
                           setSelectedUndisposedIds(nextIds);
                         }}
                       />
-                     <div className="flex flex-col">
-                      <span className="text-sm text-slate-700">
-                        {item.dept || "Dept"} - {item.qty.toFixed(2)}
-                      </span>
-                      <span className="text-sm font-semibold text-red-600">
-                        {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
-                      </span>
-                    </div>
- 
+                      <div className="flex flex-col">
+                        <span className="text-sm text-slate-700">
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                        </span>
+                        <span className="text-sm font-semibold text-red-600">
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
+                          {item.unit || "N/A"}
+                        </span>
+                      </div>
+
                     </label>
                   );
                 })
@@ -375,7 +379,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
             </div>
           )}
         </div>
- 
+
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">
             Total Quantity
@@ -389,7 +393,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
         </div>
         <div>
           <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
- 
+
           <select
             value={physicalForm}
             onChange={(e) => setPhysicalForm(e.target.value)}
@@ -402,9 +406,9 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
               </option>
             ))}
           </select>
- 
+
         </div>
- 
+
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Remarks</label>
           <textarea
@@ -414,7 +418,7 @@ const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
             rows={3}
           />
         </div>
- 
+
         <button
           type="submit"
           className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"

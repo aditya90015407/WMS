@@ -659,6 +659,7 @@ export default function GenerateForm({
       );
       setForm(initialState);
       setIsMappedPairLocked(false);
+      window.location.reload()
     } catch {
       setMessage("Save request failed");
     } finally {

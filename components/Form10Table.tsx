@@ -120,7 +120,7 @@ export default function Form10Table({
   onFieldChange,
 }: Props) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-400">
+    <div className="overflow-x-auto rounded-lg border border-slate-400 max-w-full">
       <div className="border-b border-slate-400 px-4 py-4 text-center">
         <h1 className="text-2xl font-bold text-slate-900">FORM 10</h1>
         <p className="text-sm italic text-slate-700">[See rule 19 (1)]</p>
@@ -129,7 +129,7 @@ export default function Form10Table({
         </h2>
       </div>
 
-      <table className="min-w-[980px] w-full border-collapse text-sm">
+      <table className="max-w-full mx-auto border-collapse text-sm">
         <tbody>
           <tr>
             <td className="border border-slate-400 px-3 py-2 align-top font-semibold">1.</td>
