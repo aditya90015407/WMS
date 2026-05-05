@@ -179,7 +179,7 @@ export default function Form3Page() {
           cache: "no-store",
         });
         const payload = (await res.json()) as ApiResponse;
-        console.log(payload)
+        // console.log(payload)
         if (!res.ok || !payload.success || !Array.isArray(payload.data)) {
           setRows([]);
           setError(payload.message || payload.error || "Failed to load Form 3 data");
@@ -203,7 +203,8 @@ export default function Form3Page() {
       const bCode = toText(b.ID ?? b.Code).trim();
       const aNum = Number(aCode);
       const bNum = Number(bCode);
-      if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
+      // if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
+      if (Number.isFinite(aNum) && Number.isFinite(bNum)) return bNum - aNum;
       return aCode.localeCompare(bCode, undefined, { numeric: true, sensitivity: "base" });
     });
 

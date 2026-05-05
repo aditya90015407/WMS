@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type WasteOption = {
   id: string;
@@ -18,6 +19,10 @@ type WasteOption = {
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
 export default function NonAuctionablePage() {
+
+
+  const router = useRouter();
+
   const [wasteCategory, setWasteCategory] = useState("");
   const [waste, setWaste] = useState("");
   const [Date, setDate] = useState("");
@@ -264,6 +269,7 @@ export default function NonAuctionablePage() {
       }
 
       alert("Saved Successfully");
+      router.back()
     } catch (err) {
       console.error(err);
       alert("Something went wrong");

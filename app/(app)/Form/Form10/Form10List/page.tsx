@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import decrypt from "@/components/Decrypt";
 import Form10Table, { type Form10Data } from "@/components/Form10Table";
@@ -73,7 +73,7 @@ const mapPhysicalForm = (value: string) => {
   return value;
 };
 
-export default function Form10Page({ searchParams }: { searchParams: Promise<{ fddid?: string, iddid: string }> }) {
+export default function Form10Page({ searchParams }: { searchParams: Promise<{ fddid?: string, iddid: string, mode?: string }> }) {
   // const params = useSearchParams();
 
   const params = React.use(searchParams);
@@ -83,6 +83,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
   const [fddid, setFddid] = useState("");
   const [iddid, setIddid] = useState("");
   const [ready, setReady] = useState(false);
+  const hasAutoPrinted = useRef(false);
 
   // useEffect(()=>{
 
@@ -105,7 +106,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
     };
 
     void handleDecrypt();
-  }, [fddid, iddid]);
+  }, [params.fddid, params.iddid]);
 
   // console.log(fddid, iddid)
 
@@ -246,6 +247,19 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
     void loadForm10Details();
   }, [fddid, iddid, ready]);
 
+  useEffect(() => {
+    if (params.mode !== "print") return;
+    if (hasAutoPrinted.current) return;
+    if (!status.toLowerCase().includes("loaded successfully")) return;
+
+    hasAutoPrinted.current = true;
+    const timer = window.setTimeout(() => {
+      window.print();
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [params.mode, status]);
+
 
   const updateField = <K extends keyof Form10Data>(key: K, value: Form10Data[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -286,11 +300,37 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6 w-full">
-      <Form10Table form={form} editable errors={errors} onFieldChange={updateField} />
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+ 
+          #form10-print-area,
+          #form10-print-area * {
+            visibility: visible;
+          }
+ 
+          #form10-print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+ 
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <div id="form10-print-area">
+        <Form10Table form={form} editable errors={errors} onFieldChange={updateField} />
+      </div>
 
       {status && (
         <p
-          className={`mt-4 text-sm ${status.toLowerCase().includes("fail") || status.toLowerCase().includes("fix")
+          className={`no-print mt-4 text-sm ${status.toLowerCase().includes("fail") || status.toLowerCase().includes("fix")
             ? "text-red-600"
             : "text-green-700"
             }`}
@@ -299,7 +339,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
         </p>
       )}
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="no-print mt-5 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={onSaveDraft}

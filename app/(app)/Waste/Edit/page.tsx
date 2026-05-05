@@ -27,6 +27,7 @@ type EditState = {
   storage: string;
   quantity: string;
   disposalTarget: string;
+  unit: string;
 };
 
 const PAGE_SIZE = 10;
@@ -43,7 +44,22 @@ const asDateValue = (value: unknown): string => {
 };
 
 const normalize = (value: string): string =>
+
   value.trim().toLowerCase().replace(/\s+/g, " ");
+
+const findOption = (
+  options: Option[],
+  idValue: unknown,
+  nameValue: unknown,
+): Option | undefined => {
+  const id = toText(idValue);
+  const name = normalize(toText(nameValue));
+
+  return options.find((item) => {
+    if (id && item.id === id) return true;
+    return name.length > 0 && normalize(item.name) === name;
+  });
+};
 
 export default function WasteEditPage() {
   const [rows, setRows] = useState<ViewRow[]>([]);
@@ -61,6 +77,7 @@ export default function WasteEditPage() {
   const [disposers, setDisposers] = useState<Option[]>([]);
   const [physicalStates, setPhysicalStates] = useState<Option[]>([]);
   const [storageMethods, setStorageMethods] = useState<Option[]>([]);
+  const [units, setUnits] = useState<Option[]>([]);
 
 
   type RegisteredWaste = {
@@ -88,6 +105,7 @@ export default function WasteEditPage() {
     WasteQty: string
     GenerationDate: string
     TargetDate: string
+
   }
 
   const [waste, setWaste] = useState<RegisteredWaste[]>([])
@@ -158,6 +176,7 @@ export default function WasteEditPage() {
           disposerRes,
           physicalRes,
           storageRes,
+          unitRes,
           receiverRes,
         ] = await Promise.all([
           fetch("/api/auth/Waste/generate?type=drop-wc", {
@@ -176,18 +195,24 @@ export default function WasteEditPage() {
             method: "GET",
             cache: "no-store",
           }),
+          fetch("/api/auth/Waste/generate?type=drop-quantityunit", {
+            method: "GET",
+            cache: "no-store",
+          }),
           fetch("/api/auth/Waste/generate?type=drop-rcvr", {
             method: "GET",
             cache: "no-store",
           }),
+
         ]);
 
-        const [categoryPayload, disposerPayload, physicalPayload, storagePayload, receiverPayload] =
+        const [categoryPayload, disposerPayload, physicalPayload, storagePayload, unitPayload, receiverPayload] =
           (await Promise.all([
             categoryRes.json(),
             disposerRes.json(),
             physicalRes.json(),
             storageRes.json(),
+            unitRes.json(),
             receiverRes.json(),
           ])) as Array<{ success?: boolean; data?: Option[] }>;
 
@@ -211,6 +236,13 @@ export default function WasteEditPage() {
             ? storagePayload.data
             : [],
         );
+
+        setUnits(
+          unitPayload.success && Array.isArray(unitPayload.data)
+            ? unitPayload.data
+            : [],
+        );
+
         setReceivers(
           receiverPayload.success && Array.isArray(receiverPayload.data)
             ? receiverPayload.data
@@ -221,6 +253,7 @@ export default function WasteEditPage() {
         setDisposers([]);
         setPhysicalStates([]);
         setStorageMethods([]);
+        setUnits([]);
         setReceivers([]);
       }
     };
@@ -274,7 +307,7 @@ export default function WasteEditPage() {
     return waste.filter((row) =>
       Object.values(row).some((value) => toText(value).toLowerCase().includes(q)),
     );
-  }, [rows, query]);
+  }, [waste, query]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -289,45 +322,46 @@ export default function WasteEditPage() {
 
   const onEdit = (row: ViewRow) => {
     setMessage(null);
-    const wcName = toText(row.WC);
-    const wwName = toText(row.WW);
-    const wrName = toText(row.WR);
-    const wdName = toText(row.WD);
-    const psName = toText(row.PS);
-    const smName = toText(row.SM);
+    const wcName = toText(row.WasteCategory || row.WC);
+    const wwName = toText(row.Waste || row.WW);
+    const wrName = toText(row.Receiver || row.WR);
+    const wdName = toText(row.Dept || row.Disposer || row.WD);
+    const psName = toText(row.PhysicalState || row.PS);
+    const smName = toText(row.StorageMethod || row.Storage || row.SM);
+    const unitName = toText(row.MUnit || row.Unit || row.UnitDesc);
 
-    const category = categories.find((item) => normalize(item.name) === normalize(wcName));
-    const receiver = receivers.find((item) => normalize(item.name) === normalize(wrName));
-    const disposer = disposers.find((item) => normalize(item.name) === normalize(wdName));
-    const physical = physicalStates.find(
-      (item) => normalize(item.name) === normalize(psName),
-    );
-    const storage = storageMethods.find(
-      (item) => normalize(item.name) === normalize(smName),
-    );
+    const category = findOption(categories, row.WCID, wcName);
+    const receiver = findOption(receivers, row.AID, wrName);
+    const disposer = findOption(disposers, row.DID || row.DeptID, wdName);
+    const physical = findOption(physicalStates, row.PSID, psName);
+    const storage = findOption(storageMethods, row.SMID, smName);
+    const unit = findOption(units, row.MUID || row.WTID, unitName);
 
     const nextState: EditState = {
       id: toText(row.ID),
-      date: asDateValue(row.GD),
+      date: asDateValue(row.GenerationDate || row.GD),
       categoryId: category?.id ?? "",
-      wasteId: "",
+      wasteId: toText(row.WID),
       receiver: receiver?.id ?? "",
       disposer: disposer?.id ?? "",
       physicalState: physical?.id ?? "",
       storage: storage?.id ?? "",
-      quantity: toText(row.WQ),
-      disposalTarget: asDateValue(row.TD),
+      quantity: toText(row.WasteQty || row.WQ),
+      disposalTarget: asDateValue(row.TargetDate || row.TD),
+      unit: unit?.id ?? "",
     };
     setEditState(nextState);
 
     if (nextState.categoryId) {
       void loadWasteByCategory(nextState.categoryId).then((wasteOptions) => {
-        const waste = wasteOptions.find(
+        if (nextState.wasteId) return;
+
+        const selectedWaste = wasteOptions.find(
           (item) => normalize(item.name) === normalize(wwName),
         );
-        if (waste) {
+        if (selectedWaste) {
           setEditState((prev) =>
-            prev ? { ...prev, wasteId: waste.id } : prev,
+            prev ? { ...prev, wasteId: selectedWaste.id } : prev,
           );
         }
       });
@@ -730,6 +764,28 @@ export default function WasteEditPage() {
                 }
                 className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
               />
+            </div>
+            <div>
+              <label className="mb-0.5 block text-xs font-semibold text-slate-700">
+                Unit
+              </label>
+              <select
+                required
+                value={editState.unit}
+                onChange={(e) =>
+                  setEditState((prev) =>
+                    prev ? { ...prev, unit: e.target.value } : prev,
+                  )
+                }
+                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
+              >
+                <option value="">Select Unit</option>
+                {units.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="md:col-span-2 flex items-center gap-2 pt-1">
               <button

@@ -196,7 +196,7 @@ export default function Form10Table({
             <td className="border border-slate-400 px-3 py-2 font-semibold">5.</td>
             <td className="border border-slate-400 px-3 py-2 font-medium">Type of vehicle</td>
             <td className="border border-slate-400 p-0">
-              {renderField(form, "vehicleType", editable, onFieldChange, [
+              {renderField(form, "vehicleType", editable = false, onFieldChange, [
                 "Truck",
                 "Tanker",
                 "Special Vehicle",

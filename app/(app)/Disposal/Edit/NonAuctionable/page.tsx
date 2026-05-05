@@ -392,11 +392,11 @@ export default function NonAuctionablePage() {
         return alert(data.message || "Save Failed");
       }
 
-      const wrid = data?.data?.WRID;
-      if (!wrid) {
-        alert("WRID missing from InitiateDisposal response");
-        return;
-      }
+      // const wrid = data?.data?.WRID;
+      // if (!wrid) {
+      //   alert("WRID missing from InitiateDisposal response");
+      //   return;
+      // }
 
       const newSelectedIds = undisposedOptions
         .map((item) => item.id)
@@ -408,7 +408,7 @@ export default function NonAuctionablePage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            IDDID: wrid,
+            IDDID: iddid,
             WRID: newSelectedIds,
           }),
         });

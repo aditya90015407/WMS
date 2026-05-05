@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 type DisposalType = "auctionable" | "non-auctionable" | "Internal" | "";
 
@@ -26,6 +27,18 @@ export default function DisposalInitiatePage() {
     }
   };
 
+  const { data: session } = useSession()
+
+  const [loggedRole, setLoggedRole] = useState("")
+  const [loggedRoleID, setLoggedRoleID] = useState("")
+
+  useEffect(() => {
+    if (!session) return
+    setLoggedRole(session.user.role!)
+    setLoggedRoleID(session.user.roleId!)
+  }, [session])
+
+
 
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -35,57 +48,62 @@ export default function DisposalInitiatePage() {
       </p>
 
       <div className="mt-6 space-y-4 rounded-xl border border-slate-200 p-4">
-        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
-          <input
-            type="radio"
-            name="disposalType"
-            value="auctionable"
-            checked={type === "auctionable"}
-            onChange={() => setType("auctionable")}
-            className="h-4 w-4"
-          />
-          <div>
-            <p className="text-sm font-semibold text-slate-900">Auctionable</p>
-            <p className="text-xs text-slate-600">
-              Continue to filling auction application form .
-            </p>
-          </div>
-        </label>
+        {loggedRoleID == '7' &&
+          <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
+            <input
+              type="radio"
+              name="disposalType"
+              value="auctionable"
+              checked={type === "auctionable"}
+              onChange={() => setType("auctionable")}
+              className="h-4 w-4"
+            />
+            <div>
+              <p className="text-sm font-semibold text-slate-900">Auctionable</p>
+              <p className="text-xs text-slate-600">
+                Continue to filling auction application form .
+              </p>
+            </div>
+          </label>
+        }
 
-        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
-          <input
-            type="radio"
-            name="disposalType"
-            value="Internal"
-            checked={type === "Internal"}
-            onChange={() => setType("Internal")}
-            className="h-4 w-4"
-          />
-          <div>
-            <p className="text-sm font-semibold text-slate-900">Internal</p>
-            <p className="text-xs text-slate-600">
-              Continue to filling Internal Disposal application form .
-            </p>
-          </div>
-        </label>
+        {loggedRoleID == '8' &&
+          <>
+            <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
+              <input
+                type="radio"
+                name="disposalType"
+                value="Internal"
+                checked={type === "Internal"}
+                onChange={() => setType("Internal")}
+                className="h-4 w-4"
+              />
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Internal</p>
+                <p className="text-xs text-slate-600">
+                  Continue to filling Internal Disposal application form .
+                </p>
+              </div>
+            </label>
 
-        <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
-          <input
-            type="radio"
-            name="disposalType"
-            value="non-auctionable"
-            checked={type === "non-auctionable"}
-            onChange={() => setType("non-auctionable")}
-            className="h-4 w-4"
-          />
-          <div>
-            <p className="text-sm font-semibold text-slate-900">Non Auctionable</p>
-            <p className="text-xs text-slate-600">
-              Continue to filling non-auctionable application form
-            </p>
-          </div>
-        </label>
-
+            <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
+              <input
+                type="radio"
+                name="disposalType"
+                value="non-auctionable"
+                checked={type === "non-auctionable"}
+                onChange={() => setType("non-auctionable")}
+                className="h-4 w-4"
+              />
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Non Auctionable</p>
+                <p className="text-xs text-slate-600">
+                  Continue to filling non-auctionable application form
+                </p>
+              </div>
+            </label>
+          </>
+        }
       </div>
 
       <div className="mt-6">

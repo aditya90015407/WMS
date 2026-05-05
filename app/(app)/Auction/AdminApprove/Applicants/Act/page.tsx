@@ -5,10 +5,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import { redirect } from 'next/navigation';
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 
 
 export default function AuctionApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const params = React.use(searchParams);
+    const router = useRouter()
+
 
     function normalizeData<T extends Record<string, any>>(row: T) {
         return Object.fromEntries(
@@ -40,6 +44,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         VendorCode: string
     }
 
+
     type AuctionParticipantLine = {
         ID: string
         APID: string
@@ -52,6 +57,10 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         CrBy: string
         CrDt: string
         IsActive: string
+        ApproverRemarks: string
+        UpBy: string
+        UpDt: string
+        ApproverName: string
     }
 
     type ApprovalRejectionHistory = {
@@ -180,6 +189,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         if (data.STATUS == 'Response Recorded Successfully!') {
             toast.success("Response Recorded Successfully!")
             // redirect("./")
+            router.back()
             return
         }
 
@@ -222,91 +232,113 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
                 <hr className="border border-gray-200 my-4" />
 
-                <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
-                    <div className="py-1 text-center text-sm">Documents Upload History</div>
-                    <table className="min-w-full divide-y divide-slate-200">
-                        <thead className="bg-slate-50">
-                            <tr >
-                                {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                <div className="block w-full max-w-4xl">
+                    <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 w-full block">
+                        <div className="py-1 text-center text-sm">Documents Upload History</div>
+                        <table className="min-w-full divide-y divide-slate-200">
+                            <thead className="bg-slate-50">
+                                <tr >
+                                    {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                 >ID</th> */}
-                                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >ID</th>
-                                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >CTO for respective SPCB</th>
-                                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >HW authorization from OSPCB</th>
-                                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >HW authorization from respective SPCB</th>
-                                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >Copy of blue book</th>
-                                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >EPR registration certificate for Plastic/oil/tyre</th>
-                                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >Remarks</th>
-                                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                >Apply Date</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 bg-white">
-                            {auctionParticipantLine?.map((row, index) => (
-                                <tr key={index}>
-                                    <td
-                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.ID}
-                                    </td>
-                                    <td
-                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >
-                                        <img src="/downloadicon.png" alt="" className="h-5"
-                                            onClick={() => downloadAttachment(row.CTO_AttachPath, "CTO Attachment")}
-                                        />
-                                    </td>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >ID</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >CTO for respective SPCB</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >HW authorization from OSPCB</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >HW authorization from respective SPCB</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Copy of blue book</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >EPR registration certificate for Plastic/oil/tyre</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Participant's Remarks</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Uploaded On</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Approver Remarks</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Approved / Rejected By</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Approved / Rejected On</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 bg-white">
+                                {auctionParticipantLine?.map((row, index) => (
+                                    <tr key={index}>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.ID}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >
+                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                                onClick={() => downloadAttachment(row.CTO_AttachPath, "CTO Attachment")}
+                                            />
+                                        </td>
 
-                                    <td
-                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >
-                                        <img src="/downloadicon.png" alt="" className="h-5"
-                                            onClick={() => downloadAttachment(row.OSPCB_HW_Auth_AttachPath, "OSPCB_HW_Auth_AttachPath")}
-                                        />
-                                    </td>
-                                    <td
-                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >
-                                        <img src="/downloadicon.png" alt="" className="h-5"
-                                            onClick={() => downloadAttachment(row.SPCB_HW_Auth_AttachPath, "SPCB_HW_Auth_AttachPath")}
-                                        />
-                                    </td>
-                                    <td
-                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >
-                                        <img src="/downloadicon.png" alt="" className="h-5"
-                                            onClick={() => downloadAttachment(row.BlueBook_AttachPath, "BlueBook_AttachPath")}
-                                        />
-                                    </td>
-                                    <td
-                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >
-                                        <img src="/downloadicon.png" alt="" className="h-5"
-                                            onClick={() => downloadAttachment(row.EPR_Cert_AttachPath, "EPR_Cert_AttachPath")}
-                                        />
-                                    </td>
-                                    <td
-                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.Remarks}
-                                    </td>
-                                    {/* <td
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >
+                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                                onClick={() => downloadAttachment(row.OSPCB_HW_Auth_AttachPath, "OSPCB_HW_Auth_AttachPath")}
+                                            />
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >
+                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                                onClick={() => downloadAttachment(row.SPCB_HW_Auth_AttachPath, "SPCB_HW_Auth_AttachPath")}
+                                            />
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >
+                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                                onClick={() => downloadAttachment(row.BlueBook_AttachPath, "BlueBook_AttachPath")}
+                                            />
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >
+                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                                onClick={() => downloadAttachment(row.EPR_Cert_AttachPath, "EPR_Cert_AttachPath")}
+                                            />
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.Remarks}
+                                        </td>
+                                        {/* <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                     >{row.IsActive}
                                     </td> */}
-                                    <td
-                                        className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                    >{row.CrDt?.split("T")[0]}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.CrDt?.split("T")[0]}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.ApproverRemarks}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.ApproverName}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.UpDt?.split("T")[0]}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
                 </div>
+
 
 
 

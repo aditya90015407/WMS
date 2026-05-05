@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       data: result.recordset ?? [],
     });
   } catch (error: any) {
-    console.error("GetApprovalRejectionHistoryByVendorCode error:", error);
+    // console.error("GetApprovalRejectionHistoryByVendorCode error:", error);
 
     return NextResponse.json(
       {

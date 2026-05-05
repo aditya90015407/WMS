@@ -381,15 +381,15 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                 >EPR registration certificate for Plastic/oil/tyre</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                >Remarks</th>
+                >Participant's Remarks</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                 >Uploaded On</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                 >Approver Remarks</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                >Rejected By</th>
+                >Approved / Rejected By</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                >Rejected On</th>
+                >Approved / Rejected On</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">

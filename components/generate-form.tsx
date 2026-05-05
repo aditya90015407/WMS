@@ -34,6 +34,7 @@ type GenerateFormState = {
   DeptID: string
   DID: string
   quantity: string;
+  storageMethod: string;
 };
 
 const initialState: GenerateFormState = {
@@ -50,6 +51,8 @@ const initialState: GenerateFormState = {
   DeptID: "",
   DID: "",
   quantity: "",
+  storageMethod: ""
+
 };
 
 const formatDate = (value: Date): string => {
@@ -814,7 +817,11 @@ export default function GenerateForm({
         <label className="mb-1 block text-sm font-bold text-slate-700">Storage</label>
         <select
           value={form.storage}
-          onChange={(e) => updateField("storage", e.target.value)}
+          onChange={(e) => {
+            updateField("storage", e.target.value);
+            const methodName = storageMethods.find((el) => el.id == e.target.value)?.name ?? ""
+            updateField("storageMethod", methodName)
+          }}
           className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
           disabled={loadingStorageMethods}
           required
@@ -834,6 +841,22 @@ export default function GenerateForm({
           <p className="mt-1 text-xs text-red-600">{storageMethodError}</p>
         )}
       </div>
+
+
+      {
+        form.storage == '4' &&
+        <div>
+          <label className="mb-1 block text-sm font-bold text-slate-700">Storage Method</label>
+          <input
+            type="text"
+            value={form.storageMethod}
+            onChange={(e) => updateField("storageMethod", e.target.value)}
+            className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
+            placeholder="Enter Storage Method"
+            required
+          />
+        </div>
+      }
 
       <div>
         <label className="mb-1 block text-sm font-bold text-slate-700">Dis-Target</label>
@@ -914,6 +937,10 @@ export default function GenerateForm({
             <p><span className="font-medium">Disposer:</span> {getOptionName(disposers, form.disposer) || "-"}</p>
             <p><span className="font-medium">Phy- State:</span> {getOptionName(physicalStates, form.physicalState) || "-"}</p>
             <p><span className="font-medium">Storage:</span> {getOptionName(storageMethods, form.storage) || "-"}</p>
+            {
+              form.storage == '4' &&
+              <p><span className="font-medium">Storage Method:</span>  {form.storageMethod}</p>
+            }
             <p><span className="font-medium">Dis-Target:</span> {form.disposalTarget || "-"}</p>
             <p><span className="font-medium">Quantity:</span> {`${form.quantity} ${getOptionName(units, form.unitId)}` || "-"}</p>
           </div>

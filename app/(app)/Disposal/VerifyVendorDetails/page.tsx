@@ -14,6 +14,7 @@ type FinalDisposalRow = {
     TotalQty?: string | number;
     Status?: string;
     CrDt?: string;
+    VendorSelfTransport: string
 };
 
 function normalizeData<T extends Record<string, unknown>>(row: T) {
@@ -83,9 +84,9 @@ export default function DisposalApprovePage() {
                     <h1 className="text-lg text-center font-semibold text-teal-600">
                         Verify Vendor Details
                     </h1>
-                    {/* <h2 className="text-sm text-center font-semibold text-slate-900">
-                        Submitted Final Disposal List
-                    </h2> */}
+                    <h2 className="text-sm text-center font-semibold text-cyan-700">
+                        Click to check and review Vendor details before proceeding for Approval
+                    </h2>
                 </div>
             </div>
 
@@ -118,6 +119,9 @@ export default function DisposalApprovePage() {
                                     </th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Quantity
+                                    </th>
+                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                                        Transporter Details Filled
                                     </th>
                                     {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Status
@@ -158,8 +162,11 @@ export default function DisposalApprovePage() {
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.TotalQty ?? "")}
                                         </td>
-                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                        {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.Status ?? "")}
+                                        </td> */}
+                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                            {String(row.VendorSelfTransport == '1' ? "Yes Filled" : "Not Filled")}
                                         </td>
                                     </tr>
                                 ))}

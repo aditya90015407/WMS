@@ -228,16 +228,20 @@ export default function Form10Page() {
 
   };
 
-  const downloadForm10 = (row: Form10Row) => {
+  const downloadForm10 = async (row: Form10Row) => {
     const iddid = toText(row.IDDID).trim();
+    const fddid = toText(row.ID).trim();
 
     if (!iddid) {
       alert("IDDID is missing.");
       return;
     }
 
+    const nextFddid = fddid ? await encrypt(fddid) : "";
+    const nextIddid = await encrypt(iddid);
+
     window.open(
-      `/Form/Form10/Form10List?fddid=${encodeURIComponent(toText(row.ID))}&iddid=${encodeURIComponent(iddid)}&mode=print`,
+      `/Form/Form10/Form10List?fddid=${encodeURIComponent(nextFddid)}&iddid=${encodeURIComponent(nextIddid)}&mode=print`,
       "_blank"
     );
 

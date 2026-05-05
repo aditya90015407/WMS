@@ -153,7 +153,6 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
   async function handleSelectSubmit() {
     try {
       if (!encoded || !String(selectedVid).trim()) {
-
         toast.error("Please enter VID.");
         return;
       }
@@ -167,7 +166,6 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
           IDDID: id,
           VID: String(selectedVid).trim(),
           EmpCode: empCode
-
         }),
       });
 

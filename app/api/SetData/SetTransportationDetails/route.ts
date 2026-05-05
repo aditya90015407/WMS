@@ -22,6 +22,7 @@ export async function POST(req: Request) {
       ReceiverName,
       ReceiverAddress,
       ReceiverAuthNo,
+      VendorSelfTransport
     } = await req.json();
 
     if (!APID) {
@@ -33,7 +34,8 @@ export async function POST(req: Request) {
 
     const result = await pool
       .request()
-      .input("FLAG", sql.VarChar, "InsertTransportationDetails")
+      .input("FLAG", sql.VarChar, "SetTransportationDetails")
+      .input("VendorSelfTransport", sql.Int, VendorSelfTransport)
       .input("APID", sql.Int, Number(APID)) // change to VarChar if APID is string
       .input("TransporterName", sql.VarChar, TransporterName ?? "")
       .input("TransporterAddress", sql.VarChar, TransporterAddress ?? "")

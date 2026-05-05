@@ -62,8 +62,6 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
     const params = React.use(searchParams);
 
     function normalizeData<T extends Record<string, any>>(row: T) {
-
-        console.log("HI i am normalising ")
         return Object.fromEntries(
             Object.entries(row).map(([key, value]) => {
                 if (value === null || value === undefined) {
@@ -298,7 +296,7 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="w-full">
                     <h1 className="text-lg font-semibold text-slate-900"> Approve Auction Applicants </h1>
-                    <h1 className="text-sm text-center font-semibold text-slate-900"> Applicants List</h1>
+                    <h1 className="text-sm text-center font-semibold text-teal-600"> Applicants List</h1>
 
                 </div>
                 <button

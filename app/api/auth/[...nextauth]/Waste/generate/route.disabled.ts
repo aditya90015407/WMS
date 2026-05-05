@@ -29,6 +29,7 @@ type SavePayload = {
   UID: string
   DeptID: string
   // DID: string
+  storageMethod: string
 };
 
 const toOption = (row: MasterOptionRow) => {
@@ -340,6 +341,7 @@ export async function handleGeneratePost(request: Request) {
       "storage",
       "disposalTarget",
       "quantity",
+      "storageMethod"
     ];
 
     const missing = requiredFields.find((key) => {
@@ -403,6 +405,7 @@ export async function handleGeneratePost(request: Request) {
       .input("DeptID", sql.NVarChar(20), body.DeptID as string)
       .input("DID", sql.NVarChar(20), body.disposer as string)
       .input("SMID", sql.NVarChar(20), body.storage as string)
+      .input("StorageMethod", sql.NVarChar(200), body.storageMethod as string)
       .input("AID", sql.NVarChar(20), body.receiver as string)
       .input("WasteQty", sql.Decimal(18, 2), wasteQty)
       .input("GenerationDate", sql.Date, body.date as string)
