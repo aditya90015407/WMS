@@ -7,8 +7,8 @@ import { authOptions } from "../../auth/[...nextauth]/options";
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const session = await getServerSession(authOptions);
     const pool = await getConnection();
+    const session = await getServerSession(authOptions);
 
     const empCode = String(session?.user?.id ?? "").trim();
     if (!empCode) {
@@ -23,35 +23,37 @@ export async function POST(req: Request) {
     }
 
     const iddid = String(body.IDDID ?? "").trim();
-    const wrids = Array.isArray(body.WRID)
-      ? body.WRID
-      : String(body.WRID ?? "")
-        .split(",")
-        .map((x) => x.trim())
-        .filter(Boolean);
+    const vid = String(body.VID ?? "").trim();
 
-    if (!iddid || wrids.length === 0) {
+    if (!iddid || !vid) {
       return NextResponse.json(
-        { success: false, message: "IDDID and WRID are required." },
+        { success: false, message: "IDDID and VID are required" },
         { status: 400 },
       );
     }
 
-    const results: any[] = [];
-    for (const wrid of wrids) {
-      const result = await pool
-        .request()
-        .input("FLAG", sql.NVarChar(50), "InsertAuctionWasteDetails")
-        .input("IDDID", sql.Int, Number(iddid))
-        .input("WRID", sql.NVarChar(50), String(wrid))
-        .input("EmpCode", sql.Int, Number(empCode))
-        .execute("PRO-WMS_SET");
+    const result = await pool
+      .request()
+      .input("FLAG", sql.NVarChar(50), "InsertAuctionVendorDetails")
+      .input("IDDID", sql.NVarChar(50), iddid)
+      .input("VID", sql.NVarChar(50), vid)
+      .input("EmpCode", sql.Int, Number(empCode))
+      .execute("PRO-WMS_SET");
 
-      results.push(result.recordset?.[0] ?? null);
-    }
+    return NextResponse.json({
+      success: true,
+      message: "Vendor inserted successfully",
+      data: result.recordset,
+    });
+  } catch (err: any) {
+    console.error("InsertAuctionVendorDetails error:", err);
 
-    return NextResponse.json({ success: true, data: results });
-  } catch (e: any) {
-    return NextResponse.json({ success: false, message: e.message }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        message: err?.message || "Internal Server Error",
+      },
+      { status: 500 },
+    );
   }
 }
