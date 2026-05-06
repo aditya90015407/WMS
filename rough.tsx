@@ -1,863 +1,400 @@
 "use client";
 
-import { useSession } from "next-auth/react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { POST } from "@/app/api/DownloadAttachments/route";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useEffect, useMemo, useState } from "react";
+import decrypt from "@/components/Decrypt";
+type FinalDisposalRow = Record<string, unknown>;
 
-type ViewRow = Record<string, string | number | null>;
-type Option = {
-    id: string;
-    name: string;
-};
-
-type ApiResponse = {
-    success?: boolean;
-    data?: ViewRow[];
-    message?: string;
-    error?: string;
-};
-
-type EditState = {
-    id: string;
-    date: string;
-    categoryId: string;
-    wasteId: string;
-    receiver: string;
-    disposer: string;
-    physicalState: string;
-    // storage: string;
-    storageMethod: string
-    quantity: string;
-    disposalTarget: string;
-    unit: string;
-    smid: string
-};
-
-const PAGE_SIZE = 10;
-
-const toText = (value: unknown): string => {
-    if (value === null || value === undefined) return "";
+const toDisplayValue = (value: unknown) => {
+    if (value === null || value === undefined || value === "") return "-";
+    if (Array.isArray(value)) return value.join(", ");
+    if (typeof value === "object") return JSON.stringify(value);
     return String(value);
 };
 
-const asDateValue = (value: unknown): string => {
-    const text = toText(value).trim();
-    const match = /^(\d{4}-\d{2}-\d{2})/.exec(text);
-    return match ? match[1] : "";
-};
+export default function DisposalApproveHazardousPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+    const router = useRouter();
+    // const params = useSearchParams();
+    const [id, setId] = useState("");
+    const [ready, setReady] = useState(false);
 
-const normalize = (value: string): string =>
+    const params = React.use(searchParams);
+    const encryptedId = params.id ?? "";
+    // const id = encryptedId ? await decrypt(encryptedId) : "";
+    useEffect(() => {
+        const handleDecrypt = async () => {
+            const decryptedId: string = encryptedId ? (await decrypt(encryptedId)) ?? "" : "";
+            setId(decryptedId);
+            setReady(true);
+            // use id here (set state, etc.)
+        };
 
-    value.trim().toLowerCase().replace(/\s+/g, " ");
-
-const findOption = (
-    options: Option[],
-    idValue: unknown,
-    nameValue: unknown,
-): Option | undefined => {
-    const id = toText(idValue);
-    const name = normalize(toText(nameValue));
-
-    return options.find((item) => {
-        if (id && item.id === id) return true;
-        return name.length > 0 && normalize(item.name) === name;
-    });
-};
-
-export default function WasteEditPage() {
-    const [rows, setRows] = useState<ViewRow[]>([]);
+        void handleDecrypt();
+    }, [encryptedId]);
+    const [row, setRow] = useState<FinalDisposalRow | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [message, setMessage] = useState<string | null>(null);
-    const [query, setQuery] = useState("");
-    const [refreshSeed, setRefreshSeed] = useState(0);
-    const [page, setPage] = useState(1);
-    const [editState, setEditState] = useState<EditState | null>(null);
+    const [remarks, setRemarks] = useState("");
+    const [decision, setDecision] = useState("");
     const [saving, setSaving] = useState(false);
-    const [categories, setCategories] = useState<Option[]>([]);
-    const [availableWaste, setAvailableWaste] = useState<Option[]>([]);
-    const [receivers, setReceivers] = useState<Option[]>([]);
-    const [disposers, setDisposers] = useState<Option[]>([]);
-    const [physicalStates, setPhysicalStates] = useState<Option[]>([]);
-    const [storageMethods, setStorageMethods] = useState<Option[]>([]);
-    const [units, setUnits] = useState<Option[]>([]);
+    const [form10Row, setForm10Row] = useState<Record<string, unknown> | null>(null);
+    const [vendorDetail, setVendorDetails] = useState<Record<string, unknown> | null>(null);
+
+    // type WasteList = {
+    //     IDID: string
+    //     WRID: string
+    //     GenerationDate: string
+    //     WasteQty: string
+    //     Waste: string
+    //     CrDt: string
+    //     CrBy: string
+    //     UpBy: string
+    //     UpDt: string
+    //     DeptDesc: string
+    //     TargetDate: string
+    // }
+    // const [wasteList, setWasteList] = useState<WasteList[]>([])
 
 
-    type RegisteredWaste = {
-        ID: string
-        UID: string
-        Unit: string
-        GenDeptID: string
-        GenDept: string
-        UnitDesc: string
-        DeptID: string
-        Dept: string
-        ReferenceNo: string
-        DateofIssuance: string
-        UnitAuthDesc: string
-        WasteCategory: string
-        WCID: string
-        Waste: string
-        SapWasteCode: string
-        Schedule: string
-        Storage: string
-        StorageMethod: string
-        PhysicalState: string
-        MUnit: string
-        Receiver: string
-        WasteQty: string
-        GenerationDate: string
-        TargetDate: string
+    const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
-    }
-
-    const [waste, setWaste] = useState<RegisteredWaste[]>([])
-
-    const { data: session } = useSession()
-
-    async function fetchWaste() {
-        const res = await fetch("/api/GetData/GetWasteGeneratedByDept", {
-            method: "POST"
+    async function UpdateDisposedWaste() {
+        const res = await fetch("/api/GetData/GetWasteListByIDDID", {
+            method: "POST",
+            body: JSON.stringify({ "id": row?.IDDID })
         })
+
         const data = await res.json()
-        setWaste(data)
-        // console.log(data)
+        // console.log(data.data)
+        const wasteItems = data.data
+        // setWasteList(data.data)
+
+        // console.log("i am disposing waste")
+        // if (!wasteList) return
+        // console.log("i am here to disposing waste")
+        // console.log(wasteList)
+        wasteItems?.map(async (item: any) => {
+            const res = await fetch("/api/SetData/UpdateDisposedWaste", {
+                method: "POST",
+                body: JSON.stringify({ "WRID": item.WRID })
+            })
+
+            const data = await res.json()
+
+            // console.log(data)
+        })
     }
-    useEffect(() => {
-        fetchWaste()
-    }, [refreshSeed])
 
-    useEffect(() => {
-        const loadRows = async () => {
-            setLoading(true);
-            setError(null);
+    // useEffect(() => {
+    //     UpdateDisposedWaste()
+    // }, [wasteList])
 
-            try {
-                const flags = ["GWT-ALL", "GWT-VW"];
-                let loadedRows: ViewRow[] = [];
-                let lastError = "Failed to load records";
-
-                for (const flag of flags) {
-                    const params = new URLSearchParams();
-                    params.set("flag", flag);
-                    const res = await fetch(`/api/auth/waste/view?${params.toString()}`, {
-                        method: "GET",
-                        cache: "no-store",
-                    });
-                    const payload = (await res.json()) as ApiResponse;
-                    if (!res.ok || !payload.success || !Array.isArray(payload.data)) {
-                        lastError = payload.message || payload.error || lastError;
-                        continue;
-                    }
-                    if (payload.data.length > 0) {
-                        loadedRows = payload.data;
-                        break;
-                    }
-                    loadedRows = payload.data;
-                }
-
-                setRows(loadedRows);
-                if (loadedRows.length === 0) {
-                    setError(lastError);
-                }
-            } catch {
-                setRows([]);
-                setError("Request failed while loading records");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        void loadRows();
-    }, [refreshSeed]);
-
-    useEffect(() => {
-        const loadBaseFilters = async () => {
-            try {
-                const [
-                    categoryRes,
-                    disposerRes,
-                    physicalRes,
-                    storageRes,
-                    unitRes,
-                    receiverRes,
-                ] = await Promise.all([
-                    fetch("/api/auth/Waste/generate?type=drop-wc", {
-                        method: "GET",
-                        cache: "no-store",
-                    }),
-                    fetch("/api/auth/Waste/generate?type=drop-dispo", {
-                        method: "GET",
-                        cache: "no-store",
-                    }),
-                    fetch("/api/auth/Waste/generate?type=drop-phstate", {
-                        method: "GET",
-                        cache: "no-store",
-                    }),
-                    fetch("/api/auth/Waste/generate?type=drop-smethod", {
-                        method: "GET",
-                        cache: "no-store",
-                    }),
-                    fetch("/api/auth/Waste/generate?type=drop-quantityunit", {
-                        method: "GET",
-                        cache: "no-store",
-                    }),
-                    fetch("/api/auth/Waste/generate?type=drop-rcvr", {
-                        method: "GET",
-                        cache: "no-store",
-                    }),
-
-                ]);
-
-                const [categoryPayload, disposerPayload, physicalPayload, storagePayload, unitPayload, receiverPayload] =
-                    (await Promise.all([
-                        categoryRes.json(),
-                        disposerRes.json(),
-                        physicalRes.json(),
-                        storageRes.json(),
-                        unitRes.json(),
-                        receiverRes.json(),
-                    ])) as Array<{ success?: boolean; data?: Option[] }>;
-
-                setCategories(
-                    categoryPayload.success && Array.isArray(categoryPayload.data)
-                        ? categoryPayload.data
-                        : [],
-                );
-                setDisposers(
-                    disposerPayload.success && Array.isArray(disposerPayload.data)
-                        ? disposerPayload.data
-                        : [],
-                );
-                setPhysicalStates(
-                    physicalPayload.success && Array.isArray(physicalPayload.data)
-                        ? physicalPayload.data
-                        : [],
-                );
-                setStorageMethods(
-                    storagePayload.success && Array.isArray(storagePayload.data)
-                        ? storagePayload.data
-                        : [],
-                );
-
-                setUnits(
-                    unitPayload.success && Array.isArray(unitPayload.data)
-                        ? unitPayload.data
-                        : [],
-                );
-
-                setReceivers(
-                    receiverPayload.success && Array.isArray(receiverPayload.data)
-                        ? receiverPayload.data
-                        : [],
-                );
-            } catch {
-                setCategories([]);
-                setDisposers([]);
-                setPhysicalStates([]);
-                setStorageMethods([]);
-                setUnits([]);
-                setReceivers([]);
-            }
-        };
-
-        void loadBaseFilters();
-    }, []);
-
-    const [sessionUid, setSessionUid] = useState("")
-
-
-    // const { data: session } = useSession()
-
-    useEffect(() => {
-
-        setSessionUid(session?.user.uid!)
-    }, [session])
-
-    const loadWasteByCategory = async (categoryId: string): Promise<Option[]> => {
-        if (!categoryId) return [];
-        try {
-
-            // if (!sessionUid) return;
-
-            const res = await fetch(
-                `/api/auth/Waste/generate?type=drop-waste-for-unit&wcid=${encodeURIComponent(categoryId)}&uid=${encodeURIComponent(sessionUid)}`,
-                {
-                    method: "GET",
-                    cache: "no-store",
-                },
-            );
-            const payload = (await res.json()) as { success?: boolean; data?: Option[] };
-            if (res.ok && payload.success && Array.isArray(payload.data)) {
-                setAvailableWaste(payload.data);
-                return payload.data;
-            }
-        } catch {
-            // ignore
-        }
-        setAvailableWaste([]);
-        return [];
-    };
-
-    const filteredRows = useMemo(() => {
-        const q = query.trim().toLowerCase();
-        // if (!q) return rows;
-        // return rows.filter((row) =>
-        //   Object.values(row).some((value) => toText(value).toLowerCase().includes(q)),
-        // );
-
-        if (!q) return waste;
-        return waste.filter((row) =>
-            Object.values(row).some((value) => toText(value).toLowerCase().includes(q)),
-        );
-    }, [waste, query]);
-
-    const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
-    const currentPage = Math.min(page, totalPages);
-    const pagedRows = useMemo(() => {
-        const start = (currentPage - 1) * PAGE_SIZE;
-        return filteredRows.slice(start, start + PAGE_SIZE);
-    }, [filteredRows, currentPage]);
-
-    useEffect(() => {
-        setPage(1);
-    }, [query]);
-
-    const onEdit = (row: ViewRow) => {
-        setMessage(null);
-        const wcName = toText(row.WasteCategory || row.WC);
-        const wwName = toText(row.Waste || row.WW);
-        const wrName = toText(row.Receiver || row.WR);
-        const wdName = toText(row.Dept || row.Disposer || row.WD);
-        const psName = toText(row.PhysicalState || row.PS);
-        const storageMethod = toText(row.StorageMethod || row.Storage || row.SM);
-        const smid = toText(row.smid);
-        const unitName = toText(row.MUnit || row.Unit || row.UnitDesc);
-
-        const category = findOption(categories, row.WCID, wcName);
-        const receiver = findOption(receivers, row.AID, wrName);
-        const disposer = findOption(disposers, row.DID || row.DeptID, wdName);
-        const physical = findOption(physicalStates, row.PSID, psName);
-        // const storage = findOption(storageMethods, row.SMID, smName);
-        const unit = findOption(units, row.MUID || row.WTID, unitName);
-
-        const nextState: EditState = {
-            id: toText(row.ID),
-            date: asDateValue(row.GenerationDate || row.GD),
-            categoryId: category?.id ?? "",
-            wasteId: toText(row.WID),
-            receiver: receiver?.id ?? "",
-            disposer: disposer?.id ?? "",
-            physicalState: physical?.id ?? "",
-            smid: smid ?? "",
-            storageMethod: storageMethod ?? "",
-            quantity: toText(row.WasteQty || row.WQ),
-            disposalTarget: asDateValue(row.TargetDate || row.TD),
-            unit: unit?.id ?? "",
-        };
-        setEditState(nextState);
-
-        if (nextState.categoryId) {
-            void loadWasteByCategory(nextState.categoryId).then((wasteOptions) => {
-                if (nextState.wasteId) return;
-
-                const selectedWaste = wasteOptions.find(
-                    (item) => normalize(item.name) === normalize(wwName),
-                );
-                if (selectedWaste) {
-                    setEditState((prev) =>
-                        prev ? { ...prev, wasteId: selectedWaste.id } : prev,
-                    );
-                }
-            });
-        } else {
-            setAvailableWaste([]);
-        }
-    };
-
-    const onSave = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        if (!editState) return;
+    const saveDecision = async (stsCode: 3 | 5, label: "Accepted" | "Rejected") => {
+        if (!row?.ID) return;
 
         setSaving(true);
-        setMessage(null);
+
+
+        if (stsCode == 3) {
+            UpdateDisposedWaste()
+        }
+
         try {
-            const res = await fetch("/api/auth/waste/edit", {
+            const res = await fetch("/api/SetData/SetDisposalApproval", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(editState),
+                body: JSON.stringify({
+                    FDDID: Number(row.ID),
+                    StsCode: stsCode,
+                    Remarks: remarks,
+                }),
             });
-            const payload = (await res.json()) as {
-                success?: boolean;
-                message?: string;
-                error?: string;
-            };
+
+            const payload = await res.json();
 
             if (!res.ok || !payload.success) {
-                setMessage(payload.message || payload.error || "Failed to update record");
+                setDecision(payload.message || "Failed to save disposal approval");
                 return;
             }
 
-            setMessage(payload.message || "Record updated successfully");
-            setEditState(null);
-            setRefreshSeed((prev) => prev + 1);
-        } catch {
-            setMessage("Update request failed");
+            setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`);
+
+            if (stsCode == 3 && row?.ID) {
+                router.push(`/Form/Form10?fddid=${row.ID}&iddid=${row.IDDID}`)
+
+            }
+        } catch (err) {
+            console.error("Failed to save disposal approval", err);
+            setDecision("Failed to save disposal approval");
         } finally {
             setSaving(false);
         }
     };
 
     useEffect(() => {
-        const categoryId = editState?.categoryId ?? "";
-        if (!categoryId) {
-            setAvailableWaste([]);
-            return;
-        }
-        void loadWasteByCategory(categoryId);
-    }, [editState?.categoryId]);
+        const loadRow = async () => {
+            if (!ready) return;
+            if (!id) {
+
+                setLoading(false);
+                setError("Missing record id");
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/GetData/GetAllFinalDisposalList", {
+                    method: "GET",
+                    cache: "no-store",
+                });
+
+                const rawData = await res.json();
+                const rows = Array.isArray(rawData)
+                    ? rawData
+                    : Array.isArray(rawData?.data)
+                        ? rawData.data
+                        : [];
+
+                const match =
+                    rows.find((item: Record<string, unknown>) => String(item?.ID ?? "") === id) ?? null;
+                // console.log("Page id:", id);
+                // console.log("Rows:", rows);
+                // console.log("Matched row:", match);
+
+                setRow(match);
+
+                if (!match) {
+                    setError("Submitted disposal form not found");
+                }
+            } catch {
+                setError("Failed to load submitted disposal form");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        void loadRow();
+    }, [id, ready]);
+
+    useEffect(() => {
+        const loadForm10Details = async () => {
+            if (!row?.IDDID) return;
+
+            try {
+                const res = await fetch("/api/GetData/GetForm10Details", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ID: String(row.IDDID) }),
+                });
+
+                const payload = await res.json();
+                //   console.log("GetForm10Details payload:", payload);
+
+                if (!res.ok || !payload.success) {
+                    setForm10Row(null);
+                    return;
+                }
+
+                const formRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
+                setForm10Row(formRow ?? null);
+            } catch (error) {
+                console.error("Failed to load Form 10 details", error);
+                setForm10Row(null);
+            }
+        };
+
+        void loadForm10Details();
+    }, [row?.IDDID]);
+
+
+    useEffect(() => {
+        const loadVendorDetails = async () => {
+            if (!row?.IDDID) {
+                return;
+            }
+            try {
+                const res = await fetch("/api/GetData/GetSelectedVendorDetails", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ID: String(row.IDDID) }),
+                });
+                const payload = await res.json();
+                // console.log("Vendor Details:",payload.data);
+                if (!res.ok || !payload.success) {
+                    setVendorDetails(null);
+                    return;
+                }
+                const vendorRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
+                setVendorDetails(vendorRow ?? null);
+            } catch (error) {
+                console.log("Failed to load Details", error);
+                setVendorDetails(null);
+            }
+        };
+        void loadVendorDetails();
+
+    }, [row?.IDDID]);
+
+
 
     return (
-        <section className= "rounded-2xl border border-slate-200 bg-white p-6 shadow-sm" >
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between" >
-            <div className="w-full" >
-                <h1 className="text-xl font-semibold text-teal-600 text-center" > Edit Generated Waste </h1>
-    {/* <p className="mt-1 text-sm text-slate-600 text-center">
-            Edit existing waste records.
-          </p> */}
-    </div>
-        < button
-    type = "button"
-    onClick = {() => setRefreshSeed((x) => x + 1)
-}
-className = "rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-    >
-    Refresh
-    </button>
-    </div>
+        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div className="w-full ">
+                    <h1 className="text-2xl font-semibold text-teal-600 text-center">
+                        Disposal Approval - Hazardous
+                    </h1>
+                    <p className="mt-2 text-sm text-slate-600 text-center">
+                        Verify the submitted hazardous disposal form before taking action.
+                    </p>
+                </div>
 
-    < div className = "mt-4" >
-        <input
-          type="text"
-value = { query }
-onChange = {(e) => setQuery(e.target.value)}
-placeholder = "Search records..."
-className = "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-    />
-    </div>
+                <button
+                    type="button"
+                    onClick={() => router.push("/Disposal/Approve")}
+                    className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50"
+                >
+                    <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
+                </button>
+            </div>
 
-{
-    message && (
-        <p className="mt-3 text-sm text-slate-700" > { message } </p>
-      )
-}
+            {loading && <p className="mt-4 text-sm text-slate-600">Loading submitted form...</p>}
+            {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
-{ loading && <p className="mt-4 text-sm text-slate-600" > Loading records...</p> }
-{ !loading && error && <p className="mt-4 text-sm text-red-600" > { error } </p> }
+            {!loading && !error && row && (
+                <>
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <h2 className="text-sm font-semibold text-slate-900">Approval Summary</h2>
+                            <div className="mt-3 space-y-2 text-sm text-slate-700">
+                                <p><span className="font-medium">Final Disposal Ref No.:</span> {toDisplayValue(row.ID)}</p>
+                                <p><span className="font-medium">Original Disposal ID:</span> {toDisplayValue(row.IDDID)}</p>
+                                <p><span className="font-medium">Current Status:</span> {toDisplayValue(row.Status)}</p>
+                                <p><span className="font-medium">Created By:</span> {toDisplayValue(row.CrBy)}</p>
+                                <p><span className="font-medium">Created On:</span> {toDisplayValue(row.CrDt)}</p>
+                                <p><span className="font-medium">Updated By:</span> {toDisplayValue(row.UpBy)}</p>
+                                <p><span className="font-medium">Updated On:</span> {toDisplayValue(row.UpDt)}</p>
+                            </div>
+                        </div>
 
-{
-    !loading && !error && (
-        <>
-        <p className="mt-4 text-sm text-slate-600" >
-            Showing { pagedRows.length } of { filteredRows.length } records
-                </p>
-                < div className = "mt-3 overflow-x-auto rounded-xl border border-slate-200" >
-                    <table className="min-w-full divide-y divide-slate-200" >
-                        <thead className="bg-slate-50" >
-                            <tr>
-                            <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700" >
-                                ID
-                                </th>
-                                < th className = "whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700" >
-                                    Category
-                                    </th>
-                                    < th className = "whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700" >
-                                        Waste
-                                        </th>
-                                        < th className = "whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700" >
-                                            Quantity
-                                            </th>
-                                            < th className = "whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700" >
-                                                Gen Dept
-                                                    </th>
-                                                    < th className = "whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700" >
-                                                        Gen Date
-                                                            </th>
-                                                            < th className = "whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700" >
-                                                                Target Date
-                                                                    </th>
-                                                                    < th className = "whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700" >
-                                                                        Action
-                                                                        </th>
-                                                                        </tr>
-                                                                        </thead>
-                                                                        < tbody className = "divide-y divide-slate-100 bg-white" >
-                                                                        {
-                                                                            pagedRows.map((row, index) => (
-                                                                                <tr key= {`row-${(currentPage - 1) * PAGE_SIZE + index}`} >
-                                                                            <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700" >
-                                                                                { toText(row.ID) }
-                                                                                </td>
-                                                                                < td className = "whitespace-nowrap px-2 py-1 text-xs text-slate-700" >
-                                                                                    { toText(row.WasteCategory) }
-                                                                                    </td>
-                                                                                    < td className = "whitespace-nowrap px-2 py-1 text-xs text-slate-700" >
-                                                                                        { toText(row.Waste) }
-                                                                                        </td>
-                                                                                        < td className = "whitespace-nowrap px-2 py-1 text-xs text-slate-700" >
-                                                                                            { toText(row.WasteQty) }
-                                                                                            </td>
-                                                                                            < td className = "whitespace-nowrap px-2 py-1 text-xs text-slate-700" >
-                                                                                                { toText(row.GenDept) }
-                                                                                                </td>
-                                                                                                < td className = "whitespace-nowrap px-2 py-1 text-xs text-slate-700" >
-                                                                                                    { toText(row.GenerationDate) }
-                                                                                                    </td>
-                                                                                                    < td className = "whitespace-nowrap px-2 py-1 text-xs text-slate-700" >
-                                                                                                        { toText(row.TargetDate) }
-                                                                                                        </td>
-                                                                                                        < td className = "whitespace-nowrap px-2 py-1 text-xs text-slate-700" >
-                                                                                                            <button
-                        type="button"
-    onClick = {() => onEdit(row)
-}
-className = "rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50"
-    >
-    Edit
-    </button>
-    </td>
-    </tr>
-                ))}
-</tbody>
-    </table>
-    </div>
+                        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            <h2 className="text-sm font-semibold text-slate-900">Waste Details</h2>
+                            <div className="mt-3 space-y-2 text-sm text-slate-700">
+                                <p><span className="font-medium">Waste Category:</span> {toDisplayValue(row.WasteCategory)}</p>
+                                <p><span className="font-medium">Waste:</span> {toDisplayValue(row.Waste)}</p>
+                                <p><span className="font-medium">Total Quantity:</span> {toDisplayValue(row.TotalQty)}</p>
+                                <p><span className="font-medium">Physical Form:</span> {toDisplayValue(row.PSID)}</p>
+                                <p><span className="font-medium">Waste Category ID:</span> {toDisplayValue(row.WCID)}</p>
+                                <p><span className="font-medium">Waste ID:</span> {toDisplayValue(row.WID)}</p>
+                            </div>
+                        </div>
+                    </div>
 
-    < div className = "mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700" >
-        <button
-              type="button"
-onClick = {() => setPage(1)}
-disabled = { currentPage === 1}
-className = "rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
-    >
-    First
-    </button>
-    < button
-type = "button"
-onClick = {() => setPage((prev) => Math.max(1, prev - 1))}
-disabled = { currentPage === 1}
-className = "rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
-    >
-    Prev
-    </button>
-    <span>
-              Page { currentPage } of { totalPages }
-</span>
-    < button
-type = "button"
-onClick = {() => setPage((prev) => Math.min(totalPages, prev + 1))}
-disabled = { currentPage === totalPages}
-className = "rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
-    >
-    Next
-    </button>
-    < button
-type = "button"
-onClick = {() => setPage(totalPages)}
-disabled = { currentPage === totalPages}
-className = "rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
-    >
-    Last
-    </button>
-    </div>
-    </>
-      )}
+                    <div className="mt-4 grid gap-4 md:grid-cols-2">
+                        <div className="rounded-xl border border-slate-200 bg-white p-4">
+                            <h2 className="text-sm font-semibold text-slate-900">Vendor / Recycler Details</h2>
+                            <div className="mt-3 space-y-2 text-sm text-slate-700">
+                                <p><span className="font-medium">Name:</span> {String(vendorDetail?.NAME ?? "-")}</p>
+                                <p><span className="font-medium">Email:</span> {String(vendorDetail?.EMAIL ?? "-")}</p>
+                                <p><span className="font-medium">Vendor ID:</span> {String(vendorDetail?.VID ?? "-")}</p>
+                            </div>
+                        </div>
 
-{
-    editState && (
-        <div className="fixed inset-x-3 top-2 z-50 mx-auto w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-2xl md:inset-x-auto md:right-4 md:left-auto md:w-[min(94vw,64rem)] md:p-4" >
-            <h3 className="text-sm font-semibold text-slate-800 text-center" > Edit Waste Entry </h3>
-                < form onSubmit = { onSave } className = "mt-2 grid grid-cols-1 gap-2 md:mt-3 md:grid-cols-2 md:gap-3" >
-                    <div className="md:col-span-2" >
-                        <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-                            ID
-                            </label>
-                            < input
-    type = "text"
-    value = { editState.id }
-    readOnly
-    className = "w-full rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs text-slate-700"
-        />
-        </div>
-        < div >
-        <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-            Date
-            </label>
-            < input
-    type = "date"
-    required
-    value = { editState.date }
-    onChange = {(e) =>
-    setEditState((prev) =>
-        prev ? { ...prev, date: e.target.value } : prev,
-    )
-}
-className = "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-    />
-    </div>
-    < div >
-    <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-        Category
-        </label>
-        < select
-required
-value = { editState.categoryId }
-onChange = {(e) =>
-setEditState((prev) =>
-    prev
-        ? {
-            ...prev,
-            categoryId: e.target.value,
-            wasteId: "",
-        }
-        : prev,
-)
-                }
-className = "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-    >
-    <option value="" > Select category </option>
-{
-    categories.map((item) => (
-        <option key= { item.id } value = { item.id } >
-        { item.name }
-        </option>
-    ))
-}
-</select>
-    </div>
-    < div >
-    <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-        Waste
-        </label>
-        < select
-required
-value = { editState.wasteId }
-onChange = {(e) =>
-setEditState((prev) =>
-    prev ? { ...prev, wasteId: e.target.value } : prev,
-)
-                }
-className = "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-    >
-    <option value="" > Select waste </option>
-{
-    availableWaste.map((item) => (
-        <option key= { item.id } value = { item.id } >
-        { item.name }
-        </option>
-    ))
-}
-</select>
-    </div>
-    < div >
-    <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-        Receiver
-        </label>
-        < select
-required
-value = { editState.receiver }
-onChange = {(e) =>
-setEditState((prev) =>
-    prev ? { ...prev, receiver: e.target.value } : prev,
-)
-                }
-className = "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-    >
-    <option value="" > Select receiver </option>
-{
-    receivers.map((item) => (
-        <option key= { item.id } value = { item.id } >
-        { item.name }
-        </option>
-    ))
-}
-</select>
-    </div>
-    < div >
-    <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-        Disposer
-        </label>
-        < select
-required
-value = { editState.disposer }
-onChange = {(e) =>
-setEditState((prev) =>
-    prev ? { ...prev, disposer: e.target.value } : prev,
-)
-                }
-className = "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-    >
-    <option value="" > Select disposer </option>
-{
-    disposers.map((item) => (
-        <option key= { item.id } value = { item.id } >
-        { item.name }
-        </option>
-    ))
-}
-</select>
-    </div>
-    < div >
-    <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-        Physical State
-            </label>
-            < select
-required
-value = { editState.physicalState }
-onChange = {(e) =>
-setEditState((prev) =>
-    prev ? { ...prev, physicalState: e.target.value } : prev,
-)
-                }
-className = "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-    >
-    <option value="" > Select physical state </option>
-{
-    physicalStates.map((item) => (
-        <option key= { item.id } value = { item.id } >
-        { item.name }
-        </option>
-    ))
-}
-</select>
-    </div>
-{
-    editState.smid == '4' &&
-        <div>
-        <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-            Method of Storage
-                </label>
-                < select
-    required
-    value = { editState.storageMethod }
-    onChange = {(e) =>
-    setEditState((prev) =>
-        prev ? { ...prev, storage: e.target.value } : prev,
-    )
-}
-className = "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-    >
-    <option value="" > Select storage method </option>
-{
-    storageMethods.map((item) => (
-        <option key= { item.id } value = { item.id } >
-        { item.name }
-        </option>
-    ))
-}
-</select>
-    </div>
-            }
-<div>
-    <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-        Method of Storage
-            </label>
-            < select
-required
-value = { editState.storageMethod }
-onChange = {(e) =>
-setEditState((prev) =>
-    prev ? { ...prev, storage: e.target.value } : prev,
-)
-                }
-className = "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-    >
-    <option value="" > Select storage method </option>
-{
-    storageMethods.map((item) => (
-        <option key= { item.id } value = { item.id } >
-        { item.name }
-        </option>
-    ))
-}
-</select>
-    </div>
-    < div >
-    <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-        Target Date
-            </label>
-            < input
-type = "date"
-required
-disabled
-value = { editState.disposalTarget }
-onChange = {(e) =>
-setEditState((prev) =>
-    prev ? { ...prev, disposalTarget: e.target.value } : prev,
-)
-                }
-className = "w-full rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-xs text-slate-700"
-    />
-    </div>
-    < div >
-    <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-        Quantity
-        </label>
-        < input
-type = "number"
-step = "0.01"
-min = "0"
-required
-value = { editState.quantity }
-onChange = {(e) =>
-setEditState((prev) =>
-    prev ? { ...prev, quantity: e.target.value } : prev,
-)
-                }
-className = "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-    />
-    </div>
-    < div >
-    <label className="mb-0.5 block text-xs font-semibold text-slate-700" >
-        Unit
-        </label>
-        < select
-required
-value = { editState.unit }
-onChange = {(e) =>
-setEditState((prev) =>
-    prev ? { ...prev, unit: e.target.value } : prev,
-)
-                }
-className = "w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-    >
-    <option value="" > Select Unit </option>
-{
-    units.map((item) => (
-        <option key= { item.id } value = { item.id } >
-        { item.name }
-        </option>
-    ))
-}
-</select>
-    </div>
-    < div className = "md:col-span-2 flex items-center gap-2 pt-1" >
-        <button
-                type="submit"
-disabled = { saving }
-className = "rounded-lg bg-[#ff7b00ef] px-3 py-1.5 text-xs font-medium text-white"
-    >
-    { saving? "Saving...": "Save" }
-    </button>
-    < button
-type = "button"
-onClick = {() => setEditState(null)}
-className = "rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700"
-    >
-    Cancel
-    </button>
-    </div>
-    </form>
-    </div>
-      )}
-</section>
-  );
+                        <div className="rounded-xl border border-slate-200 bg-white p-4">
+                            <h2 className="text-sm font-semibold text-slate-900">Receiver Details</h2>
+                            <div className="mt-3 space-y-2 text-sm text-slate-700">
+                                <p><span className="font-medium">Receiver Name:</span> {String(form10Row?.ReceiverName ?? row?.ReceiverName ?? "-")}</p>
+                                <p><span className="font-medium">Receiver Address:</span> {String(form10Row?.ReceiverAddress ?? row?.ReceiverAddress ?? "-")}</p>
+                                <p><span className="font-medium">Receiver Auth No.:</span> {String(form10Row?.ReceiverAuthNo ?? row?.ReceiverAuthNo ?? "-")}</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                        <h2 className="text-sm font-semibold text-slate-900">Transport Details</h2>
+                        <div className="mt-3 grid gap-3 md:grid-cols-2 text-sm text-slate-700">
+                            <p><span className="font-medium">Transporter Name:</span> {String(form10Row?.TransporterName ?? row?.TransporterName ?? "-")}</p>
+                            <p><span className="font-medium">Transporter Address:</span> {String(form10Row?.TransporterAddress ?? row?.TransporterAddress ?? "-")}</p>
+                            <p><span className="font-medium">Transporter Phone:</span> {String(form10Row?.TransporterPhone ?? row?.TransporterPhone ?? "-")}</p>
+                            <p><span className="font-medium">Transporter Email:</span> {String(form10Row?.TransporterEmail ?? row?.TransporterEmail ?? "-")}</p>
+                            <p><span className="font-medium">Vehicle Type:</span> {String(form10Row?.VehicleType ?? "-")}</p>
+                            <p><span className="font-medium">Transporter Reg No.:</span> {String(form10Row?.TransporterRegNo ?? row?.TransporterRegNo ?? "-")}</p>
+                            <p><span className="font-medium">Vehicle Reg No.:</span> {String(form10Row?.VehicleRegNo ?? row?.VehicleRegNo ?? "-")}</p>
+                            <p><span className="font-medium">Manifest Document No.:</span> {String(form10Row?.ManifestDocumentNo ?? "-")}</p>
+                        </div>
+                    </div>
+
+
+                    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                        <h2 className="text-sm font-semibold text-slate-900">Full Submitted Record</h2>
+                        <div className="mt-3 overflow-x-auto rounded-lg border border-slate-200">
+                            <table className="min-w-full border-collapse text-sm">
+                                <thead>
+                                    <tr className="bg-slate-100">
+                                        <th className="border border-slate-200 px-3 py-2 text-left">Field</th>
+                                        <th className="border border-slate-200 px-3 py-2 text-left">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(row).map(([key, value]) => (
+                                        <tr key={key}>
+                                            <td className="border border-slate-200 px-3 py-2 font-medium text-slate-900">
+                                                {key}
+                                            </td>
+                                            <td className="border border-slate-200 px-3 py-2 text-slate-700">
+                                                {toDisplayValue(value)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <h2 className="text-sm font-semibold text-slate-900">Accept / Reject</h2>
+                        <p className="mt-1 text-xs text-slate-600">
+                            Add remarks and choose the action for this submitted form.
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">Review Date: {today}</p>
+
+                        <textarea
+                            rows={4}
+                            value={remarks}
+                            onChange={(e) => setRemarks(e.target.value)}
+                            placeholder="Enter approval or rejection remarks"
+                            className="mt-3 w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                        />
+
+                        <div className="mt-4 flex flex-wrap gap-3">
+                            <button
+                                type="button"
+                                disabled={saving}
+                                onClick={() => void saveDecision(3, "Accepted")}
+                                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                            >
+                                Accept
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={saving}
+                                onClick={() => void saveDecision(5, "Rejected")}
+                                className="rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800 disabled:opacity-60"
+                            >
+                                Reject
+                            </button>
+                        </div>
+
+                        {decision ? (
+                            <div className="mt-4 rounded border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
+                                {decision}
+                            </div>
+                        ) : null}
+                    </div>
+                </>
+            )}
+        </section>
+    );
 }

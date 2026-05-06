@@ -48,12 +48,12 @@ export default function DisposalListPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/GetData/GetAllDisposalList`, {
+        const res = await fetch(`/api/GetData/GetDisposalGenerateListByDept`, {
           method: "GET",
         });
 
         const rawData = await res.json();
-        console.log(rawData);
+        // console.log(rawData);
         const data = rawData.map(normalizeData);
         setAllDisposalList(data);
       } catch {

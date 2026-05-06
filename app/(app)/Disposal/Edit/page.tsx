@@ -122,20 +122,21 @@ export default function DisposalEditPage() {
   return (
     <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900">Edit Disposal</h1>
-          <p className="text-sm text-slate-600">
-            Choose a disposal record to edit auctionable, non-auctionable, or internal details.
-          </p>
+        <div className="w-full">
+          <h1 className="text-xl font-semibold text-teal-600 text-center w-full">Edit Disposal</h1>
+          {/* <p className="text-sm text-slate-600 w-full text-center">
+            Choose a disposal record to edit details.
+          </p> */}
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search by ID, type, waste, status..."
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none md:w-80"
+          />
         </div>
 
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search by ID, type, waste, status..."
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none md:w-80"
-        />
+
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading disposal records...</p>}
@@ -177,29 +178,29 @@ export default function DisposalEditPage() {
               <tbody className="divide-y divide-slate-100 bg-white">
                 {pagedRows.map((row, index) => (
                   <tr
-                      key={`${row.ID ?? "id"}-${row.IDDID ?? "iddid"}-${index}`}
-                      className="cursor-pointer hover:bg-slate-50"
-                      onClick={() => handleRowClick(row)}
-                    >
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
+                    key={`${row.ID ?? "id"}-${row.IDDID ?? "iddid"}-${index}`}
+                    className="cursor-pointer hover:bg-slate-50"
+                    onClick={() => handleRowClick(row)}
+                  >
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.ID ?? "")}
                     </td>
-                    {/* <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
+                    {/* <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.IDDID ?? "")}
                     </td> */}
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.DisType ?? "")}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.WasteCategory ?? "")}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.Waste ?? "")}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.TotalQty ?? "")}
                     </td>
-                    {/* <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
+                    {/* <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.Status ?? "")}
                     </td> */}
                   </tr>

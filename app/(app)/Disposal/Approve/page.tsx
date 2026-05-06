@@ -70,7 +70,7 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                 });
 
                 const rawData = await res.json();
-                // console.log("GetAllFinalDisposalList rawData:", rawData);
+                console.log("GetAllFinalDisposalList rawData:", rawData);
 
                 const data = Array.isArray(rawData)
                     ? rawData
@@ -140,9 +140,9 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Quantity
                                     </th>
-                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                                    {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Status
-                                    </th>
+                                    </th> */}
                                 </tr>
                             </thead>
 
@@ -188,9 +188,9 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.TotalQty ?? "")}
                                         </td>
-                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                        {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.Status ?? "")}
-                                        </td>
+                                        </td> */}
                                     </tr>
                                 ))}
                             </tbody>

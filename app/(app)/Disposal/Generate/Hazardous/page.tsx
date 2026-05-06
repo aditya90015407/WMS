@@ -264,7 +264,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     });
 
     const result = await res.json();
-    console.log(result);
+    // console.log(result);
     const statusText = String(result?.data?.[0]?.STATUS ?? "").trim();
     const fddid = statusText.split("-").pop()?.trim() ?? "";
 

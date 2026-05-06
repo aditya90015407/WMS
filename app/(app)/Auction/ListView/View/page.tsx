@@ -1,9 +1,11 @@
 "use client";
 
+import decrypt from "@/components/Decrypt";
 import encrypt from "@/components/Encrypt";
 import { useRouter } from "next/navigation";
 import { normalize } from "path";
-import { useEffect, useMemo, useState } from "react";
+
+import React, { useEffect, useMemo, useState } from "react";
 
 type ViewRow = Record<string, string | number | null>;
 type Option = {
@@ -57,7 +59,9 @@ const getDisplayHeader = (header: string): string => {
     return labelMap[key] ?? header;
 };
 
-export default function WasteApprove() {
+export default function WasteApprove({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+
+    const params=React.use(searchParams);
 
 
     function normalizeData<T extends Record<string, any>>(row: T) {
@@ -129,17 +133,19 @@ export default function WasteApprove() {
             setError(null);
 
             try {
-                const params = new URLSearchParams();
-                params.set("flag", VIEW_FLAG);
-                if (filters.categoryId) params.set("WCID", filters.categoryId);
-                if (filters.wasteId) params.set("WID", filters.wasteId);
-                if (filters.disposerId) params.set("DID", filters.disposerId);
-                if (filters.physicalStateId) params.set("PSID", filters.physicalStateId);
-                if (filters.storageMethodId) params.set("SMID", filters.storageMethodId);
-                if (filters.receiverId) params.set("AID", filters.receiverId);
-                if (filters.date) params.set("GenerationDate", filters.date);
+                const wasteParams = new URLSearchParams();
+                wasteParams.set("flag", VIEW_FLAG);
+                if (filters.categoryId) wasteParams.set("WCID", filters.categoryId);
+                if (filters.wasteId) wasteParams.set("WID", filters.wasteId);
+                if (filters.disposerId) wasteParams.set("DID", filters.disposerId);
+                if (filters.physicalStateId) wasteParams.set("PSID", filters.physicalStateId);
+                if (filters.storageMethodId) wasteParams.set("SMID", filters.storageMethodId);
+                if (filters.receiverId) wasteParams.set("AID", filters.receiverId);
+                if (filters.date) wasteParams.set("GenerationDate", filters.date);
 
-                const res = await fetch(`/api/auth/waste/view?${params.toString()}`, {
+                // console.log(wasteParams);
+
+                const res = await fetch(`/api/auth/waste/view?${wasteParams.toString()}`, {
                     method: "GET",
                     cache: "no-store",
                 });
@@ -161,13 +167,31 @@ export default function WasteApprove() {
 
                 setRows(payload.data);
 
+                const auctionId = params.id ? await decrypt(params.id) : "";
+                if (!auctionId) {
+                    setAllAuctionParticipants([]);
+                    setError("Auction ID is missing");
+                    return;
+                }
+
                 const res2 = await fetch(`/api/GetData/GetAllAuctionParticipants`, {
                     method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ID: auctionId }),
                 });
 
-                const rawData = await res2.json()
-                // // console.log(rawData)
-                const data = rawData.map(normalizeData)
+                const rawData = await res2.json() as {
+                    success?: boolean;
+                    data?: Array<Record<string, unknown>>;
+                    message?: string;
+                };
+                if (!res2.ok || !rawData.success || !Array.isArray(rawData.data)) {
+                    setAllAuctionParticipants([]);
+                    setError(rawData.message || "Failed to load auction participants");
+                    return;
+                }
+
+                const data = rawData.data.map(normalizeData) as AuctionParticipants[];
                 setAllAuctionParticipants(data)
 
             } catch {
