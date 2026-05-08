@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 type FieldType =
   | "date"
@@ -24,7 +25,7 @@ type RowDef = {
 
 const rows: RowDef[] = [
   { key: "disposalDate", field: "Date", type: "date", hint: "Date of disposal (within 90 days of generation)" },
-  { key: "wasteIds", field: "Waste ID/Batch ID", type: "multi-select", hint: "Comma separated IDs" },
+  { key: "wasteIds", field: "Batch ID", type: "multi-select", hint: "Comma separated IDs" },
   {
     key: "senderNameAddress",
     field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
@@ -44,7 +45,7 @@ const rows: RowDef[] = [
   { key: "finalPartyDoc", field: "Final party document intact as provided prior for verification", type: "file" },
 ];
 
-export default function NonHazardousDisposalGeneratePage({searchParams}:{searchParams:Promise<{id?:string}>}) {
+export default function NonHazardousDisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
   const iddid = params.id;
@@ -327,9 +328,14 @@ export default function NonHazardousDisposalGeneratePage({searchParams}:{searchP
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-900">Disposal Generate - Non Hazardous</h1>
-      <p className="mt-2 text-sm text-slate-600">Fill non-hazardous disposal details below.</p>
+      <div className="relative">
+        <h1 className="text-xl font-semibold text-cyan-600 text-center">Disposal Generate - Non Hazardous</h1>
+        <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p>
 
+        <Link href="./">
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
+        </Link>
+      </div>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full border-collapse text-sm">

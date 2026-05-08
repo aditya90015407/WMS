@@ -85,7 +85,8 @@ export default function AuctionApply() {
     AuctionDate: string
     WCID: string
     Waste?: string
-    WasteQty?: string | number
+    TotalQty?: string | number
+    MUnit: string
     WasteCategory: string
     Remarks: string
     CrBy: string
@@ -181,7 +182,7 @@ export default function AuctionApply() {
         });
 
         const rawData = await res2.json()
-        // console.log(rawData)
+        console.log(rawData)
         const data = rawData.map(normalizeData)
         setAllauctionList(data)
 
@@ -527,6 +528,8 @@ export default function AuctionApply() {
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Auction Date</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                  >Total Qty</th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Waste Category</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Remarks</th>
@@ -559,6 +562,10 @@ export default function AuctionApply() {
                     <td
                       className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                     >{row.AuctionDate}
+                    </td>
+                    <td
+                      className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                    >{row.TotalQty}{" "}{row.MUnit}
                     </td>
                     <td
                       className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"

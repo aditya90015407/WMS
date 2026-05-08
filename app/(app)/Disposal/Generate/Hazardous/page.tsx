@@ -3,6 +3,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 
 type FieldType =
@@ -31,7 +32,7 @@ type RowDef = {
 
 
 const rows: RowDef[] = [
-  { key: "wasteIds", field: "Waste ID/Batch ID", type: "multi-select", hint: "Comma separated IDs" },
+  { key: "wasteIds", field: "Batch ID", type: "multi-select", hint: "Comma separated IDs" },
   {
     key: "senderNameAddress",
     field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
@@ -210,7 +211,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           Waste: String(row?.Waste ?? ""),
-          totalQty: String(row?.TotalQty ?? ""),
+          totalQty: String(String(row?.TotalQty ?? "") + " " + String(row?.MUnit)),
 
 
         }));
@@ -480,9 +481,14 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-900">Disposal Generate</h1>
-      <p className="mt-2 text-sm text-slate-600">Fill disposal manifest details below.</p>
+      <div className="relative">
+        <h1 className="text-xl font-semibold text-cyan-600 text-center">Disposal Generate - Hazardous</h1>
+        <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p>
 
+        <Link href="./">
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
+        </Link>
+      </div>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full border-collapse text-sm">

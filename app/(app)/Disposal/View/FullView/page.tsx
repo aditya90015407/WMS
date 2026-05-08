@@ -62,6 +62,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
         WCID: string
         WasteCategory: string
         TotalQty: string
+        MUnit: string
         Remarks: string
         StsCode: string
         Status: string
@@ -176,7 +177,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                 <div className=""><span className="text-xs mr-1 font-semibold ">Physical State : </span> {disposalDetails?.PhysicalState}</div >
                 <div className=""><span className="text-xs mr-1 font-semibold ">Approval Status : </span> {disposalDetails?.Status}</div >
                 <div className=""><span className="text-xs mr-1 font-semibold ">Initiator Remarks : </span> {disposalDetails?.Remarks}</div >
-                <div className=""><span className="text-xs mr-1 font-semibold ">Total Quantity : </span> {disposalDetails?.TotalQty}</div >
+                <div className=""><span className="text-xs mr-1 font-semibold ">Total Quantity : </span> {disposalDetails?.TotalQty}{" "}{disposalDetails?.MUnit}</div >
                 {/* <div className="">ID : </span> {disposalDetails?.WCID}</div> */}
                 < div className="" > <span className="text-xs mr-1 font-semibold ">Waste : </span > {disposalDetails?.Waste}</div >
                 <div className=""><span className="text-xs mr-1 font-semibold ">Waste Category : </span> {disposalDetails?.WasteCategory}</div >

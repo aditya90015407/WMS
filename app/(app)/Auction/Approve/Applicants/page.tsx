@@ -139,8 +139,8 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
                 });
 
                 const rawData = await res2.json()
-                // console.log(rawData)
-                const data = rawData.map(normalizeData)
+                console.log(rawData)
+                const data = rawData.data.map(normalizeData)
                 setAllAuctionParticipants(data)
 
             } catch {

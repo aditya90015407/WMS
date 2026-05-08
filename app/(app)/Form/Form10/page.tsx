@@ -13,6 +13,7 @@ type Form10Row = {
   CrDt?: string | null;
   ReceiverName?: string | null;
   TransporterName?: string | null;
+  MUnit: string
 };
 
 type ApiResponse = {
@@ -306,7 +307,7 @@ export default function Form10Page() {
                       {toText(row.Waste)}
                     </td>
                     <td className="border border-slate-300 px-2 py-2 text-slate-800">
-                      {toText(row.TotalQty)}
+                      {toText(row.TotalQty)}{" "}{row.MUnit}
                     </td>
                     <td className="border border-slate-300 px-2 py-2 text-slate-800">
                       {formatDate(row.CrDt)}

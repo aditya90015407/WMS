@@ -25,6 +25,8 @@ type ParticipantDetails = {
   ReceiverAddress?: string;
   ReceiverAuthNo?: string;
   Remarks?: string;
+  MUnit: string
+  MUID: string
 };
 
 export default function VerifyVendorDetailsActPage({ searchParams }: { searchParams: Promise<{ iddid?: string, vid: string }> }) {
@@ -63,6 +65,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
     ReceiverAddress: "",
     ReceiverAuthNo: "",
     Remarks: "",
+    MUnit: "",
+    MUID: ""
   });
 
   useEffect(() => {
@@ -120,6 +124,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
           ReceiverAddress: row?.ReceiverAddress ?? "",
           ReceiverAuthNo: row?.ReceiverAuthNo ?? "",
           Remarks: row?.Remarks ?? "",
+          MUnit: row.MUnit,
+          MUID: row.MUID
         });
       } catch (err) {
         console.error(err);
@@ -237,12 +243,17 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
 
               <div>
                 <label className="mb-1 block text-sm font-medium text-slate-900">Total Quantity</label>
-                <input
+                <div
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                >
+                  {String(formValues.TotalQty ?? "")}{" "}{formValues.MUnit}
+                </div>
+                {/* <input
                   value={String(formValues.TotalQty ?? "")}
                   onChange={(e) => updateField("TotalQty", e.target.value)}
                   readOnly
                   className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-                />
+                /> */}
               </div>
             </div>
           </div>

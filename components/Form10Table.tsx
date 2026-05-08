@@ -39,6 +39,7 @@ export type Form10Data = {
   receiverMonth: string;
   receiverDay: string;
   receiverYear: string;
+  MUnit: string
 };
 
 type Props = {
@@ -271,7 +272,8 @@ export default function Form10Table({
                 <div className="grid grid-cols-[1fr_auto]">
                   <div>{renderField(form, "totalQuantity", editable, onFieldChange)}</div>
                   <div className="px-3 py-2 text-sm text-slate-700">
-                    {form.quantityUnit || "m3 or MT"}
+                    {/* {form.quantityUnit || "m3 or MT"} */}
+                    {form.MUnit}
                   </div>
                 </div>
               </div>

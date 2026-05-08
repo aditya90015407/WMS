@@ -109,12 +109,14 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
   const [vehicleTypes, setVehicleTypes] = useState<Array<{ id: string; name: string }>>([]);
 
   const [auctionDetails, setAuctionDetails] = useState<{
+    ID: string
     AuctionDate: string;
     WasteCategory: string;
     Waste: string;
     TotalQty: string;
     Remarks: string;
     CrDt: string;
+    MUnit: string
   } | null>(null);
 
   const [wasteDetails, setWasteDetails] = useState<
@@ -151,6 +153,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
       });
 
       const payload = await res.json();
+      console.log(payload)
       if (payload.success) {
         setAuctionDetails(payload.data);
         console.log(auctionDetails)
@@ -322,6 +325,13 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
 
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
+            <p className="text-xs text-slate-500">Auction ID</p>
+            <p className="font-medium text-slate-800">
+              {auctionDetails?.ID ?? "N/A"}
+            </p>
+          </div>
+
+          <div>
             <p className="text-xs text-slate-500">Auction Date</p>
             <p className="font-medium text-slate-800">
               {auctionDetails?.AuctionDate ?? "N/A"}
@@ -355,7 +365,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
 
           <div>
             <p className="text-xs text-slate-500">Waste Qty</p>
-            <p className="font-medium text-slate-800">{auctionDetails?.TotalQty ?? "N/A"}</p>
+            <p className="font-medium text-slate-800">{auctionDetails?.TotalQty ?? "N/A"}{" "}{auctionDetails?.MUnit}</p>
           </div>
         </div>
 

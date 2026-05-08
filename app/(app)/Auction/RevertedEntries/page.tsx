@@ -25,6 +25,7 @@ type RejectedRow = {
   TotalQty: string
   CrBy: string
   IsActive: string
+  MUnit: string
 };
 
 export default function AuctionRejectedEntriesPage() {
@@ -149,7 +150,7 @@ export default function AuctionRejectedEntriesPage() {
                     <td className="px-3 py-2 text-sm text-slate-700">{row.AuctionDate}</td>
                     <td className="px-3 py-2 text-sm text-slate-700">{row.WasteCategory}</td>
                     <td className="px-3 py-2 text-sm text-slate-700">{row.Waste}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.TotalQty}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.TotalQty}{row.MUnit}</td>
                     {/* <td className="px-3 py-2 text-sm text-slate-700">{row.CrDt?.split("T")[0] || "N/A"}</td> */}
                     <td className="px-3 py-2">
                       <button

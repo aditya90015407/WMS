@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Newspaper } from "lucide-react";
+import Link from "next/link";
 
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
@@ -17,6 +18,7 @@ type UndisposedOption = {
   daysLeft: string;
   label: string;
   unit: string
+  muid: string
 };
 
 export default function NonAuctionablePage() {
@@ -194,6 +196,8 @@ export default function NonAuctionablePage() {
           console.log(genDate)
           const todayDate = new Date().toISOString().split("T")[0];
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
+          const muid = row.MUID
+          const unit = String(row.MUnit ?? "").trim();
 
 
           let daysLeft = "";
@@ -213,6 +217,8 @@ export default function NonAuctionablePage() {
             targetDate: "",
             todayDate,
             daysLeft,
+            unit,
+            muid,
             label: `${String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim()} - ${qty.toFixed(2)} - ${daysLeft ?? "N/A"}`,
           };
         });
@@ -269,6 +275,7 @@ export default function NonAuctionablePage() {
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
           const unit = String(row.MUnit ?? "").trim();
+          const muid = row.MUID
 
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
@@ -296,6 +303,7 @@ export default function NonAuctionablePage() {
             todayDate,
             daysLeft,
             unit,
+            muid,
             label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
@@ -379,6 +387,7 @@ export default function NonAuctionablePage() {
           WCID: wasteCategory,
           WID: selectedWasteId,
           TotalQty: totalSelectedQty,
+          MUID: undisposedOptions[0].muid,
           Auctionable: 2,
           PSID: physicalForm,
           AuctionDate: disposalDate,
@@ -430,7 +439,15 @@ export default function NonAuctionablePage() {
 
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-900">Non Auctionable Disposal</h1>
+
+      <div className="relative">
+        <h1 className="text-xl font-semibold text-teal-600 text-center">Non Auctionable Disposal</h1>
+
+        <Link href="./">
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
+        </Link>
+      </div>
+
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div>
@@ -543,12 +560,17 @@ export default function NonAuctionablePage() {
           <label className="mb-1 block text-sm font-semibold text-slate-700">
             Total Quantity
           </label>
-          <input
+          <div
+            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+          >
+            {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
+          </div>
+          {/* <input
             type="text"
             readOnly
             value={totalSelectedQty.toFixed(2)}
             className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
-          />
+          /> */}
         </div>
 
         <div>
