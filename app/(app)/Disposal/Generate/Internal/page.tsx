@@ -221,11 +221,14 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     });
 
     const result = await res.json();
+
+
+    const attachRes=await fetch("")
+
     if (!res.ok || !result.success) {
       alert(result.message || "Save failed");
       return;
     }
-
     alert("Saved successfully");
   };
 
