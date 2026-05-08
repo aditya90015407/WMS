@@ -13,6 +13,7 @@ type DisposalRow = {
   TotalQty?: string | number;
   Status?: string;
   CrDt?: string;
+  MUnit: string
 };
 
 function normalizeData<T extends Record<string, unknown>>(row: T) {
@@ -84,6 +85,7 @@ export default function DisposalEditPage() {
         row.TotalQty,
         // row.Status,
         row.CrDt,
+        row.MUnit
       ]
         .join(" ")
         .toLowerCase()
@@ -198,7 +200,7 @@ export default function DisposalEditPage() {
                       {String(row.Waste ?? "")}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
-                      {String(row.TotalQty ?? "")}
+                      {String(row.TotalQty ?? "")}{" "}{row.MUnit}
                     </td>
                     {/* <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.Status ?? "")}

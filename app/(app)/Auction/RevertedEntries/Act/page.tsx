@@ -13,6 +13,7 @@ type AuctionDetails = {
   Waste?: string | null;
   WasteQty?: string | number | null;
   TotalQty?: string | number | null;
+  MUnit: string
 };
 
 export default function AuctionsReverted({ searchParams }: { searchParams: Promise<{ id?: string, iddid?: string }> }) {
@@ -353,7 +354,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Waste Qty</p>
           <p className="mt-1 text-sm text-slate-900">
-            {auction?.WasteQty ?? auction?.TotalQty ?? "N/A"}
+            {auction?.WasteQty ?? auction?.TotalQty ?? "N/A"}{auction?.MUnit}
           </p>
         </div>
       </div>

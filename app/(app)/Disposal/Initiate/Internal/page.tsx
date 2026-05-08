@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 
 type Option = { id: string; name: string };
@@ -34,6 +35,8 @@ export default function DisposalRecycleForm() {
       daysLeft: string;
       label: string;
       unit: string
+      muid: string
+
     }>
   >([]);
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
@@ -163,6 +166,8 @@ export default function DisposalRecycleForm() {
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
           const unit = String(row.MUnit ?? "").trim();
+          const muid = row.MUID
+
 
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
@@ -189,6 +194,7 @@ export default function DisposalRecycleForm() {
             todayDate,
             daysLeft,
             unit,
+            muid,
             label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
@@ -229,6 +235,7 @@ export default function DisposalRecycleForm() {
           WCID: wasteCategory,
           WID: selectedWasteId,
           TotalQty: totalQty,
+          MUID: undisposedOptions[0].muid,
           Auctionable: 3,
           AuctionDate: disposalDate,
           PSID: physicalForm,
@@ -275,11 +282,20 @@ export default function DisposalRecycleForm() {
 
   return (
     <section className="max-w-4xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="border-b border-slate-200 pb-4">
+      {/* <div className="border-b border-slate-200 pb-4">
+        <h1 className="text-xl font-semibold text-teal-600 text-center">Internal Disposal </h1>
         <h1 className="text-2xl font-semibold text-teal-600">Disposal / Recycling</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1 text-xs text-slate-600 text-right">
           Fill the form below for internal disposal & recycling approval.
         </p>
+      </div> */}
+
+      <div className="relative">
+        <h1 className="text-xl font-semibold text-teal-600 text-center">Internal Disposal</h1>
+
+        <Link href="./">
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
+        </Link>
       </div>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-6">
@@ -401,12 +417,17 @@ export default function DisposalRecycleForm() {
 
         <div>
           <label className="block text-sm font-semibold text-slate-700">Total Quantity</label>
-          <input
+          <div
+            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+          >
+            {Number.isFinite(totalQty) ? totalQty.toFixed(2) : "0.00"}{" "}{undisposedOptions[0]?.unit}
+          </div>
+          {/* <input
             type="text"
             value={totalQty.toFixed(2)}
             readOnly
             className="mt-1 w-full rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
-          />
+          /> */}
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -427,7 +448,7 @@ export default function DisposalRecycleForm() {
 
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-semibold text-slate-700">Document Proof</label>
             <input
               type="file"
@@ -435,7 +456,7 @@ export default function DisposalRecycleForm() {
               onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
               className="mt-1 w-full text-sm"
             />
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center justify-between border-t border-slate-200 pt-4">

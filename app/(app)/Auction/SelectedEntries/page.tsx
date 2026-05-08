@@ -22,6 +22,7 @@ type SelectedAuctionRow = {
   CrBy: string
   IsActive: string
   CrDt: string
+  MUnit: string
 };
 
 export default function SelectedEntriesPage() {
@@ -48,6 +49,8 @@ export default function SelectedEntriesPage() {
         });
 
         const data = await res.json();
+
+        // console.log(data)
 
         if (!res.ok) {
           setRows([]);
@@ -151,7 +154,7 @@ export default function SelectedEntriesPage() {
                     <td className="px-3 py-2 text-sm text-slate-700">{row.AuctionDate}</td>
                     <td className="px-3 py-2 text-sm text-slate-700">{row.WasteCategory}</td>
                     <td className="px-3 py-2 text-sm text-slate-700">{row.Waste}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.TotalQty}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.TotalQty}{" "}{row.MUnit}</td>
                     {/* <td className="px-3 py-2 text-sm text-slate-700">{row.CrDt?.split("T")[0] || "N/A"}</td> */}
 
                   </tr>

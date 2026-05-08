@@ -25,6 +25,7 @@ export async function POST(req: Request) {
     const wcid = String(body.WCID ?? "").trim();
     const wid = String(body.WID ?? "").trim();
     const totalQty = Number(body.TotalQty ?? 0);
+    const MUID = body.MUID
     const auctionable = Number(body.Auctionable ?? 1);
     const auctionDate = String(body.AuctionDate ?? "").trim();
     const remarks = String(body.Remarks ?? "").trim();
@@ -39,6 +40,7 @@ export async function POST(req: Request) {
       .input("WCID", sql.NVarChar(50), wcid)
       .input("WID", sql.NVarChar(50), wid)
       .input("TotalQty", sql.Decimal(18, 3), totalQty)
+      .input("MUID", sql.Int, MUID)
       .input("Auctionable", sql.Int, auctionable)
       .input("AuctionDate", sql.Date, auctionDate)
       .input("PSID", sql.NVarChar(30), physicalForm)
@@ -46,7 +48,7 @@ export async function POST(req: Request) {
       .input("Remarks", sql.NVarChar(sql.MAX), remarks)
       .input("EmpCode", sql.Int, Number(empCode))
       .execute("PRO-WMS_SET");
-    console.log(result.recordset)
+    // console.log(result.recordset)
     const status = String(result.recordset?.[0]?.STATUS ?? "");
     const match = status.match(/-\s*(\d+)/);
     const wrid = match?.[1] ? Number(match[1]) : null;

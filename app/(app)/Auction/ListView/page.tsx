@@ -10,6 +10,10 @@ type AuctionRow = {
   AuctionDate: string;
   WasteCategory: string;
   Remarks: string;
+  TotalQty: string
+  // MUID: string
+  MUnit: string
+  Waste: string
   [key: string]: unknown;
 };
 
@@ -50,6 +54,9 @@ const mapAuctionRow = (row: Record<string, unknown>): AuctionRow => ({
   AuctionDate: firstValue(row, ["AuctionDate", "Auction Date", "Date", "CrDt"]),
   WasteCategory: firstValue(row, ["WasteCategory", "Waste Category", "WC"]),
   Remarks: firstValue(row, ["Remarks", "Remark"]),
+  Waste: firstValue(row, ["Waste"]),
+  MUnit: firstValue(row, ["MUnit"]),
+  TotalQty: firstValue(row, ["TotalQty"])
 });
 
 export default function AuctionList() {
@@ -130,7 +137,7 @@ export default function AuctionList() {
   };
 
   return (
-    <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-lg font-semibold text-slate-900">Auction List</h1>
@@ -183,6 +190,12 @@ export default function AuctionList() {
                   <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
                     Waste Category
                   </th>
+                  <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                    Waste
+                  </th>
+                  <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                    Total Qty
+                  </th>
                   <th className="min-w-64 px-3 py-2 text-left text-xs font-semibold text-slate-700">
                     Remarks
                   </th>
@@ -206,6 +219,12 @@ export default function AuctionList() {
                     </td>
                     <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {row.WasteCategory || "-"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
+                      {row.Waste || "-"}
+                    </td>
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
+                      {row.TotalQty || "-"} {" "} {row.MUnit}
                     </td>
                     <td className="px-3 py-2 text-xs text-slate-700">
                       {row.Remarks || "-"}

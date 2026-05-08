@@ -1,35 +1,23 @@
-"use client";
+"use client"
 
-import encrypt from "@/components/Encrypt";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react";
 
-
 type RejectedRow = {
-  ID: string;
-  NAME: string;
-  EMAIL: string;
-  StsCode: string;
-  CrDt: string;
-  Remarks?: string;
-  AuctionID?: string;
-  APID?: string;
-  IDDID?: string;
-  AuctionDate: string
-  Waste: string
-  WasteCategory: string
-  VID: string
-  DiposalType: string
-  DisType: string
-  TotalQty: string
+  ID?: String
+  IDDID?: String
+  AuctionID: String
+  DateOfDisposal: String
+  DisType: String
+  Waste: String
+  WasteCategory: String
   CrBy: string
   IsActive: string
-  MUnit: string
-};
 
-export default function AuctionRejectedEntriesPage() {
+}
 
+
+export default function RevertedDisposalList() {
 
   function normalizeData<T extends Record<string, any>>(row: T) {
     return Object.fromEntries(
@@ -48,72 +36,63 @@ export default function AuctionRejectedEntriesPage() {
     );
   }
 
-
-  const router = useRouter();
   const [rows, setRows] = useState<RejectedRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-
+  const [loading, setLoadding] = useState(true);
   const { data: session, status } = useSession();
-  const empCode = String(session?.user?.id ?? "").trim();
-
-
+  const deptId = String(session?.user?.deptId ?? "").trim();
+  //  console.log(deptId)
   useEffect(() => {
-    const loadRejectedEntries = async () => {
-      if (!empCode) return;
+    if (status === "loading") return;
 
+    if (!deptId) {
+      setRows([]);
+      setError("Department ID is not available in session.");
+      setLoadding(false);
+      return;
+    }
+
+    const loadRejectedRows = async () => {
       try {
-        setLoading(true);
+        setLoadding(true);
         setError("");
 
-        const res = await fetch("/api/GetData/GetRejectedAuctionListByVendorCode", {
+        const res = await fetch("/api/GetData/GetDisposalRevertedEntriesByDept", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ EmpCode: empCode }),
-        });
+          body: JSON.stringify({ DeptID: deptId })
+        }
+        )
 
         const raw = await res.json();
 
         if (!res.ok) {
+
           setRows([]);
-          setError(raw?.message || "Failed to load rejected entries.");
+          setError(raw?.message || "Failed to load rejected entries.")
           return;
+
         }
 
-        const rawdata = Array.isArray(raw) ? raw : raw?.data ?? [];
-        // console.log(rawdata)
-        const data = rawdata.map(normalizeData)
+        const rawData = Array.isArray(raw) ? raw : raw?.data ?? [];
+        const data = rawData.map(normalizeData)
         setRows(data);
-      } catch (err) {
-        // console.error(err);
+      }
+      catch (err) {
         setRows([]);
-        setError("Failed to load rejected entries.");
-      } finally {
-        setLoading(false);
+        setError("Failed to load Rejected Entries")
+      }
+      finally {
+        setLoadding(false);
       }
     };
-
-    void loadRejectedEntries();
-  }, [empCode]);
-
-  const openReapplyForm = async (row: RejectedRow) => {
-    const encryptedId = await encrypt(String(row.ID ?? ""));
-    const encryptedApid = await encrypt(String(row.APID ?? ""));
-    const encryptedIddid = await encrypt(String(row.IDDID ?? ""));
-
-    router.push(
-      `/Auction/RevertedEntries/Act?id=${encodeURIComponent(encryptedId)}&apid=${encodeURIComponent(
-        encryptedApid,
-      )}&iddid=${encodeURIComponent(encryptedIddid)}&reapply=1`,
-    );
-
-  };
+    void loadRejectedRows();
+  }, [deptId, status])
 
   return (
     <section className="max-w-6xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="text-center">
-        <h1 className="text-lg font-semibold text-teal-600">Rejected Auction Entries</h1>
+        <h1 className="text-lg font-semibold text-teal-600">Rejected Disposal Entries</h1>
         {/* <p className="mt-1 text-sm text-slate-600">
           Vendors can review remarks and submit corrected documents again.
         </p> */}
@@ -128,12 +107,14 @@ export default function AuctionRejectedEntriesPage() {
             <thead className="bg-slate-50">
               <tr>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">IDDID</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Auction Date</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Disposal Date</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Disposal Type</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste Category</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Total Qty</th>
+
+                {/* <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Total Qty</th> */}
                 {/* <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Rejected On</th> */}
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Action</th>
+                {/* <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Action</th> */}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
@@ -147,20 +128,22 @@ export default function AuctionRejectedEntriesPage() {
                 rows.map((row, index) => (
                   <tr key={`${row.ID}-${index}`}>
                     <td className="px-3 py-2 text-sm text-slate-700">{row.IDDID}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.AuctionDate}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.DateOfDisposal}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.DisType}</td>
                     <td className="px-3 py-2 text-sm text-slate-700">{row.WasteCategory}</td>
                     <td className="px-3 py-2 text-sm text-slate-700">{row.Waste}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.TotalQty}{row.MUnit}</td>
+                    {/* <td className="px-3 py-2 text-sm text-slate-700">{row.Waste}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.TotalQty}</td> */}
                     {/* <td className="px-3 py-2 text-sm text-slate-700">{row.CrDt?.split("T")[0] || "N/A"}</td> */}
-                    <td className="px-3 py-2">
+                    {/* <td className="px-3 py-2">
                       <button
                         type="button"
                         onClick={() => void openReapplyForm(row)}
                         className="cursor-pointer rounded-md bg-blue-700 px-3 py-1.5 text-xs text-white hover:bg-blue-800"
                       >
                         Re-Apply
-                      </button>
-                    </td>
+                      </button> */}
+                    {/* </td> */}
                   </tr>
                 ))
               )}
@@ -171,3 +154,5 @@ export default function AuctionRejectedEntriesPage() {
     </section>
   );
 }
+
+

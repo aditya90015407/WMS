@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 
 
@@ -28,6 +29,7 @@ export default function AuctionablePage() {
       daysLeft: string;
       label: string;
       unit: string
+      muid: string
     }>
   >([]);
 
@@ -193,7 +195,7 @@ export default function AuctionablePage() {
         });
 
         const payload = await res.json();
-        console.log(payload);
+        // console.log(payload);
         const raw =
           (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
           (Array.isArray(payload?.data) && payload.data) ||
@@ -207,7 +209,7 @@ export default function AuctionablePage() {
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
           const unit = String(row.MUnit ?? "").trim();
-
+          const muid = row.MUID
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
           const todayDate = new Date().toISOString().split("T")[0];
@@ -233,9 +235,12 @@ export default function AuctionablePage() {
             todayDate,
             daysLeft,
             unit,
+            muid,
             label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
+
+        // console.log(options, "op")
 
         setUndisposedOptions(options);
         setSelectedUndisposedIds([]);
@@ -288,6 +293,7 @@ export default function AuctionablePage() {
           WCID: wasteCategory,
           WID: selectedWasteId,
           TotalQty: totalSelectedQty,
+          MUID: undisposedOptions[0].muid,
           Auctionable: 1,
           AuctionDate: auctionDate,
           PSID: physicalForm,
@@ -360,8 +366,14 @@ export default function AuctionablePage() {
 
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
+      {/* <h1 className="text-2xl font-semibold text-teal-600 text-center">Auctionable Disposal</h1> */}
+      <div className="relative">
+        <h1 className="text-xl font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
 
+        <Link href="./">
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
+        </Link>
+      </div>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         {/* <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">
@@ -487,12 +499,17 @@ export default function AuctionablePage() {
           <label className="mb-1 block text-sm font-semibold text-slate-700">
             Total Quantity
           </label>
-          <input
+          <div
+            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+          >
+            {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{undisposedOptions[0]?.unit}
+          </div>
+          {/* <input
             type="text"
             readOnly
             value={Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}
             className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
-          />
+          /> */}
         </div>
 
         <div>

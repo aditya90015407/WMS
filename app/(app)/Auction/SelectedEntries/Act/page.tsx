@@ -14,6 +14,7 @@ type AuctionDetails = {
   TotalQty?: string | number;
   Remarks?: string;
   CrDt?: string;
+  MUnit: string
 };
 
 type WasteDetail = {
@@ -65,6 +66,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
     ReceiverName: "",
     ReceiverAddress: "",
     ReceiverAuthNo: "",
+    MUnit: ""
   });
 
   const formatDate = (value?: string) => {
@@ -106,9 +108,8 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
             body: JSON.stringify({ id: encIddid }),
           });
 
-
           const detailsPayload = await detailsRes.json();
-          // console.log(detailsPayload)
+          console.log(detailsPayload)
           if (detailsPayload?.success) {
             setAuctionDetails(detailsPayload.data ?? null);
           }
@@ -277,7 +278,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
           <div>
             <p className="text-xs text-slate-500">Waste Qty</p>
             <p className="font-medium text-slate-800">
-              {auctionDetails?.TotalQty ?? "N/A"}
+              {auctionDetails?.TotalQty ?? "N/A"}{" "}{auctionDetails?.MUnit}
             </p>
           </div>
         </div>

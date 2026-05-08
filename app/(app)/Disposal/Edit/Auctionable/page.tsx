@@ -2,9 +2,14 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
-type Option = { id: string; name: string, email: string, vendorCode: string };
+type Option = { id: string; name: string; email: string; vendorCode: string };
 type Option1 = { ID: string; NAME: string };
+
+type VendorOption = {
+  id: string; name: string, email: string, vendorCode: string
+};
 
 type UndisposedOption = {
   id: string;
@@ -16,6 +21,7 @@ type UndisposedOption = {
   daysLeft: string;
   label: string;
   unit: string;
+  muid: string
 };
 
 export default function AuctionablePage({ searchParams }: { searchParams: Promise<{ iddid?: string }> }) {
@@ -34,64 +40,21 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
   const [alreadySelectedUndisposedIds, setAlreadySelectedUndisposedIds] = useState<string[]>([]);
   const [savedUndisposedIds, setSavedUndisposedIds] = useState<string[]>([]);
   const [loadingUndisposed, setLoadingUndisposed] = useState(false);
+  const [alreadySelectedVendorIds, setAlreadySelectedVendorIds] = useState<string[]>([]);
 
-  const [vendorOptions, setVendorOptions] = useState<Option[]>([]);
-  const [selectedVendorIds, setSelectedVendorIds] = useState<string[]>([]);
   const [physicalForm, setPhysicalForm] = useState("");
   const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
 
   const [waste, setWaste] = useState("");
-  const [vendor, setVendor] = useState("");
   const [remarks, setRemarks] = useState("");
   const [loadingBase, setLoadingBase] = useState(false);
   const [loadingWaste, setLoadingWaste] = useState(false);
 
+  const [vendorOptions, setVendorOptions] = useState<VendorOption[]>([]);
+  const [selectedVendorIds, setSelectedVendorIds] = useState<string[]>([]);
+
   const [undisposedDropdownOpen, setUndisposedDropdownOpen] = useState(false);
   const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
-
-  async function fetchVendor(): Promise<Option[]> {
-    try {
-      const res = await fetch("/api/GetData/GetVendor", {
-        method: "POST",
-        cache: "no-store",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
-      });
-
-      const payload = await res.json();
-      console.log("payload", payload)
-      const raw =
-        (Array.isArray(payload?.data) && payload.data) ||
-        (Array.isArray(payload?.recordset) && payload.recordset) ||
-        (Array.isArray(payload) && payload) ||
-        [];
-
-      const vendors = raw.map((row: any) => ({
-        id: String(row.id ?? row.ID ?? row.VID ?? row.VendorID ?? row.VENDORID ?? ""),
-        name: String(
-          row.name ??
-          row.NAME ??
-          row.VENDORNAME ??
-          row.VendorName ??
-          row.VENDOR ??
-          row["Vendor Name"] ??
-          row["VENDOR NAME"] ??
-          row.VENDNAME ??
-          row.VNAME ??
-          "",
-        ).trim(),
-        email: String(row.Email ?? row.email ?? ""),
-        vendorCode: String(row.VendorCode ?? row.vendorCode ?? ""),
-      }));
-
-      setVendorOptions(vendors);
-      return vendors;
-    } catch (err) {
-      console.error("fetchVendor failed", err);
-      setVendorOptions([]);
-      return [];
-    }
-  }
 
   useEffect(() => {
     const loadDropdowns = async () => {
@@ -121,16 +84,12 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         });
         const wcPayload = (await wcRes.json()) as { success?: boolean; data?: Option[] };
 
-        const vendors = await fetchVendor();
-
         setCategoryOptions(
           wcPayload.success && Array.isArray(wcPayload.data) ? wcPayload.data : [],
         );
-        setVendorOptions(vendors);
       } catch (err) {
         console.error("loadBase failed", err);
         setCategoryOptions([]);
-        setVendorOptions([]);
       } finally {
         setLoadingBase(false);
       }
@@ -179,7 +138,6 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         });
 
         const payload = await res.json();
-        console.log("ppppppp", payload)
         if (!res.ok || !payload.success) {
           console.error("Failed to load edit details", payload);
           return;
@@ -222,7 +180,6 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         });
 
         const payload = await wres.json();
-        console.log(payload)
         if (!payload.success || !wres.ok) {
           console.error("Failed to load selected waste", payload);
           return;
@@ -244,6 +201,8 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
           const todayDate = new Date().toISOString().split("T")[0];
           const unit = String(row.MUnit ?? row.unit ?? "").trim();
+          const muid = row.MUID
+
 
           let daysLeft = "";
           if (targetDate) {
@@ -264,11 +223,11 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
             targetDate,
             todayDate,
             daysLeft,
+            muid,
             unit,
             label: `${dept} - ${qty.toFixed(2)} - ${daysLeft || "N/A"} - ${unit || "N/A"}`,
           };
         });
-
 
         setSavedUndisposedIds(selectedIds);
 
@@ -281,10 +240,6 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           }
           return Array.from(map.values());
         });
-
-        console.log("Selected waste rows from GetWasteListByIDDID:", rows);
-        console.log("Selected ids from GetWasteListByIDDID:", selectedIds);
-
       } catch (err) {
         console.error("loadSelectedWasteDetails failed", err);
       }
@@ -313,7 +268,6 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         });
 
         const payload = await res.json();
-        console.log(payload)
         const raw =
           (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
           (Array.isArray(payload?.data) && payload.data) ||
@@ -327,6 +281,8 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
           const unit = String(row.MUnit ?? "").trim();
+          const muid = row.MUID
+
 
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
@@ -353,11 +309,10 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
             todayDate,
             daysLeft,
             unit,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
+            muid,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft || "N/A"} - ${unit || "N/A"}`,
           };
         });
-        console.log("Undisposed raw rows from GetAllUndisposedWaste:", raw);
-        console.log("Mapped undisposed options:", options);
 
         setUndisposedOptions((prev) => {
           const map = new Map(prev.map((item) => [item.id, item]));
@@ -366,12 +321,13 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           }
           return Array.from(map.values());
         });
+
         setUndisposedDropdownOpen(false);
       } catch (err) {
         console.error("loadUndisposed failed", err);
         setUndisposedOptions([]);
         setSelectedUndisposedIds([]);
-        setAlreadySelectedUndisposedIds([])
+        setAlreadySelectedUndisposedIds([]);
       } finally {
         setLoadingUndisposed(false);
       }
@@ -381,32 +337,140 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
   }, [wasteCategory, selectedWasteId]);
 
   useEffect(() => {
+    const loadVendors = async () => {
+      if (!iddid) return;
+
+      try {
+        const selectedRes = await fetch("/api/GetData/GetVendorDetailsEditbyIDDID", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: iddid }),
+        });
+        const selectedData = await selectedRes.json();
+        const selectedRows = Array.isArray(selectedData?.data) ? selectedData.data : [];
+
+        const selectedVendorRowsMapped: VendorOption[] = selectedRows.map((row: any, index: number) => ({
+          id: String(row.VID ?? row.ID ?? row.id ?? index).trim(),
+          name: String(row.NAME ?? row.VendorName ?? row.Name ?? "Vendor").trim(),
+          email: String(row.Email ?? row.email ?? ""),
+          vendorCode: String(row.VendorCode ?? row.vendorCode ?? ""),
+
+        }));
+
+        const selectedIds = selectedVendorRowsMapped.map((item) => item.id).filter(Boolean);
+        setSelectedVendorIds(selectedIds);
+        setAlreadySelectedVendorIds(selectedIds);
+
+
+        const unselectedRes = await fetch("/api/GetData/GetVendor", {
+          method: "POST",
+          cache: "no-store"
+        });
+        const unselectedData = await unselectedRes.json();
+        const unselectedRows = Array.isArray(unselectedData?.data) ? unselectedData.data : [];
+        console.log(unselectedRows)
+
+        const unselectedVendorRowsMapped: VendorOption[] = unselectedRows.map((row: any, index: number) => ({
+          id: String(row.VID ?? row.ID ?? row.id ?? index).trim(),
+          name: String(row.NAME ?? row.VendorName ?? row.name ?? "Vendor").trim(),
+          email: String(row.Email ?? row.email ?? ""),
+          vendorCode: String(row.VendorCode ?? row.vendorCode ?? ""),
+        }));
+
+        const mergedVendorOptions: VendorOption[] = [
+          ...selectedVendorRowsMapped,
+          ...unselectedVendorRowsMapped.filter(
+            (item) => !selectedVendorRowsMapped.some((sel) => sel.id === item.id),
+          ),
+        ].filter((item) => item.id && item.name && item.email && item.vendorCode);
+
+        console.log(mergedVendorOptions)
+
+        setVendorOptions(mergedVendorOptions);
+      } catch (err) {
+        console.error("Failed to load vendors", err);
+        setVendorOptions([]);
+        setSelectedVendorIds([]);
+      }
+    };
+
+    void loadVendors();
+  }, [iddid]);
+
+
+
+
+
+
+  // useEffect(() => {
+  //   const loadVendors = async () => {
+  //     if (!iddid) return;
+
+  //     try {
+  //       const selectedRes = await fetch("/api/GetData/GetVendorDetailsEditbyIDDID", {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ id: iddid }),
+  //       });
+  //       const selectedData = await selectedRes.json();
+  //       const selectedRows = Array.isArray(selectedData?.data) ? selectedData.data : [];
+
+  //       const selectedVendorRowsMapped: VendorOption[] = selectedRows.map((row: any, index: number) => ({
+  //         id: String(row.VID ?? row.ID ?? row.id ?? index).trim(),
+  //         name: String(row.NAME ?? row.VendorName ?? row.Name ?? "Vendor").trim(),
+  //       }));
+
+  //       const selectedIds = selectedVendorRowsMapped.map((item) => item.id).filter(Boolean);
+  //       setSelectedVendorIds(selectedIds);
+
+  //       const unselectedRes = await fetch("/api/GetData/GetVendorListByIDDID", {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ id: iddid }),
+  //       });
+  //       const unselectedData = await unselectedRes.json();
+  //       const unselectedRows = Array.isArray(unselectedData?.data) ? unselectedData.data : [];
+
+  //       const unselectedVendorRowsMapped: VendorOption[] = unselectedRows.map((row: any, index: number) => ({
+  //         id: String(row.VID ?? row.ID ?? row.id ?? index).trim(),
+  //         name: String(row.NAME ?? row.VendorName ?? row.Name ?? "Vendor").trim(),
+  //       }));
+
+  //       const mergedVendorOptions: VendorOption[] = [
+  //         ...selectedVendorRowsMapped,
+  //         ...unselectedVendorRowsMapped.filter(
+  //           (item) => !selectedVendorRowsMapped.some((sel) => sel.id === item.id),
+  //         ),
+  //       ].filter((item) => item.id && item.name);
+
+  //       setVendorOptions(mergedVendorOptions);
+  //     } catch (err) {
+  //       console.error("Failed to load vendors", err);
+  //       setVendorOptions([]);
+  //       setSelectedVendorIds([]);
+  //     }
+  //   };
+
+  //   void loadVendors();
+  // }, [iddid]);
+
+  useEffect(() => {
     if (undisposedOptions.length === 0 || savedUndisposedIds.length === 0) return;
 
     const matchedIds = undisposedOptions
-      .map((item) => item.id)
-      .filter((id) => savedUndisposedIds.includes(id));
-    // console.log("savedUndisposedIds:", savedUndisposedIds);
-    // console.log("undisposed option ids:", undisposedOptions.map((item) => item.id));
-    // console.log("matchedIds:", matchedIds);
+      .map((item) => String(item.id).trim())
+      .filter((id) => savedUndisposedIds.map((x) => String(x).trim()).includes(id));
 
     setSelectedUndisposedIds(matchedIds);
-    setAlreadySelectedUndisposedIds(matchedIds)
+    setAlreadySelectedUndisposedIds(matchedIds);
   }, [undisposedOptions, savedUndisposedIds]);
 
-  const displayVendorOptions = vendorOptions.filter((v) => v.name && v.name.trim().length > 0);
 
-  const selectedVendorNames = displayVendorOptions
-    .filter((v) => selectedVendorIds.includes(v.id))
-    .map((v) => v.name);
+  const displayVendorOptions = vendorOptions.filter((v) => v.name && v.name.trim().length > 0);
 
   const selectedUndisposedItems = undisposedOptions.filter((item) =>
     selectedUndisposedIds.includes(item.id),
   );
-
-  console.log("selectedUndisposedIds final:", selectedUndisposedIds);
-  console.log("selectedUndisposedItems final:", selectedUndisposedItems);
-
 
   const sortedUndisposedOptions = useMemo(() => {
     return [...undisposedOptions].sort((a, b) => {
@@ -443,11 +507,12 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           WCID: wasteCategory,
           WID: selectedWasteId,
           TotalQty: totalSelectedQty,
+          MUID: undisposedOptions[0].muid,
           Auctionable: 1,
           AuctionDate: auctionDate,
           PSID: physicalForm,
           Remarks: remarks,
-          IDDID: iddid
+          IDDID: iddid,
         }),
       });
 
@@ -458,21 +523,10 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         return;
       }
 
-      // const newIddid = data?.data?.WRID;
-      // if (!newIddid) {
-      //   alert("IDDID missing in InitiateDisposal response");
-      //   return;
-      // }
-
       const newSelectedIds = undisposedOptions
         .map((item) => String(item.id))
         .filter((id) => selectedUndisposedIds.map(String).includes(id))
-        .filter((id) => !alreadySelectedUndisposedIds.map(String).includes(id))
-
-      // console.log(alreadySelectedUndisposedIds, "already")
-      // console.log(selectedUndisposedIds, "saved")
-      // console.log(newSelectedIds, "new ")
-      // console.log(undisposedOptions, "undisposed")
+        .filter((id) => !alreadySelectedUndisposedIds.map(String).includes(id));
 
       if (newSelectedIds.length > 0) {
         const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
@@ -491,26 +545,33 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           return;
         }
       }
-      await Promise.all(
-        selectedVendorIds.map(async (vendorId) => {
-          const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              IDDID: iddid,
-              VID: vendorId,
-            }),
-          });
-
-          const vendorData = await vendorRes.json();
-
-          if (!vendorRes.ok || !vendorData.success) {
-            throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
-          }
-
-          return vendorData;
-        }),
+      const newVendorIds = selectedVendorIds.filter(
+        (id) => !alreadySelectedVendorIds.includes(id)
       );
+
+      if (newVendorIds.length > 0) {
+        await Promise.all(
+          newVendorIds.map(async (vendorId) => {
+            const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                IDDID: iddid,
+                VID: vendorId,
+              }),
+            });
+
+            const vendorData = await vendorRes.json();
+
+            if (!vendorRes.ok || !vendorData.success) {
+              throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
+            }
+
+            return vendorData;
+          }),
+        );
+      }
+
 
       alert(data.message || "Saved Successfully");
       router.back();
@@ -522,8 +583,13 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
 
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-900">Auctionable Disposal</h1>
+      <div className="relative">
+        <h1 className="text-xl font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
 
+        <Link href="./">
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
+        </Link>
+      </div>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Auction Date</label>
@@ -541,7 +607,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
             value={wasteCategory}
             onChange={(e) => setWasteCategory(e.target.value)}
             className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled //={loadingBase}
+            disabled
           >
             <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
             {categoryOptions.map((item) => (
@@ -562,7 +628,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
               setWaste(name);
             }}
             className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled //</div>={!wasteCategory || loadingWaste}
+            disabled
           >
             <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
             {wasteOptions.map((item) => (
@@ -598,6 +664,9 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
                 sortedUndisposedOptions.map((item) => {
                   const checked = selectedUndisposedIds.includes(item.id);
                   const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
+
+
+
                   return (
                     <label
                       key={item.id}
@@ -614,13 +683,13 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
                           setSelectedUndisposedIds(nextIds);
                         }}
                       />
+
                       <div className="flex flex-col">
                         <span className="text-sm text-slate-700">
                           {item.dept || "Dept"} - {item.qty.toFixed(2)}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
-                          {item.unit || "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} - {item.unit || "N/A"}
                         </span>
                       </div>
                     </label>
@@ -632,9 +701,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         </div>
 
         <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">
-            Total Quantity
-          </label>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Total Quantity</label>
           <input
             type="text"
             readOnly
@@ -661,95 +728,56 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
 
         <div className="relative">
           <label className="mb-1 block text-sm font-semibold text-slate-700">Vendor List</label>
-
           <button
             type="button"
             onClick={() => setVendorDropdownOpen((prev) => !prev)}
-            disabled={loadingBase}
-            className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
+            className="w-full rounded border border-slate-300 px-3 py-2 text-left text-sm"
           >
-            {selectedVendorNames.length > 0
-              ? selectedVendorNames.join(", ")
-              : loadingBase
-                ? "Loading..."
-                : "Select Vendor(s)"}
+            {selectedVendorIds.length > 0
+              ? displayVendorOptions
+                .filter((v) => selectedVendorIds.includes(v.id))
+                .map((v) => v.name)
+                .join(", ")
+              : "Select vendor(s)"}
           </button>
 
           {vendorDropdownOpen && (
             <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
               {displayVendorOptions.length === 0 ? (
-                <p className="px-2 py-1 text-sm text-slate-500">No vendor options</p>
+                <p className="px-2 py-1 text-sm text-slate-500">No vendors found</p>
               ) : (
-                <>
-                  <label className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
-                    <input
-                      type="checkbox"
-                      checked={
-                        displayVendorOptions.length > 0 &&
-                        selectedVendorIds.length === displayVendorOptions.length
-                      }
-                      onChange={(e) => {
-                        const nextIds = e.target.checked ? displayVendorOptions.map((v) => v.id) : [];
-                        setSelectedVendorIds(nextIds);
-
-                        const names = displayVendorOptions
-                          .filter((v) => nextIds.includes(v.id))
-                          .map((v) => v.name)
-                          .join(", ");
-                        setVendor(names);
-                      }}
-                    />
-                    <span className="text-sm font-semibold text-slate-700">Select All Vendors</span>
-                  </label>
-
-                  {displayVendorOptions.map((item) => {
-                    const checked = selectedVendorIds.includes(item.id);
-                    return (
-                      <label
-                        key={item.id}
-                        className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={(e) => {
-                            const nextIds = e.target.checked
-                              ? [...selectedVendorIds, item.id]
-                              : selectedVendorIds.filter((id) => id !== item.id);
-
-                            setSelectedVendorIds(nextIds);
-
-                            const names = displayVendorOptions
-                              .filter((v) => nextIds.includes(v.id))
-                              .map((v) => v.name)
-                              .join(", ");
-                            setVendor(names);
-                          }}
-                        />
-                        <span className="text-sm text-slate-700">
-                          {(item.name || "Dept")} {item.vendorCode ? `- ${item.vendorCode}` : ""}
-                        </span>
-                        <span className="text-sm font-semibold">
-                          {item.email || "-"}
-                        </span>
-                      </label>
-                    );
-                  })}
-                </>
+                displayVendorOptions.map((item) => {
+                  const checked = selectedVendorIds.includes(item.id);
+                  const alreadyChecked = alreadySelectedVendorIds.includes(item.id);
+                  return (
+                    <label
+                      key={item.id}
+                      className={`flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50 ${alreadyChecked ? "cursor-not-allowed opacity-60" : ""
+                        }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        disabled={alreadyChecked}
+                        onChange={(e) => {
+                          const nextIds = e.target.checked
+                            ? [...selectedVendorIds, item.id]
+                            : selectedVendorIds.filter((id) => id !== item.id);
+                          // console.log(nextIds)
+                          setSelectedVendorIds(nextIds);
+                        }}
+                      />
+                      <span className="text-sm text-slate-700">
+                        {(item.name || "Dept")} {item.vendorCode ? `- ${item.vendorCode}` : ""}
+                      </span>
+                      <span className="text-sm font-semibold">
+                        {item.email || "-"}
+                      </span>
+                    </label>
+                  );
+                })
               )}
             </div>
-          )}
-
-          {selectedVendorNames.length > 0 && (
-            <p className="mt-1 text-xs text-slate-600">
-              Selected Vendors: {selectedVendorNames.join(", ")}
-            </p>
-          )}
-
-          {!loadingBase && displayVendorOptions.length === 0 && (
-            <p className="mt-1 text-xs text-red-600">
-              Vendor names are empty from API response. Please fix vendor name mapping in backend.
-            </p>
           )}
         </div>
 

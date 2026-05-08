@@ -143,23 +143,25 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
             }
 
             try {
-                const res = await fetch("/api/GetData/GetAllFinalDisposalList", {
+                const res = await fetch("/api/GetData/GetAllFinalRejectedDisposalList", {
                     method: "GET",
                     cache: "no-store",
                 });
-
+                // console.log("HEYYYYYYYYYY")
                 const rawData = await res.json();
+                // console.log(rawData)
                 const rows = Array.isArray(rawData)
                     ? rawData
                     : Array.isArray(rawData?.data)
                         ? rawData.data
                         : [];
+                // console.log(rows,"ROWS")
 
                 const match =
-                    rows.find((item: Record<string, unknown>) => String(item?.ID ?? "") === id) ?? null;
-                // console.log("Page id:", id);
-                // console.log("Rows:", rows);
-                // console.log("Matched row:", match);
+                    rows.find((item: Record<string, unknown>) => String(item?.IDDID ?? "") === id) ?? null;
+                console.log("Page id:", id);
+                console.log("Rows:", rows);
+                console.log("Matched row:", match);
 
                 setRow(match);
 

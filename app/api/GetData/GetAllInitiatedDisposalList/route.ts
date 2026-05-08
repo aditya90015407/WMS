@@ -11,6 +11,6 @@ export async function POST(req: NextRequest) {
 
     const result = await pool.request().input("FLAG", 'GetAllInitiatedDisposalList').execute("PRO-WMS_GET");
 
-    // console.log(result)
+    console.log(result)
     return NextResponse.json(result.recordset)
 }

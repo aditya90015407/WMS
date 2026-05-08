@@ -25,6 +25,8 @@ export async function POST(req: Request) {
       .input("ID", sql.NVarChar(50), id)
       .execute("PRO-WMS_GET");
 
+    // console.log(result)
+
     const rows = Array.isArray(result.recordset) ? result.recordset : [];
 
     return NextResponse.json({

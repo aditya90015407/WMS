@@ -87,6 +87,11 @@ export default function WasteApprove() {
     CrBy: string
     CrDt: string
     IsActive: string
+    WID: string
+    Waste: string
+    TotalQty: string
+    MUID: string
+    MUnit: string
   }
 
   const [allauctionList, setAllauctionList] = useState<AuctionList[]>([])
@@ -362,6 +367,10 @@ export default function WasteApprove() {
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Waste Category</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                  >Waste</th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                  >Total Qty</th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Remarks</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Posted On</th>
@@ -388,6 +397,14 @@ export default function WasteApprove() {
                     <td
                       className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                     >{row.WasteCategory}
+                    </td>
+                    <td
+                      className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                    >{row.Waste}
+                    </td>
+                    <td
+                      className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                    >{row.TotalQty}{" "} {row.MUnit}
                     </td>
                     <td
                       className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"

@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react";
+import  { useRouter } from "next/navigation";
+import encrypt from "@/components/Encrypt";
 
 type RejectedRow = {
+  WCID?:String
   ID?: String
   IDDID?: String
   AuctionID: String
@@ -35,7 +38,7 @@ export default function RevertedDisposalList() {
       })
     );
   }
-
+    const router = useRouter();
   const [rows, setRows] = useState<RejectedRow[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoadding] = useState(true);
@@ -75,6 +78,7 @@ export default function RevertedDisposalList() {
         }
 
         const rawData = Array.isArray(raw) ? raw : raw?.data ?? [];
+        console.log(rawData)
         const data = rawData.map(normalizeData)
         setRows(data);
       }
@@ -118,36 +122,61 @@ export default function RevertedDisposalList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
-              {rows.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-3 py-4 text-center text-sm text-slate-500">
-                    No rejected entries found.
-                  </td>
-                </tr>
-              ) : (
-                rows.map((row, index) => (
-                  <tr key={`${row.ID}-${index}`}>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.IDDID}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.DateOfDisposal}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.DisType}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.WasteCategory}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.Waste}</td>
-                    {/* <td className="px-3 py-2 text-sm text-slate-700">{row.Waste}</td>
-                    <td className="px-3 py-2 text-sm text-slate-700">{row.TotalQty}</td> */}
-                    {/* <td className="px-3 py-2 text-sm text-slate-700">{row.CrDt?.split("T")[0] || "N/A"}</td> */}
-                    {/* <td className="px-3 py-2">
-                      <button
-                        type="button"
-                        onClick={() => void openReapplyForm(row)}
-                        className="cursor-pointer rounded-md bg-blue-700 px-3 py-1.5 text-xs text-white hover:bg-blue-800"
+                  {rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-3 py-4 text-center text-sm text-slate-500">
+                        No rejected entries found.
+                      </td>
+                    </tr>
+                  ) : (
+                    rows.map((row, index) => (
+                      <tr
+                        key={`${row.ID}-${index}`}
+                        className="cursor-pointer hover:bg-slate-50"
+                        onClick={async () => {
+                          const rawId = String(row.IDDID ?? "").trim();
+                          const finalId = rawId ? await encrypt(rawId) : "";
+                          const iddid = await encrypt(String(row.IDDID));
+
+                          const wcid = String(row.WCID ?? "").trim();
+                          console.log(wcid)
+                          const disType = String(row.DisType ?? "").trim().toLowerCase();
+                          console.log(disType)
+
+                          if (!finalId) return;
+
+                          const target =
+                            disType === "internal"
+                              ? `/Disposal/RevertedEntries/Internal?id=${encodeURIComponent(finalId)}&iddid=${encodeURIComponent(iddid)}`
+                              : wcid === "1"
+                              ? `/Disposal/RevertedEntries/Hazardous?id=${encodeURIComponent(finalId)}`
+                              : `/Disposal/RevertedEntries/NonHazardous?id=${encodeURIComponent(finalId)}`;
+
+                          router.push(target);
+
+
+
+                           if (!target) {
+                          alert("Invalid disposal route");
+                          return;
+                        }
+
+                        router.push(target);
+
+
+                      } 
+                    
+                        }
                       >
-                        Re-Apply
-                      </button> */}
-                    {/* </td> */}
-                  </tr>
-                ))
-              )}
-            </tbody>
+                        <td className="px-3 py-2 text-sm text-slate-700">{row.IDDID}</td>
+                        <td className="px-3 py-2 text-sm text-slate-700">{row.DateOfDisposal}</td>
+                        <td className="px-3 py-2 text-sm text-slate-700">{row.DisType}</td>
+                        <td className="px-3 py-2 text-sm text-slate-700">{row.WasteCategory}</td>
+                        <td className="px-3 py-2 text-sm text-slate-700">{row.Waste}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
           </table>
         </div>
       )}

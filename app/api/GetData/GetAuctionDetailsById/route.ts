@@ -31,12 +31,14 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
             success: true,
             data: {
+                ID: row.ID,
                 AuctionDate: row.AuctionDate,
                 WasteCategory: row.WasteCategory,
                 Remarks: row.Remarks,
                 TotalQty: row.TotalQty,
                 Waste: row.Waste,
                 CrDt: row.CrDt,
+                MUnit: row.MUnit
             },
         });
     } catch (err: any) {
