@@ -34,7 +34,7 @@ export async function POST(req:Request) {
 
     const result=await pool
       .request()
-      .input("FLAG", sql.VarChar, "InsertTransportationDetails")
+      .input("FLAG", sql.VarChar, "SetTransportationDetails")
       .input("APID", sql.Int, Number(APID)) // change to VarChar if APID is string
       .input("TransporterName", sql.VarChar, TransporterName ?? "")
       .input("TransporterAddress", sql.VarChar, TransporterAddress ?? "")

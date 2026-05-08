@@ -1,10 +1,28 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+type WasteOption = {
+  id: string;
+  dept: string;
+  qty: number;
+  genDate: string;
+  targetDate: string;
+  todayDate: string;
+  daysLeft: string;
+  label: string;
+  unit: string
+};
+
 
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
 export default function NonAuctionablePage() {
+
+
+  const router = useRouter();
+
   const [wasteCategory, setWasteCategory] = useState("");
   const [waste, setWaste] = useState("");
   const [Date, setDate] = useState("");
@@ -15,11 +33,10 @@ export default function NonAuctionablePage() {
   const [physicalForm, setPhysicalForm] = useState("");
   const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
   const [wasteOptions, setWasteOptions] = useState<Option[]>([]);
+
   const [selectedWasteId, setSelectedWasteId] = useState("");
 
-  const [undisposedOptions, setUndisposedOptions] = useState<
-    Array<{ id: string; dept: string; qty: number; label: string }>
-  >([]);
+  const [undisposedOptions, setUndisposedOptions] = useState<WasteOption[]>([]);
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
   const [undisposedDropdownOpen, setUndisposedDropdownOpen] = useState(false);
 
@@ -129,6 +146,7 @@ export default function NonAuctionablePage() {
           }),
         });
 
+
         const payload = await res.json();
         const raw =
           (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
@@ -139,13 +157,38 @@ export default function NonAuctionablePage() {
 
         const options = raw.map((row: any, index: number) => {
           const dept = String(row.Dept ?? "").trim();
-          const qty = Number(row.WasteQty ?? 0);
+          const rawQty = String(row.WasteQty ?? "").replace(",", ".");
+          const qtyNum = Number.parseFloat(rawQty);
+          const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
+          const unit = String(row.MUnit ?? "").trim();
+
+          const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
+          const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
+          const todayDate = new globalThis.Date().toISOString().split("T")[0];
+
+          let daysLeft = "";
+          if (targetDate) {
+            const today = new globalThis.Date(todayDate);
+            const target = new globalThis.Date(`${targetDate}`);
+
+            const diffTime = target.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            daysLeft = String(diffDays);
+          }
+
+          const qtyLabel = qty.toFixed(2);
           const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
+
           return {
             id,
             dept,
             qty,
-            label: `${dept || "Dept"} - ${qty}`,
+            genDate,
+            targetDate,
+            todayDate,
+            daysLeft,
+            unit,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
 
@@ -226,6 +269,7 @@ export default function NonAuctionablePage() {
       }
 
       alert("Saved Successfully");
+      router.back()
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
@@ -287,7 +331,7 @@ export default function NonAuctionablePage() {
 
         <div className="relative">
           <label className="mb-1 block text-sm font-semibold text-slate-700">
-            Undisposed Waste (Dept - Quantity)
+            Undisposed Waste (Dept - Quantity - Days Left)
           </label>
           <button
             type="button"
@@ -299,7 +343,7 @@ export default function NonAuctionablePage() {
               ? selectedUndisposedItems.map((x) => x.label).join(", ")
               : loadingUndisposed
                 ? "Loading..."
-                : "Select Dept - Quantity"}
+                : "Select Dept - Quantity - Days Left"}
           </button>
 
           {undisposedDropdownOpen && (
@@ -324,7 +368,16 @@ export default function NonAuctionablePage() {
                           setSelectedUndisposedIds(nextIds);
                         }}
                       />
-                      <span className="text-sm text-slate-700">{item.label}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-slate-700">
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                        </span>
+                        <span className="text-sm font-semibold text-red-600">
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
+                          {item.unit || "N/A"}
+                        </span>
+                      </div>
+
                     </label>
                   );
                 })

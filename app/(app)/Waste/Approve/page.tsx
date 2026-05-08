@@ -1,8 +1,10 @@
 "use client";
 
 import encrypt from "@/components/Encrypt";
+import { getServerSession } from "next-auth";
 import { useRouter } from "next/navigation";
 import { normalize } from "path";
+import { useSession } from "next-auth/react";
 import { useEffect, useMemo, useState } from "react";
 
 type ViewRow = Record<string, string | number | null>;
@@ -102,14 +104,29 @@ export default function WasteApprove() {
         GenDeptID: string
     }
 
-    const [allWasteData, setAllWasteData] = useState<WasteData[]>([])
 
+    const { data: session, status } = useSession();
+    // console.log("session:", session);
+    // console.log("status:", status);
+
+
+    const deptID = String(session?.user?.deptId ?? "");
+    const uid = String(session?.user?.uid ?? "");
+    const empCode = String(session?.user?.id ?? session?.user?.id ?? "");
+
+
+    // console.log(deptID,uid,empCode);
+
+    const [allWasteData, setAllWasteData] = useState<WasteData[]>([])
+    // const session= useSession();
+    // console.log(session);
 
     const [page, setPage] = useState(1);
     const pageSize = 10;
 
     const start = (page - 1) * pageSize;
     const end = start + pageSize;
+
 
     const currentRows = allWasteData.slice(start, end);
     const totalPages = Math.ceil(allWasteData.length / pageSize);
@@ -176,15 +193,37 @@ export default function WasteApprove() {
                 }
 
                 setRows(payload.data);
+                // const session= useSession();
+                // console.log(session);
+                if (!deptID || !uid || !empCode) {
+                    console.log("Session values not ready yet", { deptID, uid, empCode });
+                    return;
+                }
 
-                const res2 = await fetch(`/api/GetData/GetPendingApprovalWaste`, {
+
+                const res2 = await fetch(`/api/GetData/GetPendingApprovalWasteForDepartment`, {
                     method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        DeptID: deptID,
+                        UID: uid,
+                        EmpCode: empCode,
+                    }),
                 });
 
-                const rawData = await res2.json()
-                // console.log(rawData)
-                const data = rawData.map(normalizeData)
-                setAllWasteData(data)
+
+                const rawData = await res2.json();
+                console.log("GetPendingApprovalWasteForDepartment response:", rawData);
+
+                const list = Array.isArray(rawData)
+                    ? rawData
+                    : Array.isArray(rawData?.data)
+                        ? rawData.data
+                        : [];
+
+                const data = list.map(normalizeData);
+                setAllWasteData(data);
+
 
             } catch {
                 setRows([]);
@@ -195,7 +234,7 @@ export default function WasteApprove() {
         };
 
         void loadRows();
-    }, [refreshSeed, filters]);
+    }, [refreshSeed, filters, deptID, uid, empCode]);
 
     useEffect(() => {
         const loadBaseFilters = async () => {
@@ -335,8 +374,8 @@ export default function WasteApprove() {
     return (
         <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-lg font-semibold text-slate-900"> Approve Registered Waste</h1>
+                <div className="w-full">
+                    <h1 className="text-lg font-semibold text-center text-teal-600"> Approve Registered Waste</h1>
 
                 </div>
                 <button
@@ -360,7 +399,7 @@ export default function WasteApprove() {
                         className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
                     />
                 </div>
-
+ 
                 <div>
                     <label className="mb-1 block text-xs font-semibold text-slate-700">Category</label>
                     <select
@@ -382,7 +421,7 @@ export default function WasteApprove() {
                         ))}
                     </select>
                 </div>
-
+ 
                 <div>
                     <label className="mb-1 block text-xs font-semibold text-slate-700">Waste</label>
                     <select
@@ -401,7 +440,7 @@ export default function WasteApprove() {
                         ))}
                     </select>
                 </div>
-
+ 
                 <div>
                     <label className="mb-1 block text-xs font-semibold text-slate-700">Disposer</label>
                     <select
@@ -419,7 +458,7 @@ export default function WasteApprove() {
                         ))}
                     </select>
                 </div>
-
+ 
                 <div>
                     <label className="mb-1 block text-xs font-semibold text-slate-700">
                         Physical State
@@ -439,7 +478,7 @@ export default function WasteApprove() {
                         ))}
                     </select>
                 </div>
-
+ 
                 <div>
                     <label className="mb-1 block text-xs font-semibold text-slate-700">
                         Method of Storage
@@ -459,7 +498,7 @@ export default function WasteApprove() {
                         ))}
                     </select>
                 </div>
-
+ 
                 <div>
                     <label className="mb-1 block text-xs font-semibold text-slate-700">Receiver</label>
                     <select
@@ -477,9 +516,9 @@ export default function WasteApprove() {
                         ))}
                     </select>
                 </div>
-
+ 
             </div>
-
+ 
             <div className="mt-2">
                 <label className="mb-1 block text-xs font-semibold text-slate-700">
                     Search

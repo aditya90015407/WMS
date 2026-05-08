@@ -1,3 +1,7 @@
+"use client"
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+
 const modules = [
   {
     title: "Waste Generation Tracking",
@@ -24,10 +28,20 @@ const outcomes = [
 ];
 
 export default function HomePage() {
+
+  const { data: session } = useSession()
+  const [username, setUsername] = useState("")
+
+  useEffect(() => {
+    if (!session) return
+    // console.log(session)
+    setUsername(session?.user?.name!)
+  }, [session, username])
+
   return (
     <main
       className="relative min-h-screen bg-cover bg-center bg-no-repeat p-2 md:p-4"
-      style={{ backgroundImage: 'url("/wms pic.jpg")' }}
+    // style={{ backgroundImage: 'url("/wms pic.jpg")' }}
     >
       <div className="absolute inset-0 bg-white/75" />
       <div className="relative z-10 mx-auto max-w-6xl space-y-8">
@@ -35,20 +49,25 @@ export default function HomePage() {
           {/* <p className="mb-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
             Waste Management System
           </p> */}
-          <h1 className="text-3xl font-bold text-slate-900 md:text-2xl">
+          <h1 className="font-bold text-md text-center text-slate-500">
+            Hello ! <span className="text-rose-400 text-xl">{session?.user.username} </span>
+            <br />
+            Welcome to <span className="text-teal-600 text-xl">Waste Management System</span>
+          </h1>
+          {/* <h1 className="text-3xl font-bold text-slate-900 md:text-2xl">
             Digital platform for tracking, controlling, and improving waste
             management operations
-          </h1>
-          <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-600 md:text-sm">
+          </h1> */}
+          {/* <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-600 md:text-sm">
             This application is built to monitor waste generation, standardize
             handling workflows, and provide actionable insights for operational
             and environmental performance. It helps teams capture accurate data,
             maintain compliance, and drive continuous improvement in waste
             reduction practices.
-          </p>
+          </p> */}
         </section>
 
-        <section className="grid gap-4 md:grid-cols-3">
+        {/* <section className="grid gap-4 md:grid-cols-3">
           {modules.map((item) => (
             <article
               key={item.title}
@@ -62,9 +81,9 @@ export default function HomePage() {
               </p>
             </article>
           ))}
-        </section>
+        </section> */}
 
-        <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
+        {/* <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
           <h2 className="text-xl font-semibold text-slate-900">
             What This Application Delivers
           </h2>
@@ -78,7 +97,7 @@ export default function HomePage() {
               </li>
             ))}
           </ul>
-        </section>
+        </section> */}
       </div>
     </main>
   );

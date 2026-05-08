@@ -257,7 +257,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                 </div>
                 <Link href="./">
 
-                    <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
+                    <img src="/goback.png" alt="" className="h-4 absolute top-4 right-10" />
                 </Link>
             </div>
 

@@ -11,6 +11,8 @@ export async function POST(req: Request) {
     }
 
     const { ID } = await req.json();
+
+    // console.log(ID)
     if (!ID) {
       return NextResponse.json(
         { success: false, message: "ID is required" },
@@ -18,14 +20,16 @@ export async function POST(req: Request) {
       );
     }
 
-  
-    const realId = await decrypt(ID);
+
+    // const realId = await decrypt(ID);
 
     const result = await pool
       .request()
       .input("FLAG", sql.VarChar, "GetApprovedAuctionParticipantsByID")
-      .input("ID", sql.VarChar, realId) 
+      .input("ID", sql.VarChar, ID)
       .execute("PRO-WMS_GET");
+
+    // console.log(result.recordset)
 
     return NextResponse.json({
       success: true,

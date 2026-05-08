@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Download } from "lucide-react";
-
+import { Download, Rows } from "lucide-react";
+import encrypt from "@/components/Encrypt";
 type Form10Row = {
   ID?: string | number | null;
   IDDID?: string | number | null;
@@ -58,8 +58,14 @@ export default function Form10Page() {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
+  const [fddid1, setFddid1] = useState("");
+  const [iddid1, setIddid1] = useState("");
   const [form10Availability, setForm10Availability] = useState<Record<string, boolean>>({});
   const [checkingAvailability, setCheckingAvailability] = useState(false);
+  const [clickedrow, setClickedrow] = useState<Form10Row>();
+
+
+
 
   useEffect(() => {
     const loadRows = async () => {
@@ -121,7 +127,7 @@ export default function Form10Page() {
 
               if (!res.ok || !payload.success) {
                 return [fddid, false] as const;
-              } 
+              }
 
               const statusRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
               return [fddid, Number(statusRow?.StsCode ?? 0) === 3] as const;
@@ -178,31 +184,64 @@ export default function Form10Page() {
     return Boolean(form10Availability[fddid]);
   };
 
-  const openForm10 = (row: Form10Row) => {
-    const iddid = toText(row.IDDID).trim();
+  //  useEffect(()=>{
+  //   const handleEncrypt=async(clickedrow : any)=>{
 
+  //   const iddid= toText(clickedrow.IDDID).trim();
+  //   const fddid= toText(clickedrow.ID).trim()
+  //   const nextFddid = fddid ? await encrypt(fddid) : "";
+  //   const nextIddid = iddid ? await encrypt(iddid) : "";
+
+  //   setFddid1(nextFddid)
+  //   setIddid1(nextIddid)
+  //   }
+
+  //   // if(!fddid || !iddid)
+  //   // {
+  //   //   setFddid1("");
+  //   //   setIddid1("");
+  //   //   return;
+  //   // }
+  //   void handleEncrypt(clickedrow);
+  // },[clickedrow])
+
+  const openForm10 = async (row: Form10Row) => {
+    const iddid = toText(row.IDDID).trim();
+    const fddid = toText(row.ID).trim()
+    // const iddid= toText(clickedrow.IDDID).trim();
+    // const fddid= toText(clickedrow.ID).trim()
+
+    const nextFddid = fddid ? await encrypt(fddid) : "";
+    const nextIddid = iddid ? await encrypt(iddid) : "";
+    // console.log(nextFddid,nextIddid)
+    setFddid1(nextFddid)
+    setIddid1(nextIddid)
     if (!iddid) {
       alert("IDDID is missing.");
       return;
     }
     // console.log("hii")
-    
+
     router.push(
-        `/Form/Form10/Form10List?fddid=${encodeURIComponent(toText(row.ID))}&iddid=${encodeURIComponent(iddid)}`
-      );
+      `/Form/Form10/Form10List?fddid=${encodeURIComponent(nextFddid)}&iddid=${encodeURIComponent(nextIddid)}`
+    );
 
   };
 
-  const downloadForm10 = (row: Form10Row) => {
+  const downloadForm10 = async (row: Form10Row) => {
     const iddid = toText(row.IDDID).trim();
+    const fddid = toText(row.ID).trim();
 
     if (!iddid) {
       alert("IDDID is missing.");
       return;
     }
 
-   window.open(
-      `/Form/Form10/Form10List?fddid=${encodeURIComponent(toText(row.ID))}&iddid=${encodeURIComponent(iddid)}&mode=print`,
+    const nextFddid = fddid ? await encrypt(fddid) : "";
+    const nextIddid = await encrypt(iddid);
+
+    window.open(
+      `/Form/Form10/Form10List?fddid=${encodeURIComponent(nextFddid)}&iddid=${encodeURIComponent(nextIddid)}&mode=print`,
       "_blank"
     );
 
@@ -211,10 +250,10 @@ export default function Form10Page() {
   return (
     <section className="mx-auto max-w-7xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-slate-900">FORM 10 LIST</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <h1 className="text-2xl font-bold text-teal-600">FORM 10 LIST</h1>
+        {/* <p className="mt-1 text-sm text-slate-600">
           Disposal records available for Form 10 view and download.
-        </p>
+        </p> */}
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
@@ -279,7 +318,11 @@ export default function Form10Page() {
                         <div className="flex flex-wrap gap-2">
                           <button
                             type="button"
-                            onClick={() => openForm10(row)}
+                            onClick={() => {
+                              openForm10(row)
+                              // setClickedrow(row)
+                            }}
+
                             className="rounded bg-blue-700 px-3 py-1 text-white hover:bg-blue-800"
                           >
                             View

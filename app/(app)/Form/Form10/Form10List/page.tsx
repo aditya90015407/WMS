@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import decrypt from "@/components/Decrypt";
 import Form10Table, { type Form10Data } from "@/components/Form10Table";
 
 const initialFormState: Form10Data = {
@@ -72,12 +73,40 @@ const mapPhysicalForm = (value: string) => {
   return value;
 };
 
-export default function Form10Page({ searchParams }: { searchParams: Promise<{ fddid?: string, iddid: string }> }) {
+export default function Form10Page({ searchParams }: { searchParams: Promise<{ fddid?: string, iddid: string, mode?: string }> }) {
   // const params = useSearchParams();
 
   const params = React.use(searchParams);
-  const fddid = params.fddid;
-  const iddid = params.iddid;
+  // const fddid = params.fddid;
+  // const iddid = params.iddid;
+
+  const [fddid, setFddid] = useState("");
+  const [iddid, setIddid] = useState("");
+  const [ready, setReady] = useState(false);
+  const hasAutoPrinted = useRef(false);
+
+  // useEffect(()=>{
+
+  //    const fddid1 = params.fddid;
+  //     const iddid1 = params.iddid;
+
+
+  // })
+
+  useEffect(() => {
+    const handleDecrypt = async () => {
+      const fddid1 = params.fddid;
+      const iddid1 = params.iddid;
+      const a: string = fddid1 ? (await decrypt(fddid1)) ?? "" : "";
+      const b: string = iddid1 ? (await decrypt(iddid1)) ?? "" : "";
+      setIddid(b);
+      setFddid(a);
+      setReady(true);
+
+    };
+
+    void handleDecrypt();
+  }, [params.fddid, params.iddid]);
 
   // console.log(fddid, iddid)
 
@@ -88,6 +117,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
 
   useEffect(() => {
     const loadForm10Details = async () => {
+      if (!ready) return;
       if (!fddid) {
         setStatus("Missing final disposal id.");
         return;
@@ -101,31 +131,32 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
       console.log("iddid:", iddid);
 
       try {
-        const statusRes = await fetch("/api/GetData/GetDisposalApprovalStatus", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ FDDID: fddid }),
-        });
+        // const statusRes = await fetch("/api/GetData/GetDisposalApprovalStatus", {
+        //   method: "POST",
+        //   headers: { "Content-Type": "application/json" },
+        //   body: JSON.stringify({ FDDID: fddid }),
+        // });
 
+        // console.log(statusRes)
+        // const statusData = await statusRes.json();
+        // if (!statusRes.ok || !statusData.success) {
+        //   setStatus(statusData.message || "Failed to check disposal approval status.");
+        //   return;
+        // }
 
-        const statusData = await statusRes.json();
-        if (!statusRes.ok || !statusData.success) {
-          setStatus(statusData.message || "Failed to check disposal approval status.");
-          return;
-        }
+        // const statusRow = Array.isArray(statusData.data) ? statusData.data[0] : statusData.data;
+        // const stsCode = Number(statusRow?.StsCode ?? 0);
+        // console.log(stsCode)
 
-        const statusRow = Array.isArray(statusData.data) ? statusData.data[0] : statusData.data;
-        const stsCode = Number(statusRow?.StsCode ?? 0);
+        // if (stsCode === 5) {
+        //   setStatus("Form 10 is rejected.");
+        //   return;
+        // }
 
-        if (stsCode === 5) {
-          setStatus("Form 10 is rejected.");
-          return;
-        }
-
-        if (stsCode !== 3) {
-          setStatus("Form 10 is available only after disposal approval.");
-          return;
-        }
+        // if (stsCode !== 3) {
+        //   setStatus("Form 10 is available only after disposal approval.");
+        //   return;
+        // }
 
         const fetchRow = async (url: string, body: Record<string, string>) => {
           const res = await fetch(url, {
@@ -133,7 +164,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
           });
-
+          // console.log(fetchRow)
 
           const data = await res.json();
           if (!res.ok || !data.success) {
@@ -146,7 +177,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
 
           return row && Object.keys(row).length > 0 ? row : null;
         };
-
+        // console.log(iddid)
         const row =
           (await fetchRow("/api/GetData/GetForm10Details", { ID: iddid })) ??
           (await fetchRow("/api/GetData/GetSelectedVendorDetails", { ID: iddid }));
@@ -156,7 +187,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
           setStatus("Failed to load Form 10 details.");
           return;
         }
-
+        // console.log(fetchRow)
         const transporterName = getFirstValue(row, ["TransporterName"]);
         const transporterAddress = getFirstValue(row, ["TransporterAddress"]);
         const receiverName = getFirstValue(row, ["ReceiverName"]);
@@ -214,7 +245,20 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
     };
 
     void loadForm10Details();
-  }, [fddid, iddid]);
+  }, [fddid, iddid, ready]);
+
+  useEffect(() => {
+    if (params.mode !== "print") return;
+    if (hasAutoPrinted.current) return;
+    if (!status.toLowerCase().includes("loaded successfully")) return;
+
+    hasAutoPrinted.current = true;
+    const timer = window.setTimeout(() => {
+      window.print();
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [params.mode, status]);
 
 
   const updateField = <K extends keyof Form10Data>(key: K, value: Form10Data[K]) => {
@@ -255,12 +299,38 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
-      <Form10Table form={form} editable errors={errors} onFieldChange={updateField} />
+    <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6 w-full">
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+ 
+          #form10-print-area,
+          #form10-print-area * {
+            visibility: visible;
+          }
+ 
+          #form10-print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+          }
+ 
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
+
+      <div id="form10-print-area">
+        <Form10Table form={form} editable errors={errors} onFieldChange={updateField} />
+      </div>
 
       {status && (
         <p
-          className={`mt-4 text-sm ${status.toLowerCase().includes("fail") || status.toLowerCase().includes("fix")
+          className={`no-print mt-4 text-sm ${status.toLowerCase().includes("fail") || status.toLowerCase().includes("fix")
             ? "text-red-600"
             : "text-green-700"
             }`}
@@ -269,25 +339,25 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
         </p>
       )}
 
-      <div className="mt-5 flex flex-wrap gap-2">
+      <div className="no-print mt-5 flex flex-wrap gap-2">
         <button
           type="button"
           onClick={onSaveDraft}
-          className="rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          className="cursor-pointer rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
         >
           Save Draft
         </button>
         <button
           type="button"
           onClick={onReset}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
+          className="cursor-pointer rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
         >
           Reset
         </button>
         <button
           type="button"
           onClick={() => window.print()}
-          className="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
+          className="cursor-pointer rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
         >
           Print
         </button>

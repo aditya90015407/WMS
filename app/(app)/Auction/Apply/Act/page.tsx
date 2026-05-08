@@ -359,7 +359,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
           </div>
         </div>
 
-        <div className="mt-4">
+        {/* <div className="mt-4">
           <p className="text-xs text-slate-500 mb-2">Waste Details</p>
           {wasteDetails.length > 0 ? (
             <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
@@ -415,7 +415,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
           ) : (
             <span className="text-slate-500">N/A</span>
           )}
-        </div>
+        </div> */}
       </div>
 
       <form onSubmit={handleSubmit}>

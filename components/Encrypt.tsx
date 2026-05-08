@@ -1,11 +1,12 @@
 import { createCipheriv } from "crypto";
+import crypto from 'crypto';
 
 
 
 export default async function encrypt(text: string) {
   // console.log(text)
-const encryptionKey = "c7f4d493641e10500281260c6d6eb057599618d8844d94c9828b3e9e002859d9"
-const encryptionIV = "d78c12a7f93158cab68aedfe4a05fdfb"
+  const encryptionKey = "c7f4d493641e10500281260c6d6eb057599618d8844d94c9828b3e9e002859d9"
+  const encryptionIV = "d78c12a7f93158cab68aedfe4a05fdfb"
   // const encryptionKey=process.env
   //     const key = Buffer.from(process.env.ENCRYPTION_KEY, "hex");
   // const iv = Buffer.from(process.env.ENCRYPTION_IV, "hex");

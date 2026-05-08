@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
 type ViewRow = Record<string, string | number | null>;
@@ -26,6 +27,7 @@ type EditState = {
   storage: string;
   quantity: string;
   disposalTarget: string;
+  unit: string;
 };
 
 const PAGE_SIZE = 10;
@@ -42,7 +44,22 @@ const asDateValue = (value: unknown): string => {
 };
 
 const normalize = (value: string): string =>
+
   value.trim().toLowerCase().replace(/\s+/g, " ");
+
+const findOption = (
+  options: Option[],
+  idValue: unknown,
+  nameValue: unknown,
+): Option | undefined => {
+  const id = toText(idValue);
+  const name = normalize(toText(nameValue));
+
+  return options.find((item) => {
+    if (id && item.id === id) return true;
+    return name.length > 0 && normalize(item.name) === name;
+  });
+};
 
 export default function WasteEditPage() {
   const [rows, setRows] = useState<ViewRow[]>([]);
@@ -60,6 +77,52 @@ export default function WasteEditPage() {
   const [disposers, setDisposers] = useState<Option[]>([]);
   const [physicalStates, setPhysicalStates] = useState<Option[]>([]);
   const [storageMethods, setStorageMethods] = useState<Option[]>([]);
+  const [units, setUnits] = useState<Option[]>([]);
+
+
+  type RegisteredWaste = {
+    ID: string
+    UID: string
+    Unit: string
+    GenDeptID: string
+    GenDept: string
+    UnitDesc: string
+    DeptID: string
+    Dept: string
+    ReferenceNo: string
+    DateofIssuance: string
+    UnitAuthDesc: string
+    WasteCategory: string
+    WCID: string
+    Waste: string
+    SapWasteCode: string
+    Schedule: string
+    Storage: string
+    StorageMethod: string
+    PhysicalState: string
+    MUnit: string
+    Receiver: string
+    WasteQty: string
+    GenerationDate: string
+    TargetDate: string
+
+  }
+
+  const [waste, setWaste] = useState<RegisteredWaste[]>([])
+
+  const { data: session } = useSession()
+
+  async function fetchWaste() {
+    const res = await fetch("/api/GetData/GetWasteGeneratedByDept", {
+      method: "POST"
+    })
+    const data = await res.json()
+    setWaste(data)
+    // console.log(data)
+  }
+  useEffect(() => {
+    fetchWaste()
+  }, [refreshSeed])
 
   useEffect(() => {
     const loadRows = async () => {
@@ -113,6 +176,7 @@ export default function WasteEditPage() {
           disposerRes,
           physicalRes,
           storageRes,
+          unitRes,
           receiverRes,
         ] = await Promise.all([
           fetch("/api/auth/Waste/generate?type=drop-wc", {
@@ -131,18 +195,24 @@ export default function WasteEditPage() {
             method: "GET",
             cache: "no-store",
           }),
+          fetch("/api/auth/Waste/generate?type=drop-quantityunit", {
+            method: "GET",
+            cache: "no-store",
+          }),
           fetch("/api/auth/Waste/generate?type=drop-rcvr", {
             method: "GET",
             cache: "no-store",
           }),
+
         ]);
 
-        const [categoryPayload, disposerPayload, physicalPayload, storagePayload, receiverPayload] =
+        const [categoryPayload, disposerPayload, physicalPayload, storagePayload, unitPayload, receiverPayload] =
           (await Promise.all([
             categoryRes.json(),
             disposerRes.json(),
             physicalRes.json(),
             storageRes.json(),
+            unitRes.json(),
             receiverRes.json(),
           ])) as Array<{ success?: boolean; data?: Option[] }>;
 
@@ -166,6 +236,13 @@ export default function WasteEditPage() {
             ? storagePayload.data
             : [],
         );
+
+        setUnits(
+          unitPayload.success && Array.isArray(unitPayload.data)
+            ? unitPayload.data
+            : [],
+        );
+
         setReceivers(
           receiverPayload.success && Array.isArray(receiverPayload.data)
             ? receiverPayload.data
@@ -176,6 +253,7 @@ export default function WasteEditPage() {
         setDisposers([]);
         setPhysicalStates([]);
         setStorageMethods([]);
+        setUnits([]);
         setReceivers([]);
       }
     };
@@ -183,11 +261,24 @@ export default function WasteEditPage() {
     void loadBaseFilters();
   }, []);
 
+  const [sessionUid, setSessionUid] = useState("")
+
+
+  // const { data: session } = useSession()
+
+  useEffect(() => {
+
+    setSessionUid(session?.user.uid!)
+  }, [session])
+
   const loadWasteByCategory = async (categoryId: string): Promise<Option[]> => {
     if (!categoryId) return [];
     try {
+
+      // if (!sessionUid) return;
+
       const res = await fetch(
-        `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(categoryId)}`,
+        `/api/auth/Waste/generate?type=drop-waste-for-unit&wcid=${encodeURIComponent(categoryId)}&uid=${encodeURIComponent(sessionUid)}`,
         {
           method: "GET",
           cache: "no-store",
@@ -207,11 +298,16 @@ export default function WasteEditPage() {
 
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return rows;
-    return rows.filter((row) =>
+    // if (!q) return rows;
+    // return rows.filter((row) =>
+    //   Object.values(row).some((value) => toText(value).toLowerCase().includes(q)),
+    // );
+
+    if (!q) return waste;
+    return waste.filter((row) =>
       Object.values(row).some((value) => toText(value).toLowerCase().includes(q)),
     );
-  }, [rows, query]);
+  }, [waste, query]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -226,45 +322,46 @@ export default function WasteEditPage() {
 
   const onEdit = (row: ViewRow) => {
     setMessage(null);
-    const wcName = toText(row.WC);
-    const wwName = toText(row.WW);
-    const wrName = toText(row.WR);
-    const wdName = toText(row.WD);
-    const psName = toText(row.PS);
-    const smName = toText(row.SM);
+    const wcName = toText(row.WasteCategory || row.WC);
+    const wwName = toText(row.Waste || row.WW);
+    const wrName = toText(row.Receiver || row.WR);
+    const wdName = toText(row.Dept || row.Disposer || row.WD);
+    const psName = toText(row.PhysicalState || row.PS);
+    const smName = toText(row.StorageMethod || row.Storage || row.SM);
+    const unitName = toText(row.MUnit || row.Unit || row.UnitDesc);
 
-    const category = categories.find((item) => normalize(item.name) === normalize(wcName));
-    const receiver = receivers.find((item) => normalize(item.name) === normalize(wrName));
-    const disposer = disposers.find((item) => normalize(item.name) === normalize(wdName));
-    const physical = physicalStates.find(
-      (item) => normalize(item.name) === normalize(psName),
-    );
-    const storage = storageMethods.find(
-      (item) => normalize(item.name) === normalize(smName),
-    );
+    const category = findOption(categories, row.WCID, wcName);
+    const receiver = findOption(receivers, row.AID, wrName);
+    const disposer = findOption(disposers, row.DID || row.DeptID, wdName);
+    const physical = findOption(physicalStates, row.PSID, psName);
+    const storage = findOption(storageMethods, row.SMID, smName);
+    const unit = findOption(units, row.MUID || row.WTID, unitName);
 
     const nextState: EditState = {
       id: toText(row.ID),
-      date: asDateValue(row.GD),
+      date: asDateValue(row.GenerationDate || row.GD),
       categoryId: category?.id ?? "",
-      wasteId: "",
+      wasteId: toText(row.WID),
       receiver: receiver?.id ?? "",
       disposer: disposer?.id ?? "",
       physicalState: physical?.id ?? "",
       storage: storage?.id ?? "",
-      quantity: toText(row.WQ),
-      disposalTarget: asDateValue(row.TD),
+      quantity: toText(row.WasteQty || row.WQ),
+      disposalTarget: asDateValue(row.TargetDate || row.TD),
+      unit: unit?.id ?? "",
     };
     setEditState(nextState);
 
     if (nextState.categoryId) {
       void loadWasteByCategory(nextState.categoryId).then((wasteOptions) => {
-        const waste = wasteOptions.find(
+        if (nextState.wasteId) return;
+
+        const selectedWaste = wasteOptions.find(
           (item) => normalize(item.name) === normalize(wwName),
         );
-        if (waste) {
+        if (selectedWaste) {
           setEditState((prev) =>
-            prev ? { ...prev, wasteId: waste.id } : prev,
+            prev ? { ...prev, wasteId: selectedWaste.id } : prev,
           );
         }
       });
@@ -318,11 +415,11 @@ export default function WasteEditPage() {
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Waste Edit</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Edit existing waste records from the database.
-          </p>
+        <div className="w-full">
+          <h1 className="text-xl font-semibold text-teal-600 text-center">Edit Generated Waste</h1>
+          {/* <p className="mt-1 text-sm text-slate-600 text-center">
+            Edit existing waste records.
+          </p> */}
         </div>
         <button
           type="button"
@@ -360,7 +457,7 @@ export default function WasteEditPage() {
               <thead className="bg-slate-50">
                 <tr>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700">
-                    Code
+                    ID
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700">
                     Category
@@ -372,7 +469,10 @@ export default function WasteEditPage() {
                     Quantity
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700">
-                    Entry Date
+                    Gen Dept
+                  </th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700">
+                    Gen Date
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-xs font-semibold text-slate-700">
                     Target Date
@@ -389,19 +489,22 @@ export default function WasteEditPage() {
                       {toText(row.ID)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.WC)}
+                      {toText(row.WasteCategory)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.WW)}
+                      {toText(row.Waste)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.WQ)}
+                      {toText(row.WasteQty)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.GD)}
+                      {toText(row.GenDept)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.TD)}
+                      {toText(row.GenerationDate)}
+                    </td>
+                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                      {toText(row.TargetDate)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                       <button
@@ -460,11 +563,11 @@ export default function WasteEditPage() {
 
       {editState && (
         <div className="fixed inset-x-3 top-2 z-50 mx-auto w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-2xl md:inset-x-auto md:right-4 md:left-auto md:w-[min(94vw,64rem)] md:p-4">
-          <h3 className="text-sm font-semibold text-slate-800">Edit Entry</h3>
+          <h3 className="text-sm font-semibold text-slate-800 text-center">Edit Waste Entry</h3>
           <form onSubmit={onSave} className="mt-2 grid grid-cols-1 gap-2 md:mt-3 md:grid-cols-2 md:gap-3">
             <div className="md:col-span-2">
               <label className="mb-0.5 block text-xs font-semibold text-slate-700">
-                Code
+                ID
               </label>
               <input
                 type="text"
@@ -661,6 +764,28 @@ export default function WasteEditPage() {
                 }
                 className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
               />
+            </div>
+            <div>
+              <label className="mb-0.5 block text-xs font-semibold text-slate-700">
+                Unit
+              </label>
+              <select
+                required
+                value={editState.unit}
+                onChange={(e) =>
+                  setEditState((prev) =>
+                    prev ? { ...prev, unit: e.target.value } : prev,
+                  )
+                }
+                className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
+              >
+                <option value="">Select Unit</option>
+                {units.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="md:col-span-2 flex items-center gap-2 pt-1">
               <button

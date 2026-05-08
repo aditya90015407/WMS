@@ -35,7 +35,7 @@ export async function POST(req: Request) {
 
     const result = await pool
       .request()
-      .input("FLAG", sql.NVarChar(50), "InitiateDiposal")
+      .input("FLAG", sql.NVarChar(50), "InitiateDisposal")
       .input("WCID", sql.NVarChar(50), wcid)
       .input("WID", sql.NVarChar(50), wid)
       .input("TotalQty", sql.Decimal(18, 3), totalQty)

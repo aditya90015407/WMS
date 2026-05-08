@@ -11,7 +11,17 @@ type SelectedAuctionRow = {
   VendorCode?: string;
   NAME?: string;
   EMAIL?: string;
-  StsCode?:string;
+  StsCode?: string;
+  AuctionDate: string
+  Waste: string
+  WasteCategory: string
+  VID: string
+  DiposalType: string
+  DisType: string
+  TotalQty: string
+  CrBy: string
+  IsActive: string
+  CrDt: string
 };
 
 export default function SelectedEntriesPage() {
@@ -63,14 +73,14 @@ export default function SelectedEntriesPage() {
     try {
       const id = String(row.ID ?? "").trim();
       const iddid = String(row.IDDID ?? "").trim();
-      const stsCode=String(row.StsCode??"").trim();
+      const stsCode = String(row.StsCode ?? "").trim();
 
       if (!id || !iddid) return;
 
       const encryptedId = await encrypt(id);
       const encryptedApid = await encrypt(id);
       const encryptedIddid = await encrypt(iddid);
-    
+
 
       router.push(
         `/Auction/SelectedEntries/Act?id=${encodeURIComponent(encryptedId)}&apid=${encodeURIComponent(
@@ -93,7 +103,7 @@ export default function SelectedEntriesPage() {
   return (
     <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="text-center">
-        <h1 className="text-lg font-semibold text-slate-900">Selected Auction Entries</h1>
+        <h1 className="text-lg font-semibold text-teal-600">Selected Auction Entries</h1>
         <p className="mt-1 text-sm text-slate-600">Auctions selected for the logged-in vendor</p>
       </div>
 
@@ -106,19 +116,19 @@ export default function SelectedEntriesPage() {
             <thead className="bg-slate-50">
               <tr>
                 <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
-                  ID
-                </th>
-                <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
                   IDDID
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
-                  Vendor Code
+                  Auction Date
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
-                  Name
+                  Waste Category
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
-                  Email
+                  Waste
+                </th>
+                <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                  Total Qty
                 </th>
               </tr>
             </thead>
@@ -137,28 +147,21 @@ export default function SelectedEntriesPage() {
                     className="cursor-pointer hover:bg-slate-50"
                     onClick={() => void handleRowClick(row)}
                   >
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
-                      {row.ID ?? "N/A"}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
-                      {row.IDDID ?? "N/A"}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
-                      {row.VendorCode ?? "N/A"}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
-                      {row.NAME ?? "N/A"}
-                    </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-sm text-slate-700">
-                      {row.EMAIL ?? "N/A"}
-                    </td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.IDDID}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.AuctionDate}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.WasteCategory}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.Waste}</td>
+                    <td className="px-3 py-2 text-sm text-slate-700">{row.TotalQty}</td>
+                    {/* <td className="px-3 py-2 text-sm text-slate-700">{row.CrDt?.split("T")[0] || "N/A"}</td> */}
+
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
-      )}
-    </section>
+      )
+      }
+    </section >
   );
 }

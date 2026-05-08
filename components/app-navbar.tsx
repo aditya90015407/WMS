@@ -64,8 +64,8 @@ export default function AppNavbar() {
   const pathSegments = (pathname || "/")
     .split("/")
     .filter(Boolean)
-    .filter((segment) => segment.toLowerCase() !== "home");
-  const breadcrumbParts = ["Home", ...pathSegments.map(formatSegment)];
+  // .filter((segment) => segment.toLowerCase() !== "home");
+  const breadcrumbParts = [...pathSegments.map(formatSegment)];
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -86,7 +86,7 @@ export default function AppNavbar() {
   };
 
   return (
-    <header className="w-full sticky z-40 border-b border-slate-200 bg-white backdrop-blur">
+    <header className="w-full sticky z-40 border-b border-slate-200 bg-gradient-to-r from-emerald-200 via-green-300 to-emerald-200  backdrop-blur">
       <div className="relative flex h-16 w-full items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-3">
           <Image
@@ -100,7 +100,7 @@ export default function AppNavbar() {
         </div>
 
         <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-center">
-          <h1 className="text-lg font-extrabold tracking-wide text-slate-800 drop-shadow-sm md:text-2xl">
+          <h1 className="text-lg font-extrabold font-[eco] tracking-wide text-slate-800 drop-shadow-sm md:text-2xl">
             WASTE MANAGEMENT SYSTEM
           </h1>
         </div>
@@ -116,19 +116,19 @@ export default function AppNavbar() {
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-xl border border-slate-200 bg-white p-4 shadow-lg">
+            <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white py-4 px-6 shadow-lg">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                 Profile
               </p>
               <div className="mt-3 space-y-2 text-sm">
                 <p className="text-slate-800">
-                  <span className="font-semibold">EmpCode:</span> {empCode}
+                  <span className="font-semibold">EmpCode :</span> {empCode}
                 </p>
                 <p className="text-slate-800">
-                  <span className="font-semibold">Name:</span> {displayName}
+                  <span className="font-semibold">Name :</span> {displayName}
                 </p>
                 <p className="text-slate-800">
-                  <span className="font-semibold">Email:</span> {email}
+                  <span className="font-semibold">Email :</span> {email}
                 </p>
                 {/* <p className="text-slate-800">
                   <span className="font-semibold">Department:</span>{" "}
@@ -143,15 +143,20 @@ export default function AppNavbar() {
                   {deptId}
                 </p> */}
                 <p className="text-slate-800">
-                  <span className="font-semibold">Unit:</span>{" "}
+                  <span className="font-semibold">Unit :</span>{" "}
                   {wmsUnit}
                 </p>
                 <p className="text-slate-800">
-                  <span className="font-semibold">Department:</span>{" "}
+                  <span className="font-semibold">Department :</span>{" "}
                   {wmsDept}
                 </p>
+
                 <p className="text-slate-800">
-                  <span className="font-semibold">Assigned Roles:</span>
+                  <span className="font-semibold">Assigned Role :</span>{" "}
+                  {assignedRole}
+                </p>
+                {/* <p className="text-slate-800">
+                  <span className="font-semibold">Assigned Role :</span>
                 </p>
                 {assignedRole ? (
                   <div className="flex flex-wrap gap-2 pt-1">
@@ -161,15 +166,18 @@ export default function AppNavbar() {
                   </div>
                 ) : !assignedRole ? (
                   <p className="text-sm text-slate-600">Not assigned yet</p>
-                ) : null}
+                ) : null} */}
                 <div className="pt-3">
                   <button
                     type="button"
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="w-full rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white transition hover:bg-red-800 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full rounded-md px-3 py-2 text-sm font-medium text-white transition "
                   >
-                    {isLoggingOut ? "Logging out..." : "Log out"}
+                    <span
+                      className="tracking-wide [word-spacing:1px] cursor-pointer w-fit rounded-md bg-red-700 px-5 py-2 text-sm font-medium text-white transition hover:bg-red-800"
+                    >{isLoggingOut ? "Logging Out..." : "Log Out"}
+                    </span>
                   </button>
                 </div>
               </div>
@@ -177,7 +185,7 @@ export default function AppNavbar() {
           )}
         </div>
       </div>
-      <div className="border-t border-slate-200 bg-slate-50 px-4 py-2">
+      <div className="border-t border-slate-200 bg-emerald-400 px-4 py-2">
         <div className="flex w-full justify-start">
           <div className="inline-flex flex-wrap items-center justify-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5">
             {breadcrumbParts.map((part, index) => (

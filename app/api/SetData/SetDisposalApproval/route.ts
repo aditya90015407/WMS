@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
         const Remarks = String(body?.Remarks ?? "").trim();
         const EmpCode = String(session.user.id ?? "").trim();
 
+        // console.log(body)
+
         if (!FDDID) {
             return NextResponse.json(
                 { success: false, message: "FDDID is required" },

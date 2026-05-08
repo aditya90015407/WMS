@@ -1,8 +1,10 @@
 "use client";
 
+import encrypt from "@/components/Encrypt";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
+import decrypt from "@/components/Decrypt";
+import React from "react";
 type FinalDisposalRow = {
     ID: string | number;
     IDDID?: string | number;
@@ -25,7 +27,7 @@ function normalizeData<T extends Record<string, unknown>>(row: T) {
     );
 }
 
-export default function DisposalApprovePage() {
+export default function DisposalApprovePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -38,8 +40,26 @@ export default function DisposalApprovePage() {
     const start = (currentPage - 1) * pageSize;
     const currentRows = rows.slice(start, start + pageSize);
 
+    const [id, setId] = useState("");
+    const [ready, setReady] = useState(false);
+
+    const params = React.use(searchParams);
+    const encryptedId = params.id ?? "";
+    // const id = encryptedId ? await decrypt(encryptedId) : "";
+    useEffect(() => {
+        const handleDecrypt = async () => {
+            const decryptedId: string = encryptedId ? (await decrypt(encryptedId)) ?? "" : "";
+            setId(decryptedId);
+            setReady(true);
+            // use id here (set state, etc.)
+        };
+
+        void handleDecrypt();
+    }, [encryptedId]);
+
     useEffect(() => {
         const loadRows = async () => {
+            if (!ready) return;
             setLoading(true);
             setError(null);
 
@@ -50,7 +70,7 @@ export default function DisposalApprovePage() {
                 });
 
                 const rawData = await res.json();
-                // console.log("GetAllFinalDisposalList rawData:", rawData);
+                console.log("GetAllFinalDisposalList rawData:", rawData);
 
                 const data = Array.isArray(rawData)
                     ? rawData
@@ -59,7 +79,7 @@ export default function DisposalApprovePage() {
                         : [];
 
                 const normalized = data.map(normalizeData) as FinalDisposalRow[];
-                console.log("Normalized final disposal rows:", normalized);
+                // console.log("Normalized final disposal rows:", normalized);
 
                 setRows(normalized);
             } catch (err) {
@@ -72,18 +92,18 @@ export default function DisposalApprovePage() {
         };
 
         void loadRows();
-    }, []);
+    }, [ready]);
 
     return (
         <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="w-full">
-                    <h1 className="text-lg text-center font-semibold text-slate-900">
+                    <h1 className="text-lg text-center font-semibold text-teal-600">
                         Approve Final Disposal
                     </h1>
-                    <h2 className="text-sm text-center font-semibold text-slate-900">
+                    {/* <h2 className="text-sm text-center font-semibold text-slate-900">
                         Submitted Final Disposal List
-                    </h2>
+                    </h2> */}
                 </div>
             </div>
 
@@ -120,9 +140,9 @@ export default function DisposalApprovePage() {
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Quantity
                                     </th>
-                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                                    {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Status
-                                    </th>
+                                    </th> */}
                                 </tr>
                             </thead>
 
@@ -131,19 +151,21 @@ export default function DisposalApprovePage() {
                                     <tr
                                         key={index}
                                         className="cursor-pointer hover:bg-slate-50"
-                                        onClick={() => {
-                                            const finalId = String(row.ID ?? "").trim();
+                                        onClick={async () => {
+                                            const rawId = String(row.ID ?? "").trim();
+                                            const finalId = rawId ? await encrypt(rawId) : "";
+                                            const iddid = await encrypt(String(row.IDDID))
                                             const wcid = String(row.WCID ?? "").trim();
                                             const disType = String(row.DisType ?? "").trim().toLowerCase();
 
-                                            console.log("Clicked approval row:", row);
-                                            console.log("Routing with final ID:", finalId);
+                                            // console.log(row.TotalQty);
+                                            // console.log("Routing with final ID:", finalId);
 
                                             if (!finalId) return;
 
                                             const target =
                                                 disType === "internal"
-                                                    ? `/Disposal/Approve/Internal?id=${encodeURIComponent(finalId)}`
+                                                    ? `/Disposal/Approve/Internal?id=${encodeURIComponent(finalId)}&iddid=${encodeURIComponent(iddid)}`
                                                     : wcid === "1"
                                                         ? `/Disposal/Approve/Hazardous?id=${encodeURIComponent(finalId)}`
                                                         : `/Disposal/Approve/NonHazardous?id=${encodeURIComponent(finalId)}`;
@@ -166,9 +188,9 @@ export default function DisposalApprovePage() {
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.TotalQty ?? "")}
                                         </td>
-                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                        {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.Status ?? "")}
-                                        </td>
+                                        </td> */}
                                     </tr>
                                 ))}
                             </tbody>

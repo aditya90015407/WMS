@@ -1,5 +1,5 @@
 export type ViewRow = Record<string, unknown>;
-
+ 
 export type FormEntry = {
   code: string;
   date: string;
@@ -9,7 +9,8 @@ export type FormEntry = {
   waste: string;
   quantity: string;
   sapWasteCode: string;
-
+   Schedule: string;
+   Unit : string ;
   storageMethod: string;
   physicalState: string;
   disposer: string;
@@ -24,13 +25,15 @@ export type FormEntry = {
   receiverId: string;
   wcid: string;
   stsCode: string;
+ 
+ 
 };
-
+ 
 const toText = (value: unknown): string => {
   if (value === null || value === undefined) return "";
   return String(value);
 };
-
+ 
 const firstText = (...values: unknown[]): string => {
   for (const value of values) {
     const text = toText(value).trim();
@@ -38,25 +41,26 @@ const firstText = (...values: unknown[]): string => {
   }
   return "";
 };
-
+ 
 const asDisplayDate = (value: unknown): string => {
   const raw = toText(value).trim();
   const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (!iso) return raw;
   return `${iso[3]}-${iso[2]}-${iso[1]}`;
 };
-
+ 
 export const toForm3Entry = (row: ViewRow): FormEntry => ({
   code: toText(row.ID ?? row.Code),
   date: asDisplayDate(row.GD ?? row["Date"]),
   targetDate: asDisplayDate(row.TD ?? row["Target Date"]),
   wasteCategory: toText(row.WC ?? row["Waste Category"]),
+  Unit : toText(row.MUnit ?? row["MUnit"]),
   wasteType: toText(row.WT ?? row["Waste Type"]),
   waste: toText(row.WW ?? row["Waste"]),
-  
+  Schedule: toText(row.Schedule ?? row["Schedule"] ?? row["SCHNO"] ?? row["Schedule No"]),
   sapWasteCode: toText(row.SapWasteCode ?? row["SapWasteCode"] ?? row["SAPWASTECODE"]),
-  
-  
+ 
+ 
   unitDesc: firstText(row.UnitDesc, row["UnitDesc"], row["Unit Desc"]),
   dateOfIssuance: asDisplayDate(
     firstText(row.DateofIssuance, row["DateofIssuance"], row["Date of Issuance"]),
@@ -80,4 +84,5 @@ export const toForm3Entry = (row: ViewRow): FormEntry => ({
   wcid: toText(row.WCID ?? row["WCID"]),
   stsCode: toText(row.StsCode ?? row["StsCode"]),
 });
-
+ 
+ 

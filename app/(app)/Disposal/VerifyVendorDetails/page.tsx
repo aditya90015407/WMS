@@ -8,12 +8,13 @@ type FinalDisposalRow = {
     IDDID?: string | number;
     WCID?: string | number;
     DisType?: string;
-    VID?:string | number;
+    VID?: string | number;
     WasteCategory?: string;
     Waste?: string;
     TotalQty?: string | number;
     Status?: string;
     CrDt?: string;
+    VendorSelfTransport: string
 };
 
 function normalizeData<T extends Record<string, unknown>>(row: T) {
@@ -80,11 +81,11 @@ export default function DisposalApprovePage() {
         <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="w-full">
-                    <h1 className="text-lg text-center font-semibold text-slate-900">
-                        Approve Final Disposal
+                    <h1 className="text-lg text-center font-semibold text-teal-600">
+                        Verify Vendor Details
                     </h1>
-                    <h2 className="text-sm text-center font-semibold text-slate-900">
-                        Submitted Final Disposal List
+                    <h2 className="text-sm text-center font-semibold text-cyan-700">
+                        Click to check and review Vendor details before proceeding for Approval
                     </h2>
                 </div>
             </div>
@@ -108,10 +109,7 @@ export default function DisposalApprovePage() {
                             <thead className="bg-slate-50">
                                 <tr>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
-                                        Final Ref ID
-                                    </th>
-                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
-                                        Original ID
+                                        Auction ID
                                     </th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Waste Category
@@ -121,6 +119,9 @@ export default function DisposalApprovePage() {
                                     </th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Quantity
+                                    </th>
+                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                                        Transporter Details Filled
                                     </th>
                                     {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Status
@@ -133,7 +134,7 @@ export default function DisposalApprovePage() {
                                     <tr
                                         key={index}
                                         className="cursor-pointer hover:bg-slate-50"
-                                       onClick={() => {
+                                        onClick={() => {
                                             const iddid = String(row.IDDID ?? "").trim();
                                             const vid = String(row.VID ?? "").trim();
 
@@ -150,9 +151,6 @@ export default function DisposalApprovePage() {
 
                                     >
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                                            {String(row.ID ?? "")}
-                                        </td>
-                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.IDDID ?? "")}
                                         </td>
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
@@ -164,8 +162,11 @@ export default function DisposalApprovePage() {
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.TotalQty ?? "")}
                                         </td>
-                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                        {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.Status ?? "")}
+                                        </td> */}
+                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                            {String(row.VendorSelfTransport == '1' ? "Yes Filled" : "Not Filled")}
                                         </td>
                                     </tr>
                                 ))}

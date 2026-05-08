@@ -1,9 +1,10 @@
 "use client";
 
+import decrypt from "@/components/Decrypt";
 import encrypt from "@/components/Encrypt";
 import { useRouter } from "next/navigation";
 import { normalize } from "path";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 type ViewRow = Record<string, string | number | null>;
 type Option = {
@@ -57,8 +58,8 @@ const getDisplayHeader = (header: string): string => {
     return labelMap[key] ?? header;
 };
 
-export default function WasteApprove() {
-
+export default function AuctionApprove({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+    const params = React.use(searchParams);
 
     function normalizeData<T extends Record<string, any>>(row: T) {
         return Object.fromEntries(
@@ -79,11 +80,13 @@ export default function WasteApprove() {
 
     type AuctionParticipants = {
         ID: string
+        VID: string
         NAME: string
         EMAIL: string
         CrBy: string
         CrDt: string
         IsActive: string
+        VendorCode: string
     }
 
     const [allAuctionParticipants, setAllAuctionParticipants] = useState<AuctionParticipants[]>([])
@@ -125,54 +128,26 @@ export default function WasteApprove() {
 
     useEffect(() => {
         const loadRows = async () => {
-            setLoading(true);
-            setError(null);
 
             try {
-                const params = new URLSearchParams();
-                params.set("flag", VIEW_FLAG);
-                if (filters.categoryId) params.set("WCID", filters.categoryId);
-                if (filters.wasteId) params.set("WID", filters.wasteId);
-                if (filters.disposerId) params.set("DID", filters.disposerId);
-                if (filters.physicalStateId) params.set("PSID", filters.physicalStateId);
-                if (filters.storageMethodId) params.set("SMID", filters.storageMethodId);
-                if (filters.receiverId) params.set("AID", filters.receiverId);
-                if (filters.date) params.set("GenerationDate", filters.date);
+                const encoded = params.id;
+                const id = await decrypt(encoded!)
 
-                const res = await fetch(`/api/auth/waste/view?${params.toString()}`, {
-                    method: "GET",
-                    cache: "no-store",
-                });
-
-                const payload = (await res.json()) as ApiResponse;
-                // console.log(payload)
-
-                if (!res.ok || !payload.success) {
-                    setRows([]);
-                    setError(payload.message || payload.error || "Failed to load records");
-                    return;
-                }
-
-                if (!Array.isArray(payload.data)) {
-                    setRows([]);
-                    setError("Invalid response data format");
-                    return;
-                }
-
-                setRows(payload.data);
-
-                const res2 = await fetch(`/api/GetData/GetAllAuctionParticipants`, {
+                const res2 = await fetch(`/api/GetData/GetApprovedAuctionParticipantsByID`, {
                     method: "POST",
+                    body: JSON.stringify({ "ID": id })
                 });
 
                 const rawData = await res2.json()
-                // // console.log(rawData)
-                const data = rawData.map(normalizeData)
+                // console.log(rawData, "rawdata")
+                const data = rawData.data.map(normalizeData)
+                // console.log("after normalising")
+                // console.log(data, rawData, "HI ")
                 setAllAuctionParticipants(data)
 
             } catch {
                 setRows([]);
-                setError("Request failed while loading waste records");
+                setError("Request failed while loading Applicants records");
             } finally {
                 setLoading(false);
             }
@@ -261,7 +236,6 @@ export default function WasteApprove() {
 
     useEffect(() => {
         const loadWaste = async () => {
-
             if (!filters.categoryId) {
                 setAvailableWaste([]);
                 return;
@@ -269,14 +243,11 @@ export default function WasteApprove() {
 
             try {
                 const res = await fetch(
-
                     `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(filters.categoryId)}`,
-
                     {
                         method: "GET",
                         cache: "no-store",
                     },
-
                 );
                 const payload = (await res.json()) as { success?: boolean; data?: Option[] };
                 if (payload.success && Array.isArray(payload.data)) {
@@ -293,13 +264,9 @@ export default function WasteApprove() {
     }, [filters.categoryId]);
 
     const headers = useMemo(() => {
-
         const keySet = new Set<string>();
-
         for (const row of rows) {
-
             Object.keys(row).forEach((k) => keySet.add(k));
-
         }
         return Array.from(keySet);
     }, [rows]);
@@ -327,8 +294,9 @@ export default function WasteApprove() {
     return (
         <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-lg  font-semibold text-slate-900">View Auction Participants</h1>
+                <div className="w-full">
+                    <h1 className="text-lg font-semibold text-slate-900"> Approve Auction Applicants </h1>
+                    <h1 className="text-sm text-center font-semibold text-teal-600"> Applicants List</h1>
 
                 </div>
                 <button
@@ -340,162 +308,18 @@ export default function WasteApprove() {
                 </button>
             </div>
 
-            {/* <div className="mt-4 grid grid-cols-1 gap-0 md:grid-cols-2 lg:grid-cols-4">
-                <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700">Date</label>
-                    <input
-                        type="date"
-                        value={filters.date}
-                        onChange={(e) =>
-                            setFilters((prev) => ({ ...prev, date: e.target.value }))
-                        }
-                        className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-                    />
-                </div>
-
-                <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700">Category</label>
-                    <select
-                        value={filters.categoryId}
-                        onChange={(e) =>
-                            setFilters((prev) => ({
-                                ...prev,
-                                categoryId: e.target.value,
-                                wasteId: "",
-                            }))
-                        }
-                        className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-                    >
-                        <option value="">Select</option>
-                        {categories.map((item) => (
-                            <option key={item.id} value={item.id}>
-                                {item.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700">Waste</label>
-                    <select
-                        value={filters.wasteId}
-                        onChange={(e) =>
-                            setFilters((prev) => ({ ...prev, wasteId: e.target.value }))
-                        }
-                        className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-                        disabled={!filters.categoryId}
-                    >
-                        <option value="">Select</option>
-                        {availableWaste.map((item) => (
-                            <option key={item.id} value={item.id}>
-                                {item.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700">Disposer</label>
-                    <select
-                        value={filters.disposerId}
-                        onChange={(e) =>
-                            setFilters((prev) => ({ ...prev, disposerId: e.target.value }))
-                        }
-                        className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-                    >
-                        <option value="">Select</option>
-                        {disposers.map((item) => (
-                            <option key={item.id} value={item.id}>
-                                {item.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700">
-                        Physical State
-                    </label>
-                    <select
-                        value={filters.physicalStateId}
-                        onChange={(e) =>
-                            setFilters((prev) => ({ ...prev, physicalStateId: e.target.value }))
-                        }
-                        className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-                    >
-                        <option value="">Select</option>
-                        {physicalStates.map((item) => (
-                            <option key={item.id} value={item.id}>
-                                {item.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700">
-                        Method of Storage
-                    </label>
-                    <select
-                        value={filters.storageMethodId}
-                        onChange={(e) =>
-                            setFilters((prev) => ({ ...prev, storageMethodId: e.target.value }))
-                        }
-                        className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-                    >
-                        <option value="">Select</option>
-                        {storageMethods.map((item) => (
-                            <option key={item.id} value={item.id}>
-                                {item.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div>
-                    <label className="mb-1 block text-xs font-semibold text-slate-700">Receiver</label>
-                    <select
-                        value={filters.receiverId}
-                        onChange={(e) =>
-                            setFilters((prev) => ({ ...prev, receiverId: e.target.value }))
-                        }
-                        className="w-1/2 min-w-32 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-                    >
-                        <option value="">Select</option>
-                        {receivers.map((item) => (
-                            <option key={item.id} value={item.id}>
-                                {item.name}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-            </div>
-
-            <div className="mt-2">
-                <label className="mb-1 block text-xs font-semibold text-slate-700">
-                    Search
-                </label>
-                <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search in all columns..."
-                    className="w-1/2 min-w-40 rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
-                />
-            </div> */}
 
             {loading && (
-                <p className="mt-4 text-sm text-slate-600">Loading waste records...</p>
+                <p className="mt-4 text-sm text-slate-600">Loading Auction Participants records...</p>
             )}
 
             {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-
+            {/* 
             {!loading && !error && headers.length === 0 && (
                 <p className="mt-4 text-sm text-slate-600">No records found.</p>
-            )}
+            )} */}
 
-            {!loading && !error && headers.length > 0 && (
+            {!loading && !error && (
                 <>
                     {/* <p className="mt-4 text-sm text-slate-600">
             Showing {pagedRows.length} of {filteredRows.length} records
@@ -504,16 +328,9 @@ export default function WasteApprove() {
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-slate-50">
                                 <tr >
-                                    {/* {headers.map((header) => (
-                                        <th
-                                            key={header}
-                                            className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-700"
-                                        >
-                                            {getDisplayHeader(header)}
-                                        </th>
-                                    ))} */}
+
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >ID</th>
+                                    >Vendor Code</th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Name</th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
@@ -529,13 +346,13 @@ export default function WasteApprove() {
                                     <tr key={index}
                                         onClick={async () => {
                                             const encryptedID = await encrypt(row.ID!.toString());
-                                            router.push(`./View/FullView?id=${encryptedID}`);
+                                            router.push(`./Applicants/Act?id=${encryptedID}`);
                                         }}
                                         className="cursor-pointer"
                                     >
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.ID}
+                                        >{row.VendorCode}
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"

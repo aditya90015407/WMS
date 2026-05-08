@@ -31,35 +31,35 @@ export async function POST(req: Request) {
     const physicalForm = String(body.PSID ?? "").trim();
     const disposedTo = String(body.AID ?? "").trim();
 
-    console.log(body)
+    // console.log(body)
 
     const result = await pool
       .request()
-      .input("FLAG", sql.NVarChar(50), "InitiateDiposal")
+      .input("FLAG", sql.NVarChar(50), "InitiateDisposal")
       .input("WCID", sql.NVarChar(50), wcid)
       .input("WID", sql.NVarChar(50), wid)
       .input("TotalQty", sql.Decimal(18, 3), totalQty)
       .input("Auctionable", sql.Int, auctionable)
       .input("AuctionDate", sql.Date, auctionDate)
-      .input("PSID",sql.NVarChar(30),physicalForm)
-      .input("AID",sql.NVarChar(30),disposedTo)
+      .input("PSID", sql.NVarChar(30), physicalForm)
+      .input("AID", sql.NVarChar(30), disposedTo)
       .input("Remarks", sql.NVarChar(sql.MAX), remarks)
       .input("EmpCode", sql.Int, Number(empCode))
       .execute("PRO-WMS_SET");
-        console.log(result.recordset)
-      const status = String(result.recordset?.[0]?.STATUS ?? "");
-            const match = status.match(/-\s*(\d+)/);
-            const wrid = match?.[1] ? Number(match[1]) : null;
-        
-            return NextResponse.json({
-            success: true,
-            data: {
-                recordset: result.recordset ?? [],
-                WRID: wrid,
-            },
-            });
+    console.log(result.recordset)
+    const status = String(result.recordset?.[0]?.STATUS ?? "");
+    const match = status.match(/-\s*(\d+)/);
+    const wrid = match?.[1] ? Number(match[1]) : null;
 
-    
+    return NextResponse.json({
+      success: true,
+      data: {
+        recordset: result.recordset ?? [],
+        WRID: wrid,
+      },
+    });
+
+
   } catch (e: any) {
     return NextResponse.json({ success: false, message: e.message }, { status: 500 });
   }

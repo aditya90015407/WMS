@@ -1,13 +1,21 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import decrypt from "@/components/Decrypt";
-import React, { useEffect, useMemo, useState } from "react";
-import { redirect } from 'next/navigation';
-import toast, { Toaster } from "react-hot-toast";
-import Link from "next/link";
+import toast from "react-hot-toast";
 
+type AuctionDetails = {
+  AuctionDate?: string | null;
+  CrDt?: string | null;
+  WasteCategory?: string | null;
+  Remarks?: string | null;
+  Waste?: string | null;
+  WasteQty?: string | number | null;
+  TotalQty?: string | number | null;
+};
 
-export default function AuctionApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+export default function AuctionsReverted({ searchParams }: { searchParams: Promise<{ id?: string, iddid?: string }> }) {
   const params = React.use(searchParams);
 
   function normalizeData<T extends Record<string, any>>(row: T) {
@@ -52,6 +60,10 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
     CrBy: string
     CrDt: string
     IsActive: string
+    ApproverRemarks: string
+    UpBy: string
+    UpDt: string
+    ApproverName: string
   }
 
   type ApprovalRejectionHistory = {
@@ -70,9 +82,6 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
   const [auctionParticipantLine, setAuctionParticipantLine] = useState<AuctionParticipantLine[]>([])
 
   const [approvalRejectionHistory, setApprovalRejectionHistory] = useState<ApprovalRejectionHistory[]>([])
-
-  const [remarks, setRemarks] = useState("")
-  const [acceptance, setAcceptance] = useState("")
 
 
   async function fetchDetails() {
@@ -160,69 +169,199 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
   }
 
 
+  const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  const [id, setId] = useState("");
+  const [historyRows, setHistoryRows] = useState<any[]>([]);
 
-    const res = await fetch("/api/SetData/SetAuctionApproval", {
-      method: "POST",
-      body: JSON.stringify({
-        "APID": auctionParticipant?.ID,
-        "APLID": auctionParticipantLine.at(-1)?.ID,
-        "Remarks": remarks,
-        "Acceptance": acceptance
-      })
-    })
+  const [apid, setApid] = useState("");
+  const [iddid, setIddid] = useState("");
+  const [auction, setAuction] = useState<AuctionDetails | null>(null);
 
-    const data = await res.json()
-    // console.log(data)
+  const [ctoFile, setCtoFile] = useState<File | null>(null);
+  const [hwAuthFile, setHwAuthFile] = useState<File | null>(null);
+  const [hwAuthSpcbFile, setHwAuthSpcbFile] = useState<File | null>(null);
+  const [blueBookFile, setBlueBookFile] = useState<File | null>(null);
+  const [eprFile, setEprFile] = useState<File | null>(null);
 
-    if (data.STATUS == 'Response Recorded Successfully!') {
-      toast.success("Response Recorded Successfully!")
-      // redirect("./")
-      return
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const loadPage = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const encId = params.id;
+        // const encApid = params.get("apid") ?? "";
+        const encIddid = params.iddid;
+
+        const decId = encId ? await decrypt(encId) : "";
+        // const decApid = encApid ? await decrypt(encApid) : "";
+        const decIddid = encIddid ? await decrypt(encIddid) : "";
+
+        setId(String(decId ?? ""));
+        // setApid(String(decApid ?? ""));
+        setIddid(String(decIddid ?? ""));
+
+        if (encIddid) {
+          const detailsRes = await fetch("/api/GetData/GetAuctionDetailsById", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: encIddid }),
+          });
+
+          const detailsPayload = await detailsRes.json();
+          const detailsRow = detailsPayload?.data ?? null;
+          // console.log(detailsRow)
+
+          if (decId) {
+            const historyRes = await fetch("/api/GetData/GetApprovalRejectionHistoryByVendorCode", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                APID: String(decId).trim(),
+              }),
+            });
+
+            const historyData = await historyRes.json();
+            // console.log("history response:", historyData);
+
+            if (!historyRes.ok || !historyData?.success) {
+              setHistoryRows([]);
+            } else {
+              const historyList = Array.isArray(historyData?.data) ? historyData.data : [];
+              setHistoryRows(historyList);
+            }
+          } else {
+            setHistoryRows([]);
+          }
+
+          setAuction(detailsRow ?? null);
+        }
+      } catch (err) {
+        // console.error(err);
+        setError("Failed to load reverted auction details.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadPage();
+  }, [params]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const encId = params.id;
+    const decId = encId ? await decrypt(encId) : "";
+    if (!decId) {
+      setError("APID is missing.");
+      return;
     }
 
-    else {
-      toast.success("Some error occured !")
-      // redirect("./")
-      return
-    }
+    try {
+      setSaving(true);
+      setError("");
 
+      const docsForm = new FormData();
+      docsForm.append("APID", id);
+      docsForm.append("ID", id);
+      docsForm.append("IDDID", iddid);
+      docsForm.append("Reapply", "1");
+
+      if (ctoFile) docsForm.append("CtoRespectiveFile", ctoFile);
+      if (hwAuthFile) docsForm.append("HwAuthorizationOspcbFile", hwAuthFile);
+      if (hwAuthSpcbFile) docsForm.append("HwAuthorizationSpcbFile", hwAuthSpcbFile);
+      if (blueBookFile) docsForm.append("BlueBookFile", blueBookFile);
+      if (eprFile) docsForm.append("RegistrationCertificateFile", eprFile);
+
+      const res = await fetch("/api/SetData/InsertAuctionParticipantsLine", {
+        method: "POST",
+        body: docsForm,
+      });
+
+      const payload = await res.json();
+
+      if (!res.ok || !payload.success) {
+        setError(payload.message || "Failed to save reapply documents.");
+        return;
+      }
+
+      alert("Documents re-uploaded successfully.");
+      router.push("/Auction/RevertedEntries");
+    } catch (err) {
+      // console.error(err);
+      setError("Failed to save reapply documents.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <section className="mx-auto max-w-5xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <p className="text-sm text-slate-600">Loading reverted form...</p>
+      </section>
+    );
   }
 
   return (
-
-    <div className="bg-white h-fit px-8 py-4 relative">
-      <Toaster />
-      {/* <div className="text-center text-sm">Act on Waste</div> */}
-
-      <div>
-        <div className="text-center text-orange-600 mb-5">
-          Participant's Details
-        </div>
-        {/* <Link href="./">
- 
-                    <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
-                </Link> */}
+    <section className="mx-auto max-w-5xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="border-b border-slate-200 pb-4">
+        <h1 className="text-2xl font-semibold text-slate-900">Reapply Auction Documents</h1>
+        <p className="mt-1 text-sm text-slate-600">
+          Re-upload the required documents for the same auction participant entry.
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} action="">
-        <div className="grid grid-cols-2 text-sm">
-          <div className="px-2 py-2 font-semibold text-xs">Vendor Code : <span className="font-normal text-sm"> {auctionParticipant?.VendorCode}</span></div>
-          <div className="px-2 py-2 font-semibold text-xs">Name : <span className="font-normal text-sm"> {auctionParticipant?.NAME}</span></div>
-          <div className="px-2 py-2 font-semibold text-xs">Email : <span className="font-normal text-sm"> {auctionParticipant?.EMAIL}</span></div>
-          <div className="px-2 py-2 font-semibold text-xs">Applied On : <span className="font-normal text-sm"> {auctionParticipant?.CrDt?.split('T')[0]} {auctionParticipant?.CrDt?.split('T')[1]?.split('.')[0]} </span></div>
-          {/* <div className="px-2 py-2 font-semibold text-xs">CTO for respective SPCB : <span className="font-normal text-sm"> {auctionParticipant?.CTO_AttachPath}</span></div>
-                    <div className="px-2 py-2 font-semibold text-xs">HW authorization from OSPCB : <span className="font-normal text-sm"> {auctionParticipant?.OSPCB_HW_Auth_AttachPath}</span></div>
-                    <div className="px-2 py-2 font-semibold text-xs">HW authorization from respective SPCB : <span className="font-normal text-sm"> {auctionParticipant?.SPCB_HW_Auth_AttachPath}</span></div>
-                    <div className="px-2 py-2 font-semibold text-xs">Copy of blue book : <span className="font-normal text-sm"> {auctionParticipant?.BlueBook_AttachPath}</span></div>
-                    <div className="px-2 py-2 font-semibold text-xs">EPR registration certificate for Plastic/oil/tyre : <span className="font-normal text-sm"> {auctionParticipant?.EPR_Cert_AttachPath}</span></div> */}
+      {error && (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Auction Date</p>
+          <p className="mt-1 text-sm text-slate-900">{auction?.AuctionDate ?? "N/A"}</p>
         </div>
 
-        <hr className="border border-gray-200 my-4" />
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Posted On</p>
+          <p className="mt-1 text-sm text-slate-900">
+            {auction?.CrDt ? String(auction.CrDt).split("T")[0] : "N/A"}
+          </p>
+        </div>
 
-        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Waste Category</p>
+          <p className="mt-1 text-sm text-slate-900">{auction?.WasteCategory ?? "N/A"}</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Remarks</p>
+          <p className="mt-1 text-sm text-slate-900">{auction?.Remarks ?? "N/A"}</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Waste</p>
+          <p className="mt-1 text-sm text-slate-900">{auction?.Waste ?? "N/A"}</p>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Waste Qty</p>
+          <p className="mt-1 text-sm text-slate-900">
+            {auction?.WasteQty ?? auction?.TotalQty ?? "N/A"}
+          </p>
+        </div>
+      </div>
+
+      <hr className="border border-gray-200 my-4" />
+
+      <div className="block w-full">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 w-full block">
           <div className="py-1 text-center text-sm">Documents Upload History</div>
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
@@ -242,9 +381,15 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                 >EPR registration certificate for Plastic/oil/tyre</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                >Remarks</th>
+                >Participant's Remarks</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                >Apply Date</th>
+                >Uploaded On</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >Approver Remarks</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >Approved / Rejected By</th>
+                <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                >Approved / Rejected On</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
@@ -302,54 +447,144 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                     className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                   >{row.CrDt?.split("T")[0]}
                   </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >{row.ApproverRemarks}
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >{row.ApproverName}
+                  </td>
+                  <td
+                    className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                  >{row.UpDt?.split("T")[0]}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
+      </div>
 
-
-        <hr className="border border-gray-200 my-4" />
-
-        <div className="grid grid-cols-2 text-sm">
-
-          <div>
-            <label className="font-semibold">Action <span className="text-red-600 font-semibold text-sm pr-2">* </span></label>
-            <select
-              required
-              onChange={(e) => setAcceptance(e.target.value)}
-              className="w-[40%] border border-gray-200 cursor-pointer p-2 mt-1 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-400">
-              <option value="">Select </option>
-              <option value="1">Approve</option>
-              <option value="2">Revert</option>
-            </select>
-
-
-          </div>
-
-          <div>
-            <label className="font-semibold">Remarks</label>
-            <textarea
-              // type="text"
-              rows={1}
-              placeholder=""
-              // value={complaint.date}
-              // readOnly
-              onChange={(e) => { setRemarks(e.target.value) }}
-              className=" border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
-            />
-          </div>
-
+      <form onSubmit={handleSubmit} className="mt-8 grid gap-4 md:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            CTO Respective File
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={(e) => setCtoFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
         </div>
-        <button
-          type="submit"
-          className="text-sm cursor-pointer px-4 py-1.5 rounded-md bg-green-700 text-white hover:bg-green-800"
-        >
-          Submit
-        </button>
 
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            HW Authorization OSPCB File
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={(e) => setHwAuthFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            HW Authorization SPCB File
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={(e) => setHwAuthSpcbFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            Blue Book File
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={(e) => setBlueBookFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-medium text-slate-700">
+            Registration Certificate File
+          </label>
+          <input
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={(e) => setEprFile(e.target.files?.[0] ?? null)}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          />
+        </div>
+
+
+        {/* 
+        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
+          <h2 className="mb-3 text-lg font-semibold text-slate-800">Action History</h2>
+
+          <div className="overflow-x-auto rounded-lg border border-slate-200">
+            <table className="min-w-full border-collapse text-sm">
+              <thead className="bg-slate-100">
+                <tr>
+                  <th className="border border-slate-200 px-3 py-2 text-left">ID</th>
+                  <th className="border border-slate-200 px-3 py-2 text-left">Rejected By</th>
+                  <th className="border border-slate-200 px-3 py-2 text-left">Remarks</th>
+                  <th className="border border-slate-200 px-3 py-2 text-left">Rejection Date & Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historyRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="border border-slate-200 px-3 py-3 text-center text-slate-500">
+                      No history found.
+                    </td>
+                  </tr>
+                ) : (
+                  historyRows.map((row, index) => (
+                    <tr key={`${row.ID ?? "history"}-${index}`}>
+                      <td className="border border-slate-200 px-3 py-2">{row.ID ?? "N/A"}</td>
+                      <td className="border border-slate-200 px-3 py-2">{row.UpBy ?? "N/A"}</td>
+                      <td className="border border-slate-200 px-3 py-2">{row.ApproverRemarks ?? "N/A"}</td>
+                      <td className="border border-slate-200 px-3 py-2">
+                        {row.UpDt ? String(row.UpDt).replace("T", " ").split(".")[0] : "N/A"}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div> */}
+
+
+        <div className="md:col-span-2 flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={() => router.push("/Auction/RevertedEntries")}
+            className="cursor-pointer rounded-lg border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={saving}
+            className="cursor-pointer rounded-lg bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-60"
+          >
+            {saving ? "Saving..." : "Reapply"}
+          </button>
+        </div>
       </form>
-    </div>
+    </section>
   );
 }

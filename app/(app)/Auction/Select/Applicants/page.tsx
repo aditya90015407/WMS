@@ -93,6 +93,8 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
 
   const empCode = String(session?.user?.id ?? "").trim();
 
+  const [iddid, setIDDID] = useState("")
+
 
   useEffect(() => {
     const loadRows = async () => {
@@ -101,8 +103,9 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
       try {
         if (!encoded) return;
         const id = await decrypt(encoded);
+        setIDDID(id)
 
-        const res2 = await fetch("/api/GetData/GetApprovedAuctionParticipantsByID", {
+        const res2 = await fetch("/api/GetData/GetLevel2ApprovedAuctionParticipantsByID", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ID: encoded }),
@@ -128,6 +131,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
     void loadRows();
   }, [refreshSeed, filters, encoded]);
 
+
   const filteredRows = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return rows;
@@ -149,7 +153,6 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
   async function handleSelectSubmit() {
     try {
       if (!encoded || !String(selectedVid).trim()) {
-
         toast.error("Please enter VID.");
         return;
       }
@@ -163,7 +166,6 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
           IDDID: id,
           VID: String(selectedVid).trim(),
           EmpCode: empCode
-
         }),
       });
 
@@ -174,6 +176,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
       }
 
       toast.success("Selected vendor saved!");
+      router.back()
     } catch (err) {
       console.error("Select submit failed:", err);
       toast.error(err instanceof Error ? err.message : "Error while saving selected vendor");
@@ -187,15 +190,24 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="w-full">
-          <h1 className="text-lg font-semibold text-slate-900">Select Auction Participants</h1>
-          <h1 className="text-sm text-center font-semibold text-slate-900">Applicants List</h1>
+          <h1 className="text-md text-center my-1 font-semibold text-teal-600">Select Auction Participants</h1>
+          <h1 className="text-sm text-center font-semibold text-teal-700">Approved Applicants List</h1>
         </div>
         <button
           type="button"
           onClick={() => setRefreshSeed((x) => x + 1)}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
           Refresh
+        </button>
+
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="rounded  px-1 py-2 text-xs text-slate-700 cursor-pointer hover:bg-slate-50"
+        >
+          <img src="/goback.png" alt="" className="h-5 mx-2" />
+
         </button>
       </div>
 
@@ -204,99 +216,117 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
 
       {!loading && !error && (
         <>
-          <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
-            <table className="min-w-full divide-y divide-slate-200">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
-                    Select
-                  </th>
-                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">VendorCode</th>
-                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Name</th>
-                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Email</th>
-                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Applied By</th>
-                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Applied On</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
-                {currentRows?.map((row, index) => (
-                  <tr
-                    key={index}
-                    className="cursor-pointer"
-                  >
-                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      <input
-                        type="checkbox"
-                        checked={selectedRowVid === row.VID}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedRowVid(row.VID);
-                            setSelectedVid(String(row.VID));
-                            setSelectedVendorCode(row.VendorCode)
-                            setSelectedVendorName(row.NAME)
-                          } else {
-                            setSelectedRowVid("");
-                            setSelectedVid("");
-                          }
-                        }}
-                      />
-                    </td>
-                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.VendorCode}</td>
-                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.NAME}</td>
-                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.EMAIL}</td>
-                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.CrBy}</td>
-                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {row?.CrDt?.split("T")[0]} {row?.CrDt?.split("T")[1]?.split(".")[0]}
-                    </td>
+          {
+            currentRows.length > 0 &&
+            <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
+              <table className="min-w-full divide-y divide-slate-200">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                      Select
+                    </th>
+                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">VendorCode</th>
+                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Name</th>
+                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Email</th>
+                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Applied By</th>
+                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">Applied On</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {currentRows?.map((row, index) => (
+                    <tr
+                      key={index}
+                      className="cursor-pointer"
+                    >
+                      <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={selectedRowVid === row.VID}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedRowVid(row.VID);
+                              setSelectedVid(String(row.VID));
+                              setSelectedVendorCode(row.VendorCode)
+                              setSelectedVendorName(row.NAME)
+                            } else {
+                              setSelectedRowVid("");
+                              setSelectedVid("");
+                            }
+                          }}
+                        />
+                      </td>
+                      <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.VendorCode}</td>
+                      <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.NAME}</td>
+                      <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.EMAIL}</td>
+                      <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.CrBy}</td>
+                      <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                        {row?.CrDt?.split("T")[0]} {row?.CrDt?.split("T")[1]?.split(".")[0]}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          }
 
-          <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700">
-            <button type="button" onClick={() => setPage(1)} disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
-              First
-            </button>
-            <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
-              Prev
-            </button>
-            <span>Page {currentPage} of {totalPages}</span>
-            <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
-              Next
-            </button>
-            <button type="button" onClick={() => setPage(totalPages)} disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
-              Last
-            </button>
-          </div>
+          {
+            currentRows.length == 0 &&
+            <div className="text-left text-sm m-6 text-rose-600">No vendor has been approved yet for Auction ID : {iddid}</div>
+          }
+
+          {
+            currentRows.length > 0 &&
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700">
+              <button type="button" onClick={() => setPage(1)} disabled={currentPage === 1}
+                className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
+                First
+              </button>
+              <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={currentPage === 1}
+                className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
+                Prev
+              </button>
+              <span>Page {currentPage} of {totalPages}</span>
+              <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}
+                className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
+                Next
+              </button>
+              <button type="button" onClick={() => setPage(totalPages)} disabled={currentPage === totalPages}
+                className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
+                Last
+              </button>
+            </div>
+          }
         </>
       )}
 
-      <div className="mt-4">
-        <label className="mb-1 block text-sm font-semibold text-slate-700">
-          Selected Vendor
-        </label>
-        <input
-          type="text"
-          value={selectedVendorName + " ( " + selectedVendorCode + " )"}
-          readOnly
-          // onChange={(e) => setSelectedVid(e.target.value)}
-          // placeholder="Type VID here..."
-          className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-        />
-      </div>
+      {
+        currentRows.length > 0 &&
+        <>
+          <div className="mt-4">
+            <label className="mb-1 block text-sm font-semibold text-slate-700">
+              Selected Vendor
+            </label>
+            <input
+              type="text"
+              value={selectedVendorName + " ( " + selectedVendorCode + " )"}
+              readOnly
+              // onChange={(e) => setSelectedVid(e.target.value)}
+              // placeholder="Type VID here..."
+              className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+            />
+          </div>
 
-      <button
-        type="button"
-        onClick={handleSelectSubmit}
-        className="mt-4 rounded-lg bg-green-700 px-4 py-2 text-sm text-white hover:bg-green-800"
-      >
-        Submit Selected Vendor
-      </button>
+          <button
+            type="button"
+            onClick={handleSelectSubmit}
+            className="mt-4 rounded-lg bg-green-700 px-4 py-2 text-sm text-white hover:bg-green-800"
+          >
+            Submit Selected Vendor
+          </button>
+        </>
+      }
+
+
     </section>
   );
 }

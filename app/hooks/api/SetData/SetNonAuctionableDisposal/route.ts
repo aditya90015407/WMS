@@ -31,7 +31,7 @@ export async function POST(req: Request) {
 
         const result = await pool
             .request()
-            .input("FLAG", sql.NVarChar(50), 'InitiateDiposal')
+            .input("FLAG", sql.NVarChar(50), 'InitiateDisposal')
             .input("Auctionable", sql.Int, 0)
             .input("EmpCode", sql.Int, empCode)
             .input("Remarks", sql.NVarChar(sql.MAX), remarks)

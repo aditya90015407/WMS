@@ -19,6 +19,7 @@ type SavePayload = {
   date?: string;
   categoryId?: string;
   wasteId?: string;
+  unitId?: string;
   receiver?: string;
   disposer?: string;
   physicalState?: string;
@@ -28,12 +29,35 @@ type SavePayload = {
   UID: string
   DeptID: string
   // DID: string
+  storageMethod: string
 };
 
-const toOption = (row: MasterOptionRow) => ({
-  id: String(row.ID ?? ""),
-  name: String(row.NAME ?? ""),
-});
+const toOption = (row: MasterOptionRow) => {
+  const id = getMappedId(row, [
+    "ID",
+    "MUID",
+    "QUID",
+    "UID",
+    "UnitID",
+    "QuantityUnitID",
+    "WTID",
+  ]);
+  const name = getMappedId(row, [
+    "NAME",
+    "MUnit",
+    "Unit",
+    "UNIT",
+    "UnitName",
+    "QuantityUnit",
+    "QuantityUnitName",
+    "Description",
+  ]);
+
+  return {
+    id: String(id ?? ""),
+    name: String(name ?? ""),
+  };
+};
 
 const getMappedId = (
   row: MasterOptionRow,
@@ -82,10 +106,14 @@ export async function handleGenerateGet(request: Request) {
     const type = (searchParams.get("type") ?? "").toLowerCase();
     const wcid = searchParams.get("wcid") ?? "";
     const wid = (searchParams.get("WID") ?? searchParams.get("wid") ?? "").trim();
-    const uid = (searchParams.get("UID") ?? searchParams.get("uid") ?? "").trim();
-    const deptId = (searchParams.get("DeptID") ?? searchParams.get("DeptId") ?? "").trim();
+    // const uid = (searchParams.get("UID") ?? searchParams.get("uid") ?? "").trim();
+    // const deptId = (searchParams.get("DeptID") ?? searchParams.get("DeptId") ?? "").trim();
     const waid = (searchParams.get("WAID") ?? searchParams.get("waid") ?? "").trim();
     const optionId = (searchParams.get("ID") ?? searchParams.get("id") ?? "").trim();
+
+    const session = await getServerSession(authOptions)
+    const uid = session?.user.uid
+    const deptId = session?.user.deptId
 
     const pool = await getConnection();
     if (!pool || !pool.connected) {
@@ -119,6 +147,28 @@ export async function handleGenerateGet(request: Request) {
         data: (result.recordset as MasterOptionRow[]).map(toWasteOption),
       });
     }
+
+    if (type === "drop-waste-for-unit") {
+      if (!wcid || !uid) {
+        return NextResponse.json(
+          { success: false, message: "Missing wcid or uid" },
+          { status: 400 },
+        );
+      }
+
+      const result = await pool
+        .request()
+        .input("FLAG", "DROP-WASTE-For-Unit")
+        .input("WCID", wcid)
+        .input("UID", uid)
+        .execute("PRO-WMS_GET");
+
+      return NextResponse.json({
+        success: true,
+        data: (result.recordset as MasterOptionRow[]).map(toWasteOption),
+      });
+    }
+
 
     if (type === "drop-item-select") {
       if (!wid && !waid && !optionId) {
@@ -171,6 +221,20 @@ export async function handleGenerateGet(request: Request) {
         success: true,
         data: (result.recordset as MasterOptionRow[]).map(toOption),
       });
+    }
+
+    if (type === "drop-quantityunit") {
+
+
+      const result = await pool.request().input("FLAG", "DROP-QUANTITYUNIT").execute("PRO-WMS_GET");
+      // console.log(result.recordset)
+      return NextResponse.json({
+        success: true,
+        data: (result.recordset as MasterOptionRow[])
+          .map(toOption)
+          .filter((item) => item.id.trim().length > 0 && item.name.trim().length > 0),
+      });
+
     }
 
     if (type === "drop-dispo") {
@@ -232,7 +296,8 @@ export async function handleGenerateGet(request: Request) {
       {
         success: false,
         message:
-          "Unsupported type. Use type=drop-wc, type=drop-waste&wcid=<id>, type=drop-item-select&wid=<id>, type=drop-rcvr, type=drop-dispo, type=drop-phstate, type=drop-smethod or type=getDisposer&<wid,uid,wcid>",
+          "Unsupported type. Use type=drop-wc, type=drop-waste&wcid=<id>, type=drop-waste-for-unit&wcid=<id>&uid=<id>, type=drop-item-select&wid=<id>, type=DROP-QUANTITYUNIT, type=drop-rcvr, type=drop-dispo, type=drop-phstate, type=drop-smethod or type=getDisposer&<wid,uid,wcid>",
+
       },
       { status: 400 },
     );
@@ -269,14 +334,14 @@ export async function handleGeneratePost(request: Request) {
       "date",
       "categoryId",
       "wasteId",
+      "unitId",
       "receiver",
       "disposer",
       "physicalState",
       "storage",
       "disposalTarget",
       "quantity",
-      "UID",
-      "DeptID"
+      "storageMethod"
     ];
 
     const missing = requiredFields.find((key) => {
@@ -333,12 +398,14 @@ export async function handleGeneratePost(request: Request) {
       .input("FLAG", sql.NVarChar(20), "GWT-INS")
       .input("WCID", sql.NVarChar(20), body.categoryId as string)
       .input("WID", sql.NVarChar(20), body.wasteId as string)
-      .input("WTID", sql.NVarChar(20), "1")
+      .input("WTID", sql.NVarChar(20), body.unitId as string)
+      .input("MUID", sql.NVarChar(20), body.unitId as string)
       .input("PSID", sql.NVarChar(20), body.physicalState as string)
       .input("UID", sql.NVarChar(20), body.UID as string)
       .input("DeptID", sql.NVarChar(20), body.DeptID as string)
       .input("DID", sql.NVarChar(20), body.disposer as string)
       .input("SMID", sql.NVarChar(20), body.storage as string)
+      .input("StorageMethod", sql.NVarChar(200), body.storageMethod as string)
       .input("AID", sql.NVarChar(20), body.receiver as string)
       .input("WasteQty", sql.Decimal(18, 2), wasteQty)
       .input("GenerationDate", sql.Date, body.date as string)

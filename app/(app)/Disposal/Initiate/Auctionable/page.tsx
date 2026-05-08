@@ -1,20 +1,37 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
-type Option = { id: string; name: string };
+
+
+type Option = { id: string; name: string, email: string, vendorCode: string };
 type Option1 = { ID: string; NAME: string };
 
 export default function AuctionablePage() {
   // const [batchId, setBatchId] = useState("");
+  const router = useRouter();
+
   const [auctionDate, setAuctionDate] = useState("");
   const [physicalOptions, setPhysicalOptions] = useState<Option1[]>([]);
   const [wasteCategory, setWasteCategory] = useState("");
   const [wasteOptions, setWasteOptions] = useState<Option[]>([]);
   const [selectedWasteId, setSelectedWasteId] = useState("");
   const [undisposedOptions, setUndisposedOptions] = useState<
-    Array<{ id: string; dept: string; qty: number; label: string }>
+    Array<{
+      id: string;
+      dept: string;
+      qty: number;
+      genDate: string;
+      targetDate: string;
+      todayDate: string;
+      daysLeft: string;
+      label: string;
+      unit: string
+    }>
   >([]);
+
+
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
   const [loadingUndisposed, setLoadingUndisposed] = useState(false);
 
@@ -65,6 +82,8 @@ export default function AuctionablePage() {
           row.VNAME ??
           ""
         ).trim(),
+        email: String(row.Email ?? row.email ?? ""),
+        vendorCode: String(row.VendorCode ?? row.vendorCode ?? ""),
       }));
     } catch (err) {
       console.error("fetchVendor failed", err);
@@ -187,9 +206,20 @@ export default function AuctionablePage() {
           const rawQty = String(row.WasteQty ?? "").replace(",", ".");
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
-          const genDate = String(row.GenerationDate ?? "")
-            .split("T")[0]
-            .trim();
+          const unit = String(row.MUnit ?? "").trim();
+
+          const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
+          const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
+          const todayDate = new Date().toISOString().split("T")[0];
+
+          let daysLeft = "";
+          if (targetDate) {
+            const today = new Date(todayDate);
+            const target = new Date(targetDate);
+            const diffTime = target.getTime() - today.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            daysLeft = String(diffDays);
+          }
 
           const qtyLabel = qty.toFixed(2);
           const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
@@ -199,7 +229,11 @@ export default function AuctionablePage() {
             dept,
             qty,
             genDate,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${genDate}`,
+            targetDate,
+            todayDate,
+            daysLeft,
+            unit,
+            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
 
@@ -284,7 +318,7 @@ export default function AuctionablePage() {
       });
 
       const data2 = await res2.json();
-      console.log("InsertAuctionWasteDetails response:", data2);
+      // console.log("InsertAuctionWasteDetails response:", data2);
 
       if (!res2.ok || !data2.success) {
         alert(data2.message || "InsertAuctionWasteDetails failed");
@@ -303,7 +337,7 @@ export default function AuctionablePage() {
           });
 
           const vendorData = await vendorRes.json();
-          console.log("InsertAuctionVendorDetails response:", vendorData);
+          // console.log("InsertAuctionVendorDetails response:", vendorData);
 
           if (!vendorRes.ok || !vendorData.success) {
             throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
@@ -315,6 +349,8 @@ export default function AuctionablePage() {
 
       console.log("Vendor insert results:", vendorInsertResults);
       alert(data.message || "Saved Successfully");
+
+      router.back()
     } catch (error) {
       console.error("Submit Failed", error);
       alert("Something went wrong while saving");
@@ -324,7 +360,7 @@ export default function AuctionablePage() {
 
   return (
     <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-900">Auctionable Disposal</h1>
+      <h1 className="text-2xl font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         {/* <div>
@@ -393,7 +429,7 @@ export default function AuctionablePage() {
 
         <div className="relative">
           <label className="mb-1 block text-sm font-semibold text-slate-700">
-            Undisposed Waste (Dept - Quantity - Date)
+            Undisposed Waste (Dept - Quantity - Days Left)
           </label>
           <button
             type="button"
@@ -405,7 +441,7 @@ export default function AuctionablePage() {
               ? selectedUndisposedItems.map((x) => x.label).join(", ")
               : loadingUndisposed
                 ? "Loading..."
-                : "Select Dept - Quantity - Date"}
+                : "Select Dept - Quantity - Days left"}
           </button>
 
           {undisposedDropdownOpen && (
@@ -430,7 +466,15 @@ export default function AuctionablePage() {
                           setSelectedUndisposedIds(nextIds);
                         }}
                       />
-                      <span className="text-sm text-slate-700">{item.label}</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-slate-700">
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                        </span>
+                        <span className="text-sm font-semibold text-red-600">
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
+                          {item.unit || "N/A"}
+                        </span>
+                      </div>
                     </label>
                   );
                 })
@@ -536,7 +580,12 @@ export default function AuctionablePage() {
                             setVendor(names);
                           }}
                         />
-                        <span className="text-sm text-slate-700">{item.name}</span>
+                        <span className="text-sm text-slate-700">
+                          {(item.name || "Dept")} {item.vendorCode ? `- ${item.vendorCode}` : ""}
+                        </span>
+                        <span className="text-sm font-semibold">
+                          {item.email || "-"}
+                        </span>
                       </label>
                     );
                   })}

@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 type ParticipantDetails = {
-    APID?: string |number;
+  APID?: string | number;
   IDDID?: string | number;
   VID?: string | number;
   WasteCategory?: string;
@@ -27,15 +27,14 @@ type ParticipantDetails = {
   Remarks?: string;
 };
 
-export default function VerifyVendorDetailsActPage({ searchParams }: { searchParams: Promise<{vid: string, iddid?: string }> }) {
+export default function VerifyVendorDetailsActPage({ searchParams }: { searchParams: Promise<{ iddid?: string, vid: string }> }) {
   const router = useRouter();
   // const params = useSearchParams();
-  
-    const params = React.use(searchParams)
+  const params = React.use(searchParams)
 
-  const iddid =params.iddid
-  const vid = params.vid
-//    const apid;
+  const iddid = params.iddid;
+  const vid = params.vid;
+  //    const apid;
 
 
   const [loading, setLoading] = useState(true);
@@ -68,7 +67,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
 
   useEffect(() => {
     const loadDetails = async () => {
-         console.log(iddid,vid);
+      console.log(iddid, vid);
       if (!iddid || !vid) {
         setLoading(false);
         setError("Missing IDDID or VID");
@@ -96,7 +95,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
         }
 
         const row = Array.isArray(payload.data) ? payload.data[0] : payload.data;
-        console.log(payload)
+        // console.log(payload)
         // const apid=row?.APID;
 
         setFormValues({
@@ -141,12 +140,12 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
     }));
   };
 
-  
+
   const handleSave = async () => {
     try {
       setSaving(true);
       setDecision("");
-       console.log(formValues)
+      console.log(formValues)
       const res = await fetch("/api/SetData/SetTransportationDetails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -161,6 +160,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
       }
 
       setDecision("Details updated successfully");
+      router.back()
     } catch (err) {
       console.error(err);
       setDecision("Failed to save details");
@@ -172,9 +172,9 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Verify Vendor Details</h1>
-          <p className="mt-2 text-sm text-slate-600">
+        <div className="w-full">
+          <h1 className="text-2xl font-semibold text-teal-600 text-center">Verify Vendor Details</h1>
+          <p className="mt-2 text-sm text-slate-600 text-center">
             Review and edit the selected auction participant details.
           </p>
         </div>
@@ -182,9 +182,10 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
         <button
           type="button"
           onClick={() => router.push("/Disposal/VerifyVendorDetails")}
-          className="rounded border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+          className="rounded  px-1 py-2 text-xs text-slate-700 cursor-pointer hover:bg-slate-50"
         >
-          Back to List
+          <img src="/goback.png" alt="" className="h-5 " />
+
         </button>
       </div>
 
@@ -194,10 +195,10 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
       {!loading && !error && (
         <div className="mt-6 space-y-6">
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h2 className="text-sm font-semibold text-slate-900">Waste Details</h2>
+            <h2 className="text-sm font-semibold text-slate-900">Auction Details</h2>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">IDDID</label>
+                <label className="mb-1 block text-sm font-medium text-slate-900">Auction ID</label>
                 <input
                   value={String(formValues.IDDID ?? "")}
                   readOnly
@@ -218,6 +219,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 <label className="mb-1 block text-sm font-medium text-slate-900">Waste Category</label>
                 <input
                   value={String(formValues.WasteCategory ?? "")}
+                  readOnly
                   onChange={(e) => updateField("WasteCategory", e.target.value)}
                   className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
                 />
@@ -228,6 +230,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 <input
                   value={String(formValues.Waste ?? "")}
                   onChange={(e) => updateField("Waste", e.target.value)}
+                  readOnly
                   className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
@@ -237,6 +240,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 <input
                   value={String(formValues.TotalQty ?? "")}
                   onChange={(e) => updateField("TotalQty", e.target.value)}
+                  readOnly
                   className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
@@ -391,7 +395,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 type="button"
                 disabled={saving}
                 onClick={() => void handleSave()}
-                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
               >
                 Save Details
               </button>

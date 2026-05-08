@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Download } from "lucide-react";
 import { toForm3Entry } from "@/lib/form3-columns";
+import { it } from "node:test";
 
 type ViewRow = Record<string, string | number | null>;
 
@@ -17,10 +18,12 @@ type FormEntry = {
   code: string;
   date: string;
   targetDate: string;
+  Schedule: string;
   sapWasteCode: string;
   wasteCategory: string;
   wasteType: string;
   waste: string;
+  Unit: string;
   quantity: string;
   storageMethod: string;
   physicalState: string;
@@ -45,22 +48,19 @@ const toText = (value: unknown): string => {
   return String(value);
 };
 
-const getDestinedDisplay = (entry: FormEntry): React.ReactNode => {
+const getDestinedDisplay = (entry: FormEntry): string => {
   const disposerLabel = entry.disposer?.trim() || "";
   const receiverLabel = entry.receiver?.trim() || "";
 
   if (disposerLabel && receiverLabel) {
-    return (
-      <>
-        Destined To: {disposerLabel} <br />
-        Received From: {receiverLabel}
-      </>
-    );
+    return `Destined To :  ${receiverLabel} , Received From : ${disposerLabel}`;
   }
 
-  if (receiverLabel) return <>Received From: {receiverLabel}</>;
+  if (receiverLabel) {
+    return `Received From: ${receiverLabel}`;
+  }
 
-  return <>{disposerLabel}</>;
+  return disposerLabel;
 };
 
 const getApprovalRowClass = (status: string): string => {
@@ -80,9 +80,14 @@ const esc = (value: unknown): string =>
     .replaceAll("'", "&#39;");
 
 const createForm3Html = (entry: FormEntry): string => {
-  const typeWithCategory = [entry.waste || entry.wasteType, entry.sapWasteCode]
+
+  const typeWithCategory = [entry.waste || entry.wasteType, entry.sapWasteCode, entry.Schedule]
     .filter(Boolean)
     .join(" / ");
+  const quantUnit = [entry.quantity, entry.Unit]
+    .filter(Boolean)
+    .join(" / ");
+  // console.log(entry.Schedule)
 
   return `<!doctype html>
 <html>
@@ -106,7 +111,7 @@ const createForm3Html = (entry: FormEntry): string => {
     <p class="small"><i>[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</i></p>
     <h2 class="mt2">FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES</h2>
   </div>
-
+ 
   <div class="mt4 small">
     <p>1. Name and address of the facility : ${esc(entry.unitDesc)}</p>
     <p class="mt2">2. Date of issuance of authorisation and its reference number : ${esc(
@@ -114,12 +119,12 @@ const createForm3Html = (entry: FormEntry): string => {
   )}</p>
     <p class="mt2">3. Description of hazardous and other wastes handled (Generated or Received)</p>
   </div>
-
+ 
   <table>
     <thead>
       <tr>
         <th>Date</th>
-        <th>Type of waste with category</th>
+        <th>Type of waste with category as per Schedules I,II and III of these rules</th>
         <th>Total quantity(MT)</th>
         <th>Method of Storage</th>
         <th>Destined to or received from</th>
@@ -129,20 +134,20 @@ const createForm3Html = (entry: FormEntry): string => {
       <tr>
         <td>${esc(entry.date)}</td>
         <td>${esc(typeWithCategory)}</td>
-        <td>${esc(entry.quantity)}</td>
+        <td>${esc(quantUnit)}</td>
         <td>${esc(entry.storageMethod)}</td>
         <td>${esc(getDestinedDisplay(entry))}</td>
       </tr>
     </tbody>
   </table>
-
+ 
   <p class="mt4 small"><i>* Fill up above table separately for indigenous and imported waste.</i></p>
-
+ 
   <div class="mt4 small">
     <p>4. Date wise description of management of hazardous and other wastes including products sent and to whom in case of recyclers or pre-processor or utiliser:</p>
     <p class="mt2">5. Date of environmental monitoring (as per authorisation or guidelines of Central Pollution Control Board):</p>
   </div>
-
+ 
   <div class="mt10 small" style="display:flex;justify-content:space-between;align-items:flex-end;">
     <div>
       <p>Date: ${esc(entry.date)}</p>
@@ -174,6 +179,7 @@ export default function Form3Page() {
           cache: "no-store",
         });
         const payload = (await res.json()) as ApiResponse;
+        // console.log(payload)
         if (!res.ok || !payload.success || !Array.isArray(payload.data)) {
           setRows([]);
           setError(payload.message || payload.error || "Failed to load Form 3 data");
@@ -197,7 +203,8 @@ export default function Form3Page() {
       const bCode = toText(b.ID ?? b.Code).trim();
       const aNum = Number(aCode);
       const bNum = Number(bCode);
-      if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
+      // if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
+      if (Number.isFinite(aNum) && Number.isFinite(bNum)) return bNum - aNum;
       return aCode.localeCompare(bCode, undefined, { numeric: true, sensitivity: "base" });
     });
 
@@ -244,7 +251,7 @@ export default function Form3Page() {
 
   const onDownload = (entry: FormEntry) => {
     const formHtml = createForm3Html(entry);
-
+    // console.log(entry.Schedule)
     const html = `<!doctype html>
 <html>
 <head>
@@ -255,30 +262,30 @@ export default function Form3Page() {
       size: A4;
       margin: 12mm;
     }
-
+ 
     html, body {
       margin: 0;
       padding: 0;
       background: white;
       font-family: Arial, sans-serif;
     }
-
+ 
     body {
       display: flex;
       justify-content: center;
     }
-
+ 
     #print-box {
       width: 100%;
       max-width: 800px;
       background: white;
     }
-
+ 
     #print-box table {
       width: 100%;
       border-collapse: collapse;
     }
-
+ 
     #print-box th,
     #print-box td {
       border: 1px solid #334155;
@@ -286,13 +293,13 @@ export default function Form3Page() {
       font-size: 12px;
       vertical-align: top;
     }
-
+ 
     @media print {
       body {
         margin: 0;
         padding: 0;
       }
-
+ 
       #print-box {
         box-shadow: none;
         margin: 0;
@@ -327,14 +334,16 @@ export default function Form3Page() {
     };
   };
 
+  // console.log(selectedEntry)
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6 max-w-4xl mx-auto">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-slate-900">FORM 3</h1>
-        <p className="text-sm italic text-slate-700">[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</p>
+        <h1 className="text-2xl font-bold text-teal-600">Form 3</h1>
+        {/* <p className="text-sm italic text-slate-700">[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</p>
         <h2 className="mt-2 text-base font-semibold text-slate-900">
           FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES
-        </h2>
+        </h2> */}
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
@@ -360,7 +369,7 @@ export default function Form3Page() {
                   <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">ID</th>
                   <th className="min-w-[110px] whitespace-nowrap border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Date</th>
                   <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste Category</th>
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste Type</th>
+                  {/* <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste Type</th> */}
                   <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste</th>
                   <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Quantity</th>
                   <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Storage</th>
@@ -385,9 +394,9 @@ export default function Form3Page() {
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.code}</td>
                     <td className="whitespace-nowrap border border-slate-300 px-2 py-0.5 text-slate-800">{item.date}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.wasteCategory}</td>
-                    <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.wasteType}</td>
+                    {/* <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.wasteType}</td> */}
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.waste}</td>
-                    <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.quantity}</td>
+                    <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.quantity} {item.Unit}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.storageMethod}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.physicalState}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.disposer}</td>
@@ -397,19 +406,19 @@ export default function Form3Page() {
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">
                       <div className="flex items-center gap-2">
                         {item.wcid !== "1" && <div className="text-center">Not Applicable</div>}
-                        {item.wcid === "1" && item.stsCode === "3" && (
+                        {item.wcid === "1" && (item.stsCode === "3" || item.stsCode == "8" || item.stsCode == "9") && (
                           <>
                             <button
                               type="button"
                               onClick={() => setSelectedEntry(item)}
-                              className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+                              className="cursor-pointer rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
                             >
                               View Form
                             </button>
                             <button
                               type="button"
                               onClick={() => onDownload(item)}
-                              className="rounded-md border border-slate-300 p-1 hover:bg-slate-50"
+                              className="cursor-pointer rounded-md border border-slate-300 p-1 hover:bg-slate-50"
                               title="Download Form 3"
                               aria-label="Download Form 3"
                             >
@@ -421,10 +430,12 @@ export default function Form3Page() {
                         {item.wcid === "1" && item.stsCode === "2" && (
                           <div className="text-center">Download requires approval.</div>
                         )}
-
-                        {item.wcid == "1" && item.stsCode != "3" && item.stsCode != "2" && (
+                        {item.wcid == "1" && item.stsCode == "5" && (
                           <div className="text-center">Not Applicable.</div>
                         )}
+                        {/* {item.wcid == "1" && item.stsCode != "3" && item.stsCode != "2" && (
+                          <div className="text-center">Not Applicable.</div>
+                        )} */}
                       </div>
                     </td>
                   </tr>
@@ -439,7 +450,7 @@ export default function Form3Page() {
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
           <p>
             Showing {pagedRows.length} of {filteredRows.length} records
-            {searchTerm.trim() ? " (filtered)" : ""} (Code Ascending)
+            {searchTerm.trim() ? " (filtered)" : ""}
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <button
@@ -487,7 +498,7 @@ export default function Form3Page() {
               <button
                 type="button"
                 onClick={() => setSelectedEntry(null)}
-                className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+                className="cursor-pointer rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
               >
                 Close
               </button>
@@ -505,7 +516,7 @@ export default function Form3Page() {
               <p>1. Name and address of the facility : {selectedEntry.unitDesc}</p>
               <p>
                 2. Date of issuance of authorisation and its reference number :{" "}
-                {[selectedEntry.dateOfIssuance, selectedEntry.referenceNo].filter(Boolean).join(" ")}
+                {[selectedEntry.dateOfIssuance, "and", selectedEntry.referenceNo].filter(Boolean).join(" ")}
               </p>
               <p>3. Description of hazardous and other wastes handled (Generated or Received)</p>
             </div>
@@ -515,8 +526,8 @@ export default function Form3Page() {
                 <thead>
                   <tr className="bg-slate-100">
                     <th className="min-w-[110px] whitespace-nowrap border border-slate-300 px-2 py-2 text-left">Date</th>
-                    <th className="border border-slate-300 px-2 py-2 text-left">Type of waste with category</th>
-                    <th className="border border-slate-300 px-2 py-2 text-left">Total quantity(MT)</th>
+                    <th className="border border-slate-300 px-2 py-2 text-left">Type of waste with category as per Schedules I,II and III of these rules</th>
+                    <th className="border border-slate-300 px-2 py-2 text-left">Total quantity</th>
                     <th className="border border-slate-300 px-2 py-2 text-left">Method of Storage</th>
                     <th className="border border-slate-300 px-2 py-2 text-left">Destined to or received from</th>
                   </tr>
@@ -525,11 +536,15 @@ export default function Form3Page() {
                   <tr>
                     <td className="whitespace-nowrap border border-slate-300 px-2 py-2">{selectedEntry.date}</td>
                     <td className="border border-slate-300 px-2 py-2">
-                      {[selectedEntry.waste || selectedEntry.wasteType]
+                      {[selectedEntry.waste || selectedEntry.wasteType, selectedEntry.sapWasteCode, selectedEntry.Schedule]
                         .filter(Boolean)
                         .join(" / ")}
+
                     </td>
-                    <td className="border border-slate-300 px-2 py-2">{selectedEntry.quantity}</td>
+
+                    <td className="border border-slate-300 px-2 py-2">{[selectedEntry.quantity, selectedEntry.Unit]
+                      .filter(Boolean)
+                      .join("  ")}</td>
                     <td className="border border-slate-300 px-2 py-2">{selectedEntry.storageMethod}</td>
                     <td className="border border-slate-300 px-2 py-2">{getDestinedDisplay(selectedEntry)}</td>
                   </tr>

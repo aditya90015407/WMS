@@ -29,7 +29,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
   // if (!session) redirect("/sign-in")
 
   return (
-    <div className="min-w-6xl min-h-screen bg-slate-50">
+    // <div className="min-w-6xl min-h-screen bg-gradient-to-b from-emerald-50 to-emerald-100">
+
+    <div className="min-w-6xl min-h-screen bg-gray-50">
       <AppNavbar />
       <div className="flex min-h-[calc(100vh-4rem)]">
         <AppSidebar />

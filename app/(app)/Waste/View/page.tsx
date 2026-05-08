@@ -1,54 +1,37 @@
 "use client";
-
+ 
 import { useEffect, useMemo, useState } from "react";
 import { Download } from "lucide-react";
-import { toForm3Entry } from "@/lib/form3-columns";
+// import { toForm3Entry } from "@/lib/form3-columns";
 import { type Form10Data } from "@/components/Form10Table";
-
+import { Session } from "next-auth";
+import { useSession } from "next-auth/react";
+import { toForm3Entry, type FormEntry as Form3Entry } from "@/lib/form3-columns";
+ 
+ 
+ 
 type ViewRow = Record<string, string | number | null>;
-
+ 
 type ApiResponse = {
   success?: boolean;
   data?: ViewRow[];
   message?: string;
   error?: string;
 };
-
-type FormEntry = {
-  code: string;
+ 
+type FormEntry = Form3Entry & {
   iddid: string;
-  date: string;
-  targetDate: string;
-  sapWasteCode: string;
-  wasteCategory: string;
   disposalType: string;
-  wasteType: string;
-  waste: string;
-  quantity: string;
   manifestDocumentNo: string;
-  storageMethod: string;
-  physicalState: string;
-  disposer: string;
-  receiver: string;
-  approvalStatus: string;
-  unitDesc: string;
-  dateOfIssuance: string;
-  referenceNo: string;
-  dispId: string;
-  deptId: string;
-  dept: string;
-  receiverId: string;
-  wcid: string;
-  stsCode: string;
 };
-
+ 
 const PAGE_SIZE = 10;
-
+ 
 const toText = (value: unknown): string => {
   if (value === null || value === undefined) return "";
   return String(value);
 };
-
+ 
 const esc = (value: string): string =>
   value
     .replaceAll("&", "&amp;")
@@ -56,35 +39,41 @@ const esc = (value: string): string =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-
+ 
 const getDestinedDisplay = (entry: FormEntry): string => {
   const disposerLabel = entry.disposer?.trim() || "";
   const receiverLabel = entry.receiver?.trim() || "";
-
+ 
   if (disposerLabel && receiverLabel) {
     return `${disposerLabel} / Received From: ${receiverLabel}`;
   }
   if (receiverLabel) return `Received From: ${receiverLabel}`;
   return disposerLabel;
 };
-
+ 
 const getApprovalRowClass = (status: string): string => {
   const normalized = status.trim().toLowerCase();
-  if (normalized === "approval completed") return "bg-green-100";
-  if (normalized === "approval inprogress") return "bg-yellow-100";
+  console.log(normalized)
+  if (normalized === "completed") return "bg-green-100";
+  if (normalized === "in progress") return "bg-yellow-100";
   if (normalized === "rejected") return "bg-red-100";
   return "";
 };
-
+ 
+// const { data: session, status } = useSession();
+ 
+ 
 const buildDetailRows = (entry: FormEntry) => [
+ 
   ["ID", entry.code],
   ["Date", entry.date],
   ["Target Date", entry.targetDate],
   ["Waste Category", entry.wasteCategory],
   ["Waste Approval Status", entry.approvalStatus],
-  ["SAP Waste Code", entry.sapWasteCode],
+  ["Category Code", entry.sapWasteCode],
   ["Disposal Type", entry.disposalType],
-  ["Waste Type", entry.wasteType],
+ 
+  // ["Waste Type", entry.wasteType],
   ["Waste", entry.waste],
   ["Quantity", entry.quantity],
   ["Storage Method", entry.storageMethod],
@@ -97,12 +86,12 @@ const buildDetailRows = (entry: FormEntry) => [
   ["Reference No.", entry.referenceNo],
   ["Disposer ID", entry.dispId],
   ["Department ID", entry.deptId],
-  ["Department", entry.dept],
+  // ["Department", entry.dept],
   ["Receiver ID", entry.receiverId],
   ["Waste Category ID", entry.wcid],
   ["Status Code", entry.stsCode],
 ].filter(([, value]) => String(value ?? "").trim() !== "");
-
+ 
 const getFirstValue = (row: Record<string, unknown>, keys: string[]) => {
   for (const key of keys) {
     const value = row?.[key];
@@ -110,17 +99,17 @@ const getFirstValue = (row: Record<string, unknown>, keys: string[]) => {
       return String(value).trim();
     }
   }
-
+ 
   return "";
 };
-
+ 
 const mapVehicleType = (value: string) => {
   if (value === "1" || value.toLowerCase() === "truck") return "Truck";
   if (value === "2" || value.toLowerCase() === "tanker") return "Tanker";
   if (value === "3" || value.toLowerCase() === "special vehicle") return "Special Vehicle";
   return value;
 };
-
+ 
 const mapPhysicalForm = (value: string) => {
   if (value === "1" || value.toLowerCase() === "solid") return "Solid";
   if (value === "2" || value.toLowerCase() === "semi-solid" || value.toLowerCase() === "semisolid") return "Semi-solid";
@@ -131,14 +120,14 @@ const mapPhysicalForm = (value: string) => {
   if (value === "7" || value.toLowerCase() === "liquid") return "Liquid";
   return value;
 };
-
+ 
 const toForm10Data = (entry: FormEntry): Form10Data => ({
   senderNameAddress: entry.unitDesc || "",
   senderPhone: "",
   senderEmail: "",
   senderAuthorizationNo: "",
   manifestDocumentNo: entry.manifestDocumentNo || entry.code || "",
-
+ 
   transporterNameAddress: entry.disposer || "",
   transporterPhone: "",
   transporterEmail: "",
@@ -171,13 +160,13 @@ const toForm10Data = (entry: FormEntry): Form10Data => ({
   receiverDay: "",
   receiverYear: "",
 });
-
+ 
 const toForm10DataFromApiRow = (row: Record<string, unknown>): Form10Data => {
   const transporterName = getFirstValue(row, ["TransporterName"]);
   const transporterAddress = getFirstValue(row, ["TransporterAddress"]);
   const receiverName = getFirstValue(row, ["ReceiverName"]);
   const receiverAddress = getFirstValue(row, ["ReceiverAddress"]);
-
+ 
   return {
     senderNameAddress: getFirstValue(row, ["SenderNameAddress", "UnitDesc", "NAME", "SenderName"]),
     senderPhone: getFirstValue(row, ["SenderPhone", "Phone", "PHONE"]),
@@ -217,12 +206,18 @@ const toForm10DataFromApiRow = (row: Record<string, unknown>): Form10Data => {
     receiverYear: getFirstValue(row, ["ReceiverYear"]),
   };
 };
-
+ 
 const createForm3Html = (entry: FormEntry): string => {
-  const typeWithCategory = [entry.waste || entry.wasteType, entry.sapWasteCode]
+ 
+  console.log(entry)
+  const typeWithCategory = [entry.waste || entry.wasteType, entry.sapWasteCode ]
     .filter(Boolean)
     .join(" / ");
-
+ 
+  const quantUnit = [entry.quantity, entry.Unit]
+    .filter(Boolean)
+    .join(" / ");
+ 
   return `<!doctype html>
 <html>
 <head>
@@ -268,7 +263,7 @@ const createForm3Html = (entry: FormEntry): string => {
       <tr>
         <td>${esc(entry.date)}</td>
         <td>${esc(typeWithCategory)}</td>
-        <td>${esc(entry.quantity)}</td>
+        <td>${esc(quantUnit)}</td>
         <td>${esc(entry.storageMethod)}</td>
         <td>${esc(getDestinedDisplay(entry))}</td>
       </tr>
@@ -291,9 +286,9 @@ const createForm3Html = (entry: FormEntry): string => {
   </div>
 </body>
 </html>`;
-
+ 
 };
-
+ 
 const createForm10Html = (form: Form10Data, code: string): string => {
   return `<!doctype html>
 <html>
@@ -338,7 +333,7 @@ const createForm10Html = (form: Form10Data, code: string): string => {
 </body>
 </html>`;
 };
-
+ 
 export default function WasteViewPage() {
   const [rows, setRows] = useState<ViewRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -346,7 +341,11 @@ export default function WasteViewPage() {
   const [selectedEntry, setSelectedEntry] = useState<FormEntry | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
-
+  const { data: session } = useSession();
+  const department = session?.user?.department ?? "";
+ 
+ 
+  console.log(department)
   useEffect(() => {
     const loadRows = async () => {
       setLoading(true);
@@ -372,10 +371,10 @@ export default function WasteViewPage() {
         setLoading(false);
       }
     };
-
+ 
     void loadRows();
   }, []);
-
+ 
   const tableRows = useMemo<FormEntry[]>(() => {
     const sortedRows = [...rows].sort((a, b) => {
       const aCode = toText(a.ID ?? a.Code).trim();
@@ -385,14 +384,30 @@ export default function WasteViewPage() {
       if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
       return aCode.localeCompare(bCode, undefined, { numeric: true, sensitivity: "base" });
     });
-
-    return sortedRows.map((row) => toForm3Entry(row as Record<string, unknown>) as FormEntry);
+ 
+    return sortedRows.map((row) => {
+      const source = row as Record<string, unknown>;
+      const entry = toForm3Entry(source);
+ 
+      return {
+        ...entry,
+        iddid: getFirstValue(source, ["IDDID", "IDDid", "iddid", "ID"]),
+        disposalType: getFirstValue(source, ["DisposalType", "Disposal Type", "DisType", "DTYPE"]),
+        manifestDocumentNo: getFirstValue(source, [
+          "ManifestDocumentNo",
+          "Manifest Document No",
+          "ManifestNo",
+          "IDDID",
+          "ID",
+        ]),
+      };
+    });
   }, [rows]);
-
+ 
   const filteredRows = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
     if (!query) return tableRows;
-
+ 
     return tableRows.filter((item) =>
       [
         item.code,
@@ -413,22 +428,22 @@ export default function WasteViewPage() {
         .includes(query),
     );
   }, [tableRows, searchTerm]);
-
+ 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-
+ 
   const pagedRows = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredRows.slice(start, start + PAGE_SIZE);
   }, [filteredRows, currentPage]);
-
+ 
   useEffect(() => {
     setPage(1);
   }, [rows.length, searchTerm]);
-
+ 
   const onDownload = (entry: FormEntry) => {
     const formHtml = createForm3Html(entry);
-
+ 
     const html = `<!doctype html>
 <html>
 <head>
@@ -439,30 +454,30 @@ export default function WasteViewPage() {
       size: A4;
       margin: 12mm;
     }
-
+ 
     html, body {
       margin: 0;
       padding: 0;
       background: white;
       font-family: Arial, sans-serif;
     }
-
+ 
     body {
       display: flex;
       justify-content: center;
     }
-
+ 
     #print-box {
       width: 100%;
       max-width: 800px;
       background: white;
     }
-
+ 
     #print-box table {
       width: 100%;
       border-collapse: collapse;
     }
-
+ 
     #print-box th,
     #print-box td {
       border: 1px solid #334155;
@@ -470,13 +485,13 @@ export default function WasteViewPage() {
       font-size: 12px;
       vertical-align: top;
     }
-
+ 
     @media print {
       body {
         margin: 0;
         padding: 0;
       }
-
+ 
       #print-box {
         box-shadow: none;
         margin: 0;
@@ -492,17 +507,17 @@ export default function WasteViewPage() {
   </div>
 </body>
 </html>`;
-
+ 
     const printWindow = window.open("", "_blank", "width=900,height=700");
     if (!printWindow) {
       alert("Please allow popups to download Form 3 as PDF.");
       return;
     }
-
+ 
     printWindow.document.open();
     printWindow.document.write(html);
     printWindow.document.close();
-
+ 
     printWindow.onload = () => {
       setTimeout(() => {
         printWindow.focus();
@@ -510,26 +525,26 @@ export default function WasteViewPage() {
       }, 500);
     };
   };
-
-
-
+ 
+ 
+ 
   const fetchForm10Data = async (id: string): Promise<Form10Data> => {
     const res = await fetch("/api/GetData/GetForm10Details", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ID: id }),
     });
-
+ 
     const payload = await res.json();
-
+ 
     if (!res.ok || !payload.success) {
       throw new Error(payload.message || "Failed to load Form 10 details");
     }
-
+ 
     const row = Array.isArray(payload.data) ? payload.data[0] : payload.data;
     return toForm10DataFromApiRow((row ?? {}) as Record<string, unknown>);
   };
-
+ 
   const openForm10 = (entry: FormEntry) => {
     const linkedId = entry.iddid || entry.code;
     if (!linkedId) {
@@ -541,7 +556,7 @@ export default function WasteViewPage() {
       "_blank"
     );
   };
-
+ 
   const onDownloadForm10 = async (entry: FormEntry) => {
     let form: Form10Data;
     try {
@@ -551,9 +566,9 @@ export default function WasteViewPage() {
       alert("Failed to load Form 10.");
       return;
     }
-
+ 
     const formHtml = createForm10Html(form, entry.code);
-
+ 
     const html = `
 <!doctype html>
 <html>
@@ -574,31 +589,31 @@ export default function WasteViewPage() {
   </div>
 </body>
 </html>`;
-
+ 
     const printWindow = window.open("", "_blank", "width=900,height=650");
     if (!printWindow) return;
-
+ 
     printWindow.document.open();
     printWindow.document.write(html);
     printWindow.document.close();
-
+ 
     printWindow.onload = () => {
       printWindow.focus();
       printWindow.print();
       printWindow.close();
     };
   };
-
-
+ 
+ 
   return (
     <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-slate-900">WASTE DETAILS</h1>
+        <h1 className="text-2xl font-bold text-teal-600">View Waste Details</h1>
       </div>
-
+ 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
       {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-
+ 
       {!loading && !error && (
         <div className="mt-4 space-y-3">
           <input
@@ -609,7 +624,7 @@ export default function WasteViewPage() {
             placeholder="Search by ID, date, waste category, approval status..."
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-slate-500 sm:max-w-sm"
           />
-
+ 
           <div className="overflow-x-auto rounded-xl border border-slate-300">
             <table className="min-w-full border-collapse text-xs">
               <thead>
@@ -632,7 +647,7 @@ export default function WasteViewPage() {
                     </td>
                   </tr>
                 )}
-
+ 
                 {pagedRows.map((item, index) => (
                   <tr
                     key={`waste-entry-${(currentPage - 1) * PAGE_SIZE + index}`}
@@ -645,7 +660,7 @@ export default function WasteViewPage() {
                     <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.waste}</td>
                     <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.approvalStatus}</td>
                     <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.targetDate}</td>
-
+ 
                   </tr>
                 ))}
               </tbody>
@@ -653,7 +668,7 @@ export default function WasteViewPage() {
           </div>
         </div>
       )}
-
+ 
       {!loading && !error && filteredRows.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
           <p>
@@ -669,7 +684,7 @@ export default function WasteViewPage() {
           </div>
         </div>
       )}
-
+ 
       {selectedEntry && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-2 md:p-4">
           <div className="max-h-[96vh] w-full max-w-5xl overflow-y-auto rounded-xl bg-white p-3 shadow-2xl md:p-6">
@@ -689,7 +704,7 @@ export default function WasteViewPage() {
                       Form 3 PDF
                     </button>
                   </>
-
+ 
                 ) : null}
                 <button
                   type="button"
@@ -700,7 +715,7 @@ export default function WasteViewPage() {
                 </button>
               </div>
             </div>
-
+ 
             <div className="mt-4 overflow-x-auto rounded-lg border border-slate-300">
               <table className="min-w-full border-collapse text-xs sm:text-sm">
                 <thead>
@@ -719,7 +734,7 @@ export default function WasteViewPage() {
                 </tbody>
               </table>
             </div>
-
+ 
             {/* <div className="mt-4 text-center">
               <h1 className="text-xl font-bold text-slate-900">FORM 3</h1>
               <p className="text-xs italic text-slate-700">
@@ -763,11 +778,11 @@ export default function WasteViewPage() {
                 </tbody>
               </table>
             </div> */}
-            {/* 
+            {/*
             <p className="mt-4 text-xs italic text-slate-700 sm:text-sm">
               * Fill up above table separately for indigenous and imported waste.
             </p>
-
+ 
             <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
               <p>
                 4. Date wise description of management of hazardous and other wastes including products sent and to whom in case of
@@ -775,7 +790,7 @@ export default function WasteViewPage() {
               </p>
               <p>5. Date of environmental monitoring (as per authorisation or guidelines of Central Pollution Control Board):</p>
             </div>
-
+ 
             <div className="mt-8 flex flex-col gap-3 text-xs text-slate-900 sm:flex-row sm:items-end sm:justify-between sm:text-sm">
               <div>
                 <p>Date: {selectedEntry.date || "...................."}</p>

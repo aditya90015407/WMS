@@ -22,8 +22,12 @@ export async function POST(req: NextRequest) {
     const APLID = body.APLID
     const Remarks = body.Remarks
     const Acceptance = body.Acceptance
+    const ApprovalLevel = body.ApprovalLevel
 
-    const StsCode = Acceptance == 1 ? 3 : 5
+    var StsCode = Acceptance == 1 ? 3 : 5
+    if (ApprovalLevel == 2 && Acceptance == 1) {
+        StsCode = 10
+    }
 
     // console.log(body, EmpCode)
 
