@@ -58,6 +58,8 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
         DID: string
         SMID: string
         AID: string
+        MUnit: string
+        MUID: string
     }
 
     type ApprovalRejectionHistory = {
@@ -224,6 +226,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                 "SMID": wasteData?.SMID,
                 "AID": wasteData?.AID,
                 "WasteQty": wasteData?.WasteQty,
+                "MUnit": wasteData?.MUnit,
                 "TargetDate": wasteData?.TargetDate,
             })
         })
@@ -443,6 +446,9 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                             }}
                             className="font-normal border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
                         />
+                        <span
+                            className="font-normal p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        >{wasteData?.MUnit}</span>
                     </div>
 
                     {/* <div className="px-2 py-2 font-semibold text-xs">Approver : <span className="font-normal text-sm"> {wasteData?.Approver}</span></div> */}

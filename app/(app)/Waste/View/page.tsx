@@ -6,7 +6,7 @@ import { Download } from "lucide-react";
 import { type Form10Data } from "@/components/Form10Table";
 import { Session } from "next-auth";
 import { useSession } from "next-auth/react";
-import { toForm3Entry, type FormEntry } from "@/lib/form3-columns";
+import { toForm3Entry, type FormEntry as Form3Entry } from "@/lib/form3-columns";
 
 
 
@@ -19,33 +19,10 @@ type ApiResponse = {
   error?: string;
 };
 
-type FormEntry = {
-  code: string;
+type FormEntry = Form3Entry & {
   iddid: string;
-  date: string;
-  targetDate: string;
-  sapWasteCode: string;
-  wasteCategory: string;
   disposalType: string;
-  wasteType: string;
-  Unit: string;
-  waste: string;
-  quantity: string;
   manifestDocumentNo: string;
-  storageMethod: string;
-  physicalState: string;
-  disposer: string;
-  receiver: string;
-  approvalStatus: string;
-  unitDesc: string;
-  dateOfIssuance: string;
-  referenceNo: string;
-  dispId: string;
-  deptId: string;
-  dept: string;
-  receiverId: string;
-  wcid: string;
-  stsCode: string;
 };
 
 const PAGE_SIZE = 10;
@@ -182,6 +159,7 @@ const toForm10Data = (entry: FormEntry): Form10Data => ({
   receiverMonth: "",
   receiverDay: "",
   receiverYear: "",
+  MUnit: ""
 });
 
 const toForm10DataFromApiRow = (row: Record<string, unknown>): Form10Data => {
@@ -227,10 +205,13 @@ const toForm10DataFromApiRow = (row: Record<string, unknown>): Form10Data => {
     receiverMonth: getFirstValue(row, ["ReceiverMonth"]),
     receiverDay: getFirstValue(row, ["ReceiverDay"]),
     receiverYear: getFirstValue(row, ["ReceiverYear"]),
+    MUnit: getFirstValue(row, ["MUnit"])
   };
 };
 
 const createForm3Html = (entry: FormEntry): string => {
+
+  console.log(entry)
   const typeWithCategory = [entry.waste || entry.wasteType, entry.sapWasteCode]
     .filter(Boolean)
     .join(" / ");
@@ -406,7 +387,23 @@ export default function WasteViewPage() {
       return aCode.localeCompare(bCode, undefined, { numeric: true, sensitivity: "base" });
     });
 
-    return sortedRows.map((row) => toForm3Entry(row as Record<string, unknown>) as FormEntry);
+    return sortedRows.map((row) => {
+      const source = row as Record<string, unknown>;
+      const entry = toForm3Entry(source);
+
+      return {
+        ...entry,
+        iddid: getFirstValue(source, ["IDDID", "IDDid", "iddid", "ID"]),
+        disposalType: getFirstValue(source, ["DisposalType", "Disposal Type", "DisType", "DTYPE"]),
+        manifestDocumentNo: getFirstValue(source, [
+          "ManifestDocumentNo",
+          "Manifest Document No",
+          "ManifestNo",
+          "IDDID",
+          "ID",
+        ]),
+      };
+    });
   }, [rows]);
 
   const filteredRows = useMemo(() => {

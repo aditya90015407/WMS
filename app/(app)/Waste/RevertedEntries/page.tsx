@@ -101,6 +101,8 @@ export default function WasteApprove() {
         Status: string
         GenDept: string
         GenDeptID: string
+        MUID: string
+        MUnit: string
     }
 
     const [allWasteData, setAllWasteData] = useState<WasteData[]>([])
@@ -578,7 +580,7 @@ export default function WasteApprove() {
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.WasteQty}
+                                        >{row.WasteQty}{" "}{row.MUnit}
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"

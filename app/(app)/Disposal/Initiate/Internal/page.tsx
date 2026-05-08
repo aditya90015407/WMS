@@ -448,7 +448,7 @@ export default function DisposalRecycleForm() {
 
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-semibold text-slate-700">Document Proof</label>
             <input
               type="file"
@@ -456,7 +456,7 @@ export default function DisposalRecycleForm() {
               onChange={(e) => setDocFile(e.target.files?.[0] ?? null)}
               className="mt-1 w-full text-sm"
             />
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center justify-between border-t border-slate-200 pt-4">
