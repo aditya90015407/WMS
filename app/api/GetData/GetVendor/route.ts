@@ -1,24 +1,24 @@
 import { NextResponse } from "next/server";
 import { getConnection } from "@/lib/dbConnect";
- 
+
 export async function POST() {
   try {
     const pool = await getConnection();
     if (!pool || !pool.connected) {
       throw new Error("SQL pool is not connected");
     }
- 
+
     const result = await pool
       .request()
       .input("FLAG", "GetVendor")
       .execute("PRO-WMS_GET"); // use underscore exactly if your DB proc is PRO_WMS_GET
- 
+
     const rows =
       (Array.isArray(result.recordset) && result.recordset) ||
       ((result as any).recordsets?.[0] ?? []);
- 
+
     // console.log(rows)
- 
+
     return NextResponse.json({
       success: true,
       data: rows.map((r: any) => ({
@@ -31,8 +31,9 @@ export async function POST() {
           r["Vendor Name"] ??
           ""
         ).trim(),
-        email : String(r.Email??""),
-        vendorCode:String(r.VendorCode??""),
+        email: String(r.Email ?? ""),
+        vendorCode: String(r.VendorCode ?? ""),
+        IsActive: r.IsActive
       })),
     });
   } catch (error: unknown) {

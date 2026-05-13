@@ -22,6 +22,8 @@ export async function POST(req: Request) {
       throw new Error("SQL pool is not connected after getConnection()");
     }
 
+    console.log(form)
+
     const result = await pool
       .request()
       .input("FLAG", sql.NVarChar(50), "SetFinalDisposalDetails")
@@ -49,7 +51,7 @@ export async function POST(req: Request) {
 
     const rows = result.recordset[0];
     const fddid = rows?.FDDID;
-    console.log(fddid);
+    console.log(rows);
     return NextResponse.json({
       success: true,
       fddid,

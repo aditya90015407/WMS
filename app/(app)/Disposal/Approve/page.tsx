@@ -15,6 +15,7 @@ type FinalDisposalRow = {
     TotalQty?: string | number;
     Status?: string;
     CrDt?: string;
+    MUnit: string
 };
 
 function normalizeData<T extends Record<string, unknown>>(row: T) {
@@ -140,6 +141,9 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Quantity
                                     </th>
+                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                                        Disposal Type
+                                    </th>
                                     {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Status
                                     </th> */}
@@ -186,7 +190,10 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                             {String(row.Waste ?? "")}
                                         </td>
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                                            {String(row.TotalQty ?? "")}
+                                            {String(row.TotalQty ?? "")}{" "}{row.MUnit}
+                                        </td>
+                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                            {String(row.DisType ?? "")}
                                         </td>
                                         {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.Status ?? "")}

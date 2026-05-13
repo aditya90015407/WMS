@@ -19,8 +19,9 @@ export async function POST(req: NextRequest) {
         const StsCode = Number(body?.StsCode ?? 0);
         const Remarks = String(body?.Remarks ?? "").trim();
         const EmpCode = String(session.user.id ?? "").trim();
+        const IDDID = body.IDDID
 
-        // console.log(body)
+        console.log(body)
 
         if (!FDDID) {
             return NextResponse.json(
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
             .input("Remarks", sql.NVarChar(sql.MAX), Remarks)
             .input("EmpCode", sql.VarChar, EmpCode)
             .input("FDDID", sql.Int, FDDID)
+            .input("IDDID", IDDID)
             .execute("PRO-WMS_SET");
 
         return NextResponse.json({

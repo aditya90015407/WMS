@@ -32,7 +32,7 @@ type RowDef = {
 
 
 const rows: RowDef[] = [
-  { key: "wasteIds", field: "Batch ID", type: "multi-select", hint: "Comma separated IDs" },
+  { key: "wasteIds", field: "Waste ID/Batch ID", type: "multi-select", hint: "Comma separated IDs" },
   {
     key: "senderNameAddress",
     field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
@@ -211,7 +211,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           Waste: String(row?.Waste ?? ""),
-          totalQty: String(String(row?.TotalQty ?? "") + " " + String(row?.MUnit)),
+          totalQty: String(row?.TotalQty ?? ""),
 
 
         }));
@@ -249,7 +249,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     formData.append("NoOfContainers", String(values.containers ?? ""));
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", String(values.specialHandling ?? ""));
-    formData.append("EmpCode", "YOUR_EMP_CODE");
+    // formData.append("EmpCode", "YOUR_EMP_CODE");
     formData.append("DateOfDisposal", today);
 
     if (values.salePoSoDoc instanceof File) {
@@ -278,10 +278,11 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       return;
     }
 
-    if (values.salePoSoDoc instanceof File) {
+    if (values.salePoSoDoc instanceof File && values.finalPartyDoc instanceof File) {
       const attachmentFormData = new FormData();
       attachmentFormData.append("FDDID", fddid);
       attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+      attachmentFormData.append("finalPartyDoc", values.finalPartyDoc);
 
       const attachmentRes = await fetch("/api/SetData/SetFinalDisposalDetailsAttachments", {
         method: "POST",
@@ -482,8 +483,8 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="relative">
-        <h1 className="text-xl font-semibold text-cyan-600 text-center">Disposal Generate - Hazardous</h1>
-        <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p>
+        <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Generate - Hazardous</h1>
+        {/* <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p> */}
 
         <Link href="./">
           <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />

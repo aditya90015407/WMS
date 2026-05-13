@@ -127,7 +127,7 @@ export default function AuctionRejectedEntriesPage() {
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">IDDID</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Auction ID</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Auction Date</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste Category</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste</th>

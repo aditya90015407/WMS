@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 
 type FieldType =
   | "date"
@@ -25,7 +24,7 @@ type RowDef = {
 
 const rows: RowDef[] = [
   { key: "disposalDate", field: "Date", type: "date", hint: "Date of disposal (within 90 days of generation)" },
-  { key: "wasteIds", field: "Batch ID", type: "multi-select", hint: "Comma separated IDs" },
+  { key: "wasteIds", field: "Waste ID/Batch ID", type: "multi-select", hint: "Comma separated IDs" },
   {
     key: "senderNameAddress",
     field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
@@ -106,7 +105,7 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
       if (!iddid) return;
 
       try {
-        const res = await fetch("/api/GetData/GetSelectedVendorDetails", {
+        const res = await fetch("/api/GetData/GetInternalDisposalDetails", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ID: iddid }),
@@ -166,7 +165,7 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
     formData.append("NoOfContainers", "0");
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", "");
-    formData.append("EmpCode", "YOUR_EMP_CODE");
+    // formData.append("EmpCode", "YOUR_EMP_CODE");
     formData.append("DateOfDisposal", String(values.disposalDate ?? today));
 
     if (values.salePoSoDoc instanceof File) {
@@ -188,7 +187,32 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
       return;
     }
 
+
+    // console.log(result);
+    const statusText = String(result?.data?.[0]?.STATUS ?? "").trim();
+    const fddid = statusText.split("-").pop()?.trim() ?? "";
+
     alert("Saved successfully");
+
+
+    if (values.salePoSoDoc instanceof File && values.finalPartyDoc instanceof File) {
+      const attachmentFormData = new FormData();
+      attachmentFormData.append("FDDID", fddid);
+      attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+      attachmentFormData.append("finalPartyDoc", values.finalPartyDoc);
+
+      const attachmentRes = await fetch("/api/SetData/SetFinalDisposalDetailsAttachments", {
+        method: "POST",
+        // headers: { "Content-Type": "application/json" },
+        body: attachmentFormData,
+      });
+
+      const attachmentResult = await attachmentRes.json();
+      if (!attachmentRes.ok || !attachmentResult.success) {
+        alert(attachmentResult.message || "Attachment save failed");
+        return;
+      }
+    }
   };
 
 
@@ -328,14 +352,9 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="relative">
-        <h1 className="text-xl font-semibold text-cyan-600 text-center">Disposal Generate - Non Hazardous</h1>
-        <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p>
+      <h1 className="text-2xl font-semibold text-slate-900">Disposal Generate - Non Hazardous</h1>
+      <p className="mt-2 text-sm text-slate-600">Fill non-hazardous disposal details below.</p>
 
-        <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
-        </Link>
-      </div>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full border-collapse text-sm">

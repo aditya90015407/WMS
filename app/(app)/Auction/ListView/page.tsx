@@ -50,7 +50,7 @@ const formatDate = (value: unknown): string => {
 const mapAuctionRow = (row: Record<string, unknown>): AuctionRow => ({
   ...row,
   AuctionID: firstValue(row, ["AuctionID", "AuctionId", "AID", "ID"]),
-  DisposalType: firstValue(row, ["DisposalType", "Disposal Type", "DTYPE"]),
+  DisposalType: firstValue(row, ["DisType"]),
   AuctionDate: firstValue(row, ["AuctionDate", "Auction Date", "Date", "CrDt"]),
   WasteCategory: firstValue(row, ["WasteCategory", "Waste Category", "WC"]),
   Remarks: firstValue(row, ["Remarks", "Remark"]),
@@ -139,17 +139,20 @@ export default function AuctionList() {
   return (
     <section className="mx-auto max-w-4xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-slate-900">Auction List</h1>
-          <p className="mt-1 text-xs text-slate-500">Click any auction row to view details.</p>
+        <div className="w-full">
+          <h1 className="text-lg font-semibold text-teal-600 text-center">Auctions List</h1>
+          {/* <p className="mt-1 text-xs text-slate-500">Click any auction row to view details.</p> */}
         </div>
-        <button
+        {/* <button
           type="button"
           onClick={() => setRefreshSeed((x) => x + 1)}
           className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
           Refresh
-        </button>
+        </button> */}
+        <img src="/refresh.png" alt="" className="h-5 cursor-pointer"
+          onClick={() => setRefreshSeed((x) => x + 1)}
+        />
       </div>
 
       <div className="mt-4">
@@ -181,9 +184,9 @@ export default function AuctionList() {
                   <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
                     Auction ID
                   </th>
-                  <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                  {/* <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
                     Disposal Type
-                  </th>
+                  </th> */}
                   <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
                     Auction Date
                   </th>
@@ -211,9 +214,9 @@ export default function AuctionList() {
                     <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {row.AuctionID || "-"}
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
+                    {/* <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {row.DisposalType || "-"}
-                    </td>
+                    </td> */}
                     <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {formatDate(row.AuctionDate)}
                     </td>

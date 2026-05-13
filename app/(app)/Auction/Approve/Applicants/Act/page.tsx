@@ -202,18 +202,22 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
     return (
 
-        <div className="bg-white h-fit px-8 py-4 relative max-w-5xl">
+        <div className="bg-white h-fit px-8 py-4 relative max-w-4xl">
             <Toaster />
             {/* <div className="text-center text-sm">Act on Waste</div> */}
 
             <div>
-                <div className="text-center text-orange-600 mb-5">
+                <div className="text-center font-semibold text-teal-600 mb-5">
                     Participant's Details
                 </div>
                 {/* <Link href="./">
 
                     <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
                 </Link> */}
+
+                <img src="/goback.png" alt="" className="cursor-pointer h-5 absolute top-4 right-10"
+                    onClick={() => router.back()} />
+
             </div>
 
             <form onSubmit={handleSubmit} action="">

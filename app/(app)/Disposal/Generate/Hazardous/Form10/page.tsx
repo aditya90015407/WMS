@@ -41,7 +41,6 @@ const initialFormState: Form10Data = {
   receiverMonth: "",
   receiverDay: "",
   receiverYear: "",
-  MUnit: ""
 };
 
 const getFirstValue = (row: Record<string, unknown>, keys: string[]) => {
@@ -154,7 +153,6 @@ export default function HazardousForm10Page({ searchParams }: { searchParams: Pr
           receiverMonth: getFirstValue(row, ["ReceiverMonth"]),
           receiverDay: getFirstValue(row, ["ReceiverDay"]),
           receiverYear: getFirstValue(row, ["ReceiverYear"]),
-          MUnit: getFirstValue(row, ["MUnit"])
         });
 
         setStatus("Form 10 details loaded successfully.");

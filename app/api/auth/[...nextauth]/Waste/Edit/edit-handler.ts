@@ -15,11 +15,13 @@ type EditPayload = {
   storage?: string;
   quantity?: string;
   disposalTarget?: string;
+  storageMethod: string
 };
 
 export async function handleEditPost(request: Request) {
   try {
     const body = (await request.json()) as EditPayload;
+    console.log(body)
     const authSession = await getServerSession(authOptions);
     const createdBy = String(authSession?.user?.id ?? "").trim();
 
@@ -88,8 +90,11 @@ export async function handleEditPost(request: Request) {
       .input("WasteQty", sql.Decimal(18, 2), wasteQty)
       .input("GenerationDate", sql.Date, body.date as string)
       .input("TargetDate", sql.Date, body.disposalTarget as string)
+      .input("StorageMethod", body.storageMethod as string)
       .input("CRBY", sql.NVarChar(50), createdBy)
       .execute("PRO-WMS_SET");
+
+    console.log(result, "esrfjdsff")
 
     const firstRow = result.recordset?.[0] as Record<string, unknown> | undefined;
     const values = firstRow ? Object.values(firstRow) : [];

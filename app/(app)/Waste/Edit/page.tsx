@@ -28,6 +28,8 @@ type EditState = {
   quantity: string;
   disposalTarget: string;
   unit: string;
+  storageMethod: string
+  smid: string
 };
 
 const PAGE_SIZE = 10;
@@ -335,6 +337,7 @@ export default function WasteEditPage() {
     const disposer = findOption(disposers, row.DID || row.DeptID, wdName);
     const physical = findOption(physicalStates, row.PSID, psName);
     const storage = findOption(storageMethods, row.SMID, smName);
+    const storageMethod = smName;
     const unit = findOption(units, row.MUID || row.WTID, unitName);
 
     const nextState: EditState = {
@@ -349,6 +352,8 @@ export default function WasteEditPage() {
       quantity: toText(row.WasteQty || row.WQ),
       disposalTarget: asDateValue(row.TargetDate || row.TD),
       unit: unit?.id ?? "",
+      storageMethod: "",
+      smid: ""
     };
     setEditState(nextState);
 
@@ -421,13 +426,17 @@ export default function WasteEditPage() {
             Edit existing waste records.
           </p> */}
         </div>
-        <button
+        {/* <button
           type="button"
           onClick={() => setRefreshSeed((x) => x + 1)}
           className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
           Refresh
-        </button>
+        </button> */}
+        <img src="/refresh.png" alt="" className="cursor-pointer h-4 "
+          onClick={() => setRefreshSeed((x) => x + 1)}
+        />
+
       </div>
 
       <div className="mt-4">
@@ -495,7 +504,7 @@ export default function WasteEditPage() {
                       {toText(row.Waste)}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {toText(row.WasteQty)}
+                      {toText(row.WasteQty)}{" "}{row.MUnit}
                     </td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                       {toText(row.GenDept)}
@@ -510,7 +519,7 @@ export default function WasteEditPage() {
                       <button
                         type="button"
                         onClick={() => onEdit(row)}
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50"
+                        className="cursor-pointer rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700 hover:bg-slate-50"
                       >
                         Edit
                       </button>
@@ -715,10 +724,14 @@ export default function WasteEditPage() {
               <select
                 required
                 value={editState.storage}
-                onChange={(e) =>
+                onChange={(e) => {
+                  console.log(e.target.value)
+                  const smethod = storageMethods.find(el => el.id == e.target.value)?.name
+                  console.log(smethod)
                   setEditState((prev) =>
-                    prev ? { ...prev, storage: e.target.value } : prev,
+                    prev ? { ...prev, storage: e.target.value, smid: e.target.value, storageMethod: smethod! } : prev,
                   )
+                }
                 }
                 className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs outline-none focus:border-slate-500"
               >
@@ -730,6 +743,25 @@ export default function WasteEditPage() {
                 ))}
               </select>
             </div>
+
+            {
+              editState.smid == '4' &&
+              <div>
+                <label className="mb-1 block text-sm font-bold text-slate-700">Storage Method</label>
+                <input
+                  type="text"
+                  value={(editState.smid == '4' && editState.storageMethod == "Others") ? "" : editState.storageMethod}
+                  onChange={(e) =>
+                    setEditState((prev) =>
+                      prev ? { ...prev, storageMethod: e.target.value } : prev,
+                    )
+                  }
+                  className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
+                  placeholder="Enter Storage Method"
+                  required
+                />
+              </div>
+            }
             <div>
               <label className="mb-0.5 block text-xs font-semibold text-slate-700">
                 Target Date

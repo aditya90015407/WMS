@@ -53,7 +53,7 @@ const getDestinedDisplay = (entry: FormEntry): string => {
 
 const getApprovalRowClass = (status: string): string => {
   const normalized = status.trim().toLowerCase();
-  console.log(normalized)
+  // console.log(normalized)
   if (normalized === "completed") return "bg-green-100";
   if (normalized === "in progress") return "bg-yellow-100";
   if (normalized === "rejected") return "bg-red-100";
@@ -65,8 +65,8 @@ const getApprovalRowClass = (status: string): string => {
 
 const buildDetailRows = (entry: FormEntry) => [
 
-  ["ID", entry.code],
-  ["Date", entry.date],
+  ["Waste ID", entry.code],
+  ["Generation Date", entry.date],
   ["Target Date", entry.targetDate],
   ["Waste Category", entry.wasteCategory],
   ["Waste Approval Status", entry.approvalStatus],
@@ -75,21 +75,26 @@ const buildDetailRows = (entry: FormEntry) => [
 
   // ["Waste Type", entry.wasteType],
   ["Waste", entry.waste],
-  ["Quantity", entry.quantity],
+  ["Quantity", [entry.quantity, entry.Unit].filter(Boolean).join(" ")],
+
   ["Storage Method", entry.storageMethod],
   ["Physical State", entry.physicalState],
   ["Disposer", entry.disposer],
   ["Receiver", entry.receiver],
-  ["Unit Description", entry.unitDesc],
-  ["Manifest Document No.", entry.manifestDocumentNo],
-  ["Date Of Issuance", entry.dateOfIssuance],
-  ["Reference No.", entry.referenceNo],
-  ["Disposer ID", entry.dispId],
-  ["Department ID", entry.deptId],
+  ["Generating Department", entry.genDept],
+
+  ["Generating Unit", entry.unitDesc],
+  ["Auction ID", entry.IDDID],
+  // ["Manifest Document No.", entry.manifestDocumentNo],
+  // ["Date Of Issuance", entry.dateOfIssuance],
+  // ["Reference No.", entry.referenceNo],
+  // ["Disposer ID", entry.dispId],
+  // ["Department ID", entry.deptId],
+
   // ["Department", entry.dept],
-  ["Receiver ID", entry.receiverId],
-  ["Waste Category ID", entry.wcid],
-  ["Status Code", entry.stsCode],
+  // ["Receiver ID", entry.receiverId],
+  // ["Waste Category ID", entry.wcid],
+  // ["Status Code", entry.stsCode],
 ].filter(([, value]) => String(value ?? "").trim() !== "");
 
 const getFirstValue = (row: Record<string, unknown>, keys: string[]) => {
@@ -211,20 +216,20 @@ const toForm10DataFromApiRow = (row: Record<string, unknown>): Form10Data => {
 
 const createForm3Html = (entry: FormEntry): string => {
 
-  console.log(entry)
+  // console.log(entry)
   const typeWithCategory = [entry.waste || entry.wasteType, entry.sapWasteCode]
     .filter(Boolean)
     .join(" / ");
 
   const quantUnit = [entry.quantity, entry.Unit]
     .filter(Boolean)
-    .join(" / ");
+    .join("  ");
 
   return `<!doctype html>
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Form3_${esc(entry.code)}</title>
+
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; color: #111827; }
     h1, h2, p { margin: 0; }
@@ -245,6 +250,7 @@ const createForm3Html = (entry: FormEntry): string => {
  
   <div class="mt4 small">
     <p>1. Name and address of the facility : ${esc(entry.unitDesc)}</p>
+  
     <p class="mt2">2. Date of issuance of authorisation and its reference number : ${esc(
     [entry.dateOfIssuance, entry.referenceNo].filter(Boolean).join(" ")
   )}</p>
@@ -296,7 +302,7 @@ const createForm10Html = (form: Form10Data, code: string): string => {
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Form10_${esc(code)}</title>
+
   <style>
     body { font-family: Arial, sans-serif; padding: 0; color: #111827; }
     table { width: 100%; border-collapse: collapse; }
@@ -347,7 +353,7 @@ export default function WasteViewPage() {
   const department = session?.user?.department ?? "";
 
 
-  console.log(department)
+  // console.log(department)
   useEffect(() => {
     const loadRows = async () => {
       setLoading(true);
@@ -383,13 +389,22 @@ export default function WasteViewPage() {
       const bCode = toText(b.ID ?? b.Code).trim();
       const aNum = Number(aCode);
       const bNum = Number(bCode);
-      if (Number.isFinite(aNum) && Number.isFinite(bNum)) return aNum - bNum;
-      return aCode.localeCompare(bCode, undefined, { numeric: true, sensitivity: "base" });
+
+      if (Number.isFinite(aNum) && Number.isFinite(bNum)) return bNum - aNum;
+
+      return bCode.localeCompare(aCode, undefined, {
+        numeric: true,
+        sensitivity: "base",
+      });
     });
 
+
     return sortedRows.map((row) => {
+      // console.log(row)
       const source = row as Record<string, unknown>;
       const entry = toForm3Entry(source);
+      // console.log(entry.genDept);
+
 
       return {
         ...entry,
@@ -450,7 +465,7 @@ export default function WasteViewPage() {
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Form3_${entry.code}</title>
+
   <style>
     @page {
       size: A4;
@@ -576,7 +591,7 @@ export default function WasteViewPage() {
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Form10_${entry.code}</title>
+  
   <style>
     @media print {
       body { margin: 0; }
@@ -609,8 +624,11 @@ export default function WasteViewPage() {
 
   return (
     <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-teal-600">View Waste Details</h1>
+      <div className="text-center w-full relative ">
+        <h1 className="text-xl font-bold text-teal-600">View Waste Details</h1>
+        <img src="/refresh.png" alt="" className="absolute h-5 cursor-pointer right-4 top-1"
+          onClick={() => window.location.reload()}
+        />
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
@@ -632,7 +650,7 @@ export default function WasteViewPage() {
               <thead>
                 <tr className="bg-slate-100">
                   <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">ID</th>
-                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Date</th>
+                  <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Gen Date</th>
                   <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Waste Category</th>
                   <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Waste</th>
                   <th className="border border-slate-300 px-2 py-1 text-left font-semibold text-slate-900">Approval Status</th>
@@ -653,7 +671,7 @@ export default function WasteViewPage() {
                 {pagedRows.map((item, index) => (
                   <tr
                     key={`waste-entry-${(currentPage - 1) * PAGE_SIZE + index}`}
-                    className={getApprovalRowClass(item.approvalStatus)}
+                    className={getApprovalRowClass(item.approvalStatus) + " cursor-pointer"}
                     onClick={() => setSelectedEntry(item)}
                   >
                     <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.code}</td>
@@ -669,75 +687,80 @@ export default function WasteViewPage() {
             </table>
           </div>
         </div>
-      )}
+      )
+      }
 
-      {!loading && !error && filteredRows.length > 0 && (
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
-          <p>
-            Showing {pagedRows.length} of {filteredRows.length} records
-            {searchTerm.trim() ? " (filtered)" : ""} (Code Ascending)
-          </p>
-          <div className="flex flex-wrap items-center gap-2">
-            <button type="button" onClick={() => setPage(1)} disabled={currentPage === 1} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">First</button>
-            <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={currentPage === 1} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">Prev</button>
-            <span>Page {currentPage} of {totalPages}</span>
-            <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">Next</button>
-            <button type="button" onClick={() => setPage(totalPages)} disabled={currentPage === totalPages} className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">Last</button>
+      {
+        !loading && !error && filteredRows.length > 0 && (
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
+            <p>
+              Showing {pagedRows.length} of {filteredRows.length} records
+              {searchTerm.trim() ? " (filtered)" : ""} (Code Descending)
+
+            </p>
+            <div className="flex flex-wrap items-center gap-2">
+              <button type="button" onClick={() => setPage(1)} disabled={currentPage === 1} className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">First</button>
+              <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={currentPage === 1} className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">Prev</button>
+              <span>Page {currentPage} of {totalPages}</span>
+              <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages} className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">Next</button>
+              <button type="button" onClick={() => setPage(totalPages)} disabled={currentPage === totalPages} className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">Last</button>
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {selectedEntry && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-2 md:p-4">
-          <div className="max-h-[96vh] w-full max-w-5xl overflow-y-auto rounded-xl bg-white p-3 shadow-2xl md:p-6">
-            <div className="flex items-start justify-between">
-              <h3 className="text-lg font-semibold text-slate-900">
-                Waste Form - {selectedEntry.code || "Entry"}
-              </h3>
-              <div className="flex items-center gap-2">
-                {selectedEntry.wcid === "1" && selectedEntry.stsCode === "3" ? (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => onDownload(selectedEntry)}
-                      className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
-                    >
-                      <Download className="h-4 w-4" />
-                      Form 3 PDF
-                    </button>
-                  </>
+      {
+        selectedEntry && (
+          <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 p-2 md:p-4">
+            <div className="max-h-[96vh] w-full max-w-5xl overflow-y-auto rounded-xl bg-white p-3 shadow-2xl md:p-6">
+              <div className="flex items-start justify-between">
+                <h3 className="text-lg font-semibold text-teal-600 text-center w-full">
+                  Waste Details
+                </h3>
+                <div className="flex items-center gap-2">
+                  {selectedEntry.wcid === "1" && selectedEntry.stsCode === "3" ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => onDownload(selectedEntry)}
+                        className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
+                      >
+                        <Download className="h-4 w-4" />
+                        Form 3 PDF
+                      </button>
+                    </>
 
-                ) : null}
-                <button
-                  type="button"
-                  onClick={() => setSelectedEntry(null)}
-                  className="rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
-                >
-                  Close
-                </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedEntry(null)}
+                    className="cursor-pointer rounded-md border border-slate-300 px-2 py-1 text-xs hover:bg-slate-50"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="mt-4 overflow-x-auto rounded-lg border border-slate-300">
-              <table className="min-w-full border-collapse text-xs sm:text-sm">
-                <thead>
-                  <tr className="bg-slate-100">
-                    <th className="border border-slate-300 px-2 py-2 text-left">Field</th>
-                    <th className="border border-slate-300 px-2 py-2 text-left">Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {buildDetailRows(selectedEntry).map(([label, value]) => (
-                    <tr key={`${selectedEntry.code}-${label}`}>
-                      <td className="border border-slate-300 px-2 py-2 font-medium text-slate-900">{label}</td>
-                      <td className="border border-slate-300 px-2 py-2 text-slate-800">{value}</td>
+              <div className="mt-4 overflow-x-auto rounded-lg border border-slate-300">
+                <table className="min-w-full border-collapse text-xs sm:text-sm">
+                  <thead>
+                    <tr className="bg-slate-100">
+                      <th className="border border-slate-300 px-2 py-2 text-left">Field</th>
+                      <th className="border border-slate-300 px-2 py-2 text-left">Value</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {buildDetailRows(selectedEntry).map(([label, value]) => (
+                      <tr key={`${selectedEntry.code}-${label}`}>
+                        <td className="border border-slate-300 px-2 py-2 font-medium text-slate-900">{label}</td>
+                        <td className="border border-slate-300 px-2 py-2 text-slate-800">{value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-            {/* <div className="mt-4 text-center">
+              {/* <div className="mt-4 text-center">
               <h1 className="text-xl font-bold text-slate-900">FORM 3</h1>
               <p className="text-xs italic text-slate-700">
                 [See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]
@@ -746,7 +769,7 @@ export default function WasteViewPage() {
                 FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES
               </h2>
             </div> */}
-            {/* <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
+              {/* <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
               <p>1. Name and address of the facility : {selectedEntry.unitDesc}</p>
               <p>
                 2. Date of issuance of authorisation and its reference number :{" "}
@@ -754,7 +777,7 @@ export default function WasteViewPage() {
               </p>
               <p>3. Description of hazardous and other wastes handled (Generated or Received)</p>
             </div> */}
-            {/* <div className="mt-3 overflow-x-auto rounded-lg border border-slate-300">
+              {/* <div className="mt-3 overflow-x-auto rounded-lg border border-slate-300">
               <table className="min-w-[760px] border-collapse text-xs sm:min-w-full sm:text-sm">
                 <thead>
                   <tr className="bg-slate-100">
@@ -780,7 +803,7 @@ export default function WasteViewPage() {
                 </tbody>
               </table>
             </div> */}
-            {/*
+              {/*
             <p className="mt-4 text-xs italic text-slate-700 sm:text-sm">
               * Fill up above table separately for indigenous and imported waste.
             </p>
@@ -800,9 +823,10 @@ export default function WasteViewPage() {
               </div>
               <p className="font-semibold">Signature of occupier</p>
             </div> */}
+            </div>
           </div>
-        </div>
-      )}
-    </section>
+        )
+      }
+    </section >
   );
 }

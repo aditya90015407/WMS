@@ -111,7 +111,7 @@ export default function DisposalInitiatePage() {
           type="button"
           onClick={onContinue}
           disabled={!type}
-          className={`rounded-md px-4 py-2 text-sm font-medium text-white ${type ? "bg-emerald-700 hover:bg-emerald-800" : "bg-slate-400 cursor-not-allowed"
+          className={`cursor-pointer rounded-md px-4 py-2 text-sm font-medium text-white ${type ? "bg-emerald-700 hover:bg-emerald-800" : "bg-slate-400 cursor-not-allowed"
             }`}
         >
           Continue

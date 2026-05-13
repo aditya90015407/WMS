@@ -89,16 +89,16 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
             // console.log(data)
         })
     }
-     
+
     const handleChange = (
-                key: string,
-                value: string
-            ) => {
-                setFormData((prev) => ({
-                    ...prev,
-                    [key]: value,
-                }));
-            };
+        key: string,
+        value: string
+    ) => {
+        setFormData((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
 
 
     const saveDecision = async (stsCode: 3 | 5, label: "Accepted" | "Rejected") => {
@@ -186,12 +186,14 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="w-full text-center">
-                    <h1 className="text-2xl font-semibold text-teal-600">Disposal Approval - Non Hazardous</h1>
-                    <p className="mt-2 text-sm text-slate-600">Verify the submitted non-hazardous disposal form before taking action.</p>
+                    <h1 className="text-xl font-semibold text-teal-600"> Reverted Disposal - Non Hazardous</h1>
+                    {/* <p className="mt-2 text-sm text-slate-600">Verify the submitted non-hazardous disposal form before taking action.</p> */}
                 </div>
-                <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-1 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                {/* <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-1 py-2 text-sm text-slate-700 hover:bg-slate-50">
                     Back to Queue
-                </button>
+                </button> */}
+                <img src="/goback.png" alt="" className="cursor-pointer relative h-5 absolute top-0 right-10"
+                    onClick={() => router.back()} />
             </div>
 
             {loading && <p className="mt-4 text-sm text-slate-600">Loading submitted form...</p>}
@@ -208,26 +210,26 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                                 </tr>
                             </thead>
                             <tbody>
-    {fields.map(([key, label]) => (
-        <tr key={key}>
-            <td className="border border-slate-200 px-3 py-2 align-top">
-                {label}
-            </td>
+                                {fields.map(([key, label]) => (
+                                    <tr key={key}>
+                                        <td className="border border-slate-200 px-3 py-2 align-top">
+                                            {label}
+                                        </td>
 
-            <td className="border border-slate-200 px-3 py-2">
-                                <input
-                                    type="text"
-                                    value={String(formData[key] ?? "")}
-                                    onChange={(e) =>
-                                        handleChange(key, e.target.value)
-                                    }
-                                    className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-                                />
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-                                        </table>
+                                        <td className="border border-slate-200 px-3 py-2">
+                                            <input
+                                                type="text"
+                                                value={String(formData[key] ?? "")}
+                                                onChange={(e) =>
+                                                    handleChange(key, e.target.value)
+                                                }
+                                                className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                                            />
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
 
                     <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">

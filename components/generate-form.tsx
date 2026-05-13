@@ -849,7 +849,7 @@ export default function GenerateForm({
           <label className="mb-1 block text-sm font-bold text-slate-700">Storage Method</label>
           <input
             type="text"
-            value={form.storageMethod}
+            value={(form.storage == '4' && form.storageMethod == "Others") ? "" : form.storageMethod}
             onChange={(e) => updateField("storageMethod", e.target.value)}
             className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
             placeholder="Enter Storage Method"

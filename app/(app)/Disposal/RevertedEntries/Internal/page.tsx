@@ -170,7 +170,7 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
                     cache: "no-store",
                 });
                 const rawData = await res.json();
-                console.log(rawData,"wadf")
+                console.log(rawData, "wadf")
                 const rows = Array.isArray(rawData) ? rawData : Array.isArray(rawData?.data) ? rawData.data : [];
                 const match = rows.find((item: Record<string, unknown>) => String(item?.IDDID ?? "") === id) ?? null;
                 setRow(match);
@@ -190,13 +190,15 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <h1 className="text-2xl font-semibold text-slate-900">Disposal Approval - Internal</h1>
-                    <p className="mt-2 text-sm text-slate-600">Verify the submitted internal disposal form before taking action.</p>
+                <div className=" w-full">
+                    <h1 className="text-xl font-semibold text-teal-600 text-center"> Reverted Disposal - Internal</h1>
+                    {/* <p className="mt-2 text-sm text-slate-600">Verify the submitted internal disposal form before taking action.</p> */}
                 </div>
-                <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                {/* <button type="button" onClick={() => router.back()} className="rounded border border-slate-300 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">
                     Back to Queue
-                </button>
+                </button> */}
+                <img src="/goback.png" alt="" className="cursor-pointer relative h-5 absolute top-0 right-10"
+                    onClick={() => router.back()} />
             </div>
 
             {loading && <p className="mt-4 text-sm text-slate-600">Loading submitted form...</p>}

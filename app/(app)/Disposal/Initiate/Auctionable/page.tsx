@@ -636,7 +636,7 @@ export default function AuctionablePage() {
 
         <button
           type="submit"
-          className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
+          className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
         >
           Submit
         </button>

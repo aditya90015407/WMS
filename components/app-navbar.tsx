@@ -64,8 +64,12 @@ export default function AppNavbar() {
   const pathSegments = (pathname || "/")
     .split("/")
     .filter(Boolean)
+  // console.log(pathSegments)
   // .filter((segment) => segment.toLowerCase() !== "home");
-  const breadcrumbParts = [...pathSegments.map(formatSegment)];
+  // const breadcrumbParts = [...pathSegments.map(formatSegment)];
+  const breadcrumbParts = [...pathSegments];
+
+  // console.log(breadcrumbParts)
 
   useEffect(() => {
     const handleOutsideClick = (event: MouseEvent) => {
@@ -86,7 +90,9 @@ export default function AppNavbar() {
   };
 
   return (
-    <header className="w-full sticky z-40 border-b border-slate-200 bg-gradient-to-r from-emerald-200 via-green-300 to-emerald-200  backdrop-blur">
+    // <header className="w-full sticky z-40 border-b border-slate-200 bg-gradient-to-r from-emerald-200 via-green-300 to-emerald-200  backdrop-blur">
+    <header className="w-full sticky z-40 border-b border-slate-200 bg-white  backdrop-blur">
+
       <div className="relative flex h-16 w-full items-center justify-between px-4 md:px-6">
         <div className="flex items-center gap-3">
           <Image
@@ -100,8 +106,11 @@ export default function AppNavbar() {
         </div>
 
         <div className="pointer-events-none absolute left-1/2 -translate-x-1/2 text-center">
-          <h1 className="text-lg font-extrabold font-[eco] tracking-wide text-slate-800 drop-shadow-sm md:text-2xl">
+          {/* <h1 className="text-lg font-extrabold font-[eco] tracking-wide text-slate-800 drop-shadow-sm md:text-2xl">
             WASTE MANAGEMENT SYSTEM
+          </h1> */}
+          <h1 className="text-lg font-semibold font-[eco] tracking-wide text-emerald-600   md:text-[28px]">
+            Waste Management System
           </h1>
         </div>
 
@@ -117,7 +126,7 @@ export default function AppNavbar() {
 
           {isOpen && (
             <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white py-4 px-6 shadow-lg">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <p className="text-sm font-semibold tracking-wide text-emerald-600 mt-2">
                 Profile
               </p>
               <div className="mt-3 space-y-2 text-sm">
@@ -185,13 +194,15 @@ export default function AppNavbar() {
           )}
         </div>
       </div>
-      <div className="border-t border-slate-200 bg-emerald-400 px-4 py-2">
-        <div className="flex w-full justify-start">
-          <div className="inline-flex flex-wrap items-center justify-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1.5">
+      {/* <div className="border-t border-slate-200 bg-emerald-400 px-4 py-2"> */}
+      <div className="border-t border-slate-200 bg-white px-4 py-2">
+
+        <div className="flex w-full justify-start ">
+          <div className="bg-emerald-600 inline-flex flex-wrap items-center justify-center gap-1 rounded-full border border-slate-200  px-3 py-1.5">
             {breadcrumbParts.map((part, index) => (
-              <div key={`nav-${part}-${index}`} className="flex items-center gap-1">
-                {index > 0 && <ChevronRight className="h-3.5 w-3.5 text-slate-400" />}
-                <span className="text-[11px] font-medium text-slate-700 md:text-xs">{part}</span>
+              <div key={`nav-${part}-${index}`} className=" flex items-center gap-1">
+                {index > 0 && <ChevronRight className="h-3.5 w-3.5 text-white " />}
+                <span className="text-[11px] font-medium  text-white md:text-xs">{part}</span>
               </div>
             ))}
           </div>

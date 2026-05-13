@@ -12,7 +12,6 @@ type InternalDisposalFormState = {
   totalQuantity: string;
   physicalForm: string;
   documentProof: File | null;
-  munit: string
 };
 
 type WasteOption = {
@@ -42,7 +41,6 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     totalQuantity: "",
     physicalForm: "",
     documentProof: null,
-    munit: ""
   });
   const [disposedToOptions, setDisposedToOptions] = useState<InternalReceiverOption[]>([]);
   const [physicalFormOptions, setPhysicalFormOptions] = useState<PhysicalFormOption[]>([]);
@@ -114,7 +112,6 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
         const payload = await res.json();
         if (!res.ok || !payload.success) return;
-        console.log(payload)
 
         const row = Array.isArray(payload.data) ? payload.data[0] : payload.data;
         if (!row) return;
@@ -127,9 +124,6 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
         ).trim();
         const fetchedTotalQty = String(
           row?.TotalQty ?? row?.Quantity ?? row?.WasteQty ?? "",
-        ).trim();
-        const fetchedMUnit = String(
-          row.MUnit,
         ).trim();
         const fetchedDisposalDate = String(
           row?.DateOfDisposal ?? row?.AuctionDate ?? row?.DisposalDate ?? "",
@@ -166,7 +160,6 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
           wasteDescription: fetchedWasteDescription,
           totalQuantity: fetchedTotalQty,
           physicalForm: fetchedPhysicalForm,
-          munit: fetchedMUnit
         }));
       } catch (error) {
         console.error("Failed to load internal disposal details", error);
@@ -193,7 +186,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
     const formData = new FormData();
     formData.append("IDDID", iddid!);
-    formData.append("UID", String(wasteIdsArr[0] ?? ""));
+    // formData.append("UID", String(wasteIdsArr[0] ?? ""));
     formData.append("SenderAuthNo", "");
     formData.append("TransporterName", "");
     formData.append("TransporterAddress", "");
@@ -211,38 +204,65 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     formData.append("SpecialHandlingInstructions", "");
     formData.append("DateOfDisposal", String(form.disposalDate ?? today));
 
-    if (form.documentProof instanceof File) {
-      formData.append("documentProof", form.documentProof);
-    }
+
 
     const res = await fetch("/api/SetData/SetFinalDisposalDetails", {
       method: "POST",
       body: formData,
     });
 
+
+    // console.log(result);
+
+
     const result = await res.json();
 
 
-    const attachRes=await fetch("")
+    const statusText = String(result?.data?.[0]?.STATUS ?? "").trim();
+    const fddid = statusText.split("-").pop()?.trim() ?? "";
+
+
+
+    if (form.documentProof instanceof File) {
+      const attachmentFormData = new FormData();
+      attachmentFormData.append("FDDID", fddid);
+      attachmentFormData.append("documentProof", form.documentProof);
+
+      const attachmentRes = await fetch("/api/SetData/SetFinalDisposalDetailsAttachments", {
+        method: "POST",
+        // headers: { "Content-Type": "application/json" },
+        body: attachmentFormData,
+      });
+
+      const attachmentResult = await attachmentRes.json();
+      if (!attachmentRes.ok || !attachmentResult.success) {
+        alert(attachmentResult.message || "Attachment save failed");
+        return;
+      }
+
+
+    }
+
+
 
     if (!res.ok || !result.success) {
       alert(result.message || "Save failed");
       return;
     }
+
     alert("Saved successfully");
   };
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="relative">
-        <h1 className="text-xl font-semibold text-cyan-600 text-center">Disposal Generate - Internal</h1>
-        <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p>
+        <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Generate - Internal</h1>
+        {/* <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p> */}
 
         <Link href="./">
           <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
         </Link>
       </div>
-
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div className="overflow-x-auto rounded-2xl border border-slate-200">
           <table className="min-w-full border-collapse text-sm">
@@ -273,13 +293,21 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
               <tr>
                 <td className="border border-slate-200 px-4 py-3 font-medium text-slate-900">
-                  Batch ID
+                  Waste ID / Batch ID
                 </td>
                 <td className="border border-slate-200 px-4 py-3">
-
-                  <span className="min-h-10 w-full rounded-md px-3 py-2 outline-none focus:border-slate-80"
-                  >{form.wasteIds[0] ?? ""}</span>
-
+                  <select
+                    value={form.wasteIds[0] ?? ""}
+                    onChange={(e) => onWasteIdsChange(e.target.value ? [e.target.value] : [])}
+                    className="min-h-10 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-slate-80"
+                  >
+                    <option value="">Select waste ID</option>
+                    {wasteOptions.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.id}
+                      </option>
+                    ))}
+                  </select>
 
                 </td>
               </tr>
@@ -323,17 +351,12 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
                   Total Quantity
                 </td>
                 <td className="border border-slate-200 px-4 py-3">
-                  <div
-                    className="w-full rounded-md border border-slate-200 bg-slate-100 px-3 py-2 text-slate-700"
-                  >
-                    {form.totalQuantity}{" "}{form.munit}
-                  </div>
-                  {/* <input
+                  <input
                     readOnly
-                    value={form.totalQuantity}{form.MUnit}
+                    value={form.totalQuantity}
                     placeholder="Quantity shall be automatically add up from ID selection"
                     className="w-full rounded-md border border-slate-200 bg-slate-100 px-3 py-2 text-slate-700"
-                  /> */}
+                  />
                 </td>
               </tr>
 
@@ -359,7 +382,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
               <tr>
                 <td className="border border-slate-200 px-4 py-3 font-medium text-slate-900">
-                  Document Proof
+                  Document Proof <span className="text-xs text-gray-400">(Proof of internal disposal e.g. mail or screenshot)</span>
                 </td>
                 <td className="border border-slate-200 px-4 py-3">
                   <input
@@ -390,6 +413,6 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
           </table>
         </div>
       </form>
-    </section >
+    </section>
   );
 }
