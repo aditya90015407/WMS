@@ -5,28 +5,42 @@ import React, { useEffect, useMemo, useState } from "react";
 import decrypt from "@/components/Decrypt";
 
 
+type Field =
+    | [string, string]
+    | [[string, string], string];
 
 type FinalDisposalRow = Record<string, string | number | boolean | null>;
 
-const fields = [
+const fields: Field[] = [
     ["ID", "Final Disposal Ref No."],
     ["IDDID", "Original Disposal ID"],
     ["WasteCategory", "Waste Category"],
     ["Waste", "Waste Description"],
-    ["TotalQty", "Total Quantity"],
-    ["NAME", "Recycler / Vendor Name"],
-    ["EMAIL", "Recycler Email"],
-    ["TransporterName", "Transporter Name"],
-    ["TransporterAddress", "Transporter Address"],
-    ["TransporterPhone", "Transporter Phone"],
-    ["TransporterEmail", "Transporter Email"],
-    ["ReceiverName", "Receiver Name"],
-    ["ReceiverAddress", "Receiver Address"],
-    ["ReceiverAuthNo", "Receiver Auth No."],
-    ["Status", "Current Status"],
-    ["CrDt", "Created On"],
-    ["UpDt", "Updated On"],
-] as const;
+    [["TotalQty", "MUnit"], "Total Quantity"],
+    ["IRName", "Internal Receiver Name"],
+    ["PhysicalState", "Physical State"],
+];
+
+
+// const fields = [
+//     ["ID", "Final Disposal Ref No."],
+//     ["IDDID", "Original Disposal ID"],
+//     ["WasteCategory", "Waste Category"],
+//     ["Waste", "Waste Description"],
+//     ["TotalQty", "Total Quantity"],
+//     ["NAME", "Recycler / Vendor Name"],
+//     ["EMAIL", "Recycler Email"],
+//     ["TransporterName", "Transporter Name"],
+//     ["TransporterAddress", "Transporter Address"],
+//     ["TransporterPhone", "Transporter Phone"],
+//     ["TransporterEmail", "Transporter Email"],
+//     ["ReceiverName", "Receiver Name"],
+//     ["ReceiverAddress", "Receiver Address"],
+//     ["ReceiverAuthNo", "Receiver Auth No."],
+//     ["Status", "Current Status"],
+//     ["CrDt", "Created On"],
+//     ["UpDt", "Updated On"],
+// ] as const;
 
 export default function DisposalApproveInternalPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const router = useRouter();
@@ -213,9 +227,16 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
                             </thead>
                             <tbody>
                                 {fields.map(([key, label]) => (
-                                    <tr key={key}>
-                                        <td className="border border-slate-200 px-3 py-2 align-top">{label}</td>
-                                        <td className="border border-slate-200 px-3 py-2 whitespace-pre-wrap">{String(row[key] ?? "-")}</td>
+                                    <tr key={label}>
+                                        <td className="border border-slate-200 px-3 py-2 align-top">
+                                            {label}
+                                        </td>
+
+                                        <td className="border border-slate-200 px-3 py-2 whitespace-pre-wrap">
+                                            {Array.isArray(key)
+                                                ? `${row?.[key[0]] ?? "-"} ${row?.[key[1]] ?? "-"}`
+                                                : String(row?.[key] ?? "-")}
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -254,7 +275,8 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
                         {decision ? <div className="mt-4 rounded border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">{decision}</div> : null}
                     </div>
                 </>
-            )}
-        </section>
+            )
+            }
+        </section >
     );
 }

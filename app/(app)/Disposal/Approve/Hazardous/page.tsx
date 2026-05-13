@@ -121,10 +121,10 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
 
             setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`);
 
-            // if (stsCode == 3 && row?.ID) {
-            //     router.push(`/Form/Form10?fddid=${row.ID}&iddid=${row.IDDID}`)
+            if (stsCode == 3 && row?.ID) {
+                router.push(`/Form/Form10?fddid=${row.ID}&iddid=${row.IDDID}`)
 
-            // }
+            }
         } catch (err) {
             console.error("Failed to save disposal approval", err);
             setDecision("Failed to save disposal approval");
@@ -273,11 +273,11 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                                 <div className="mt-3 space-y-2 text-sm text-slate-700">
                                     <p><span className="font-medium">Final Disposal Ref No.:</span> {toDisplayValue(row.ID)}</p>
                                     <p><span className="font-medium">Original Disposal ID:</span> {toDisplayValue(row.IDDID)}</p>
-                                    <p><span className="font-medium">Current Status:</span> {toDisplayValue(row.Status)}</p>
+                                    {/* <p><span className="font-medium">Current Status:</span> {toDisplayValue(row.Status)}</p>
                                     <p><span className="font-medium">Created By:</span> {toDisplayValue(row.CrBy)}</p>
                                     <p><span className="font-medium">Created On:</span> {toDisplayValue(row.CrDt)}</p>
                                     <p><span className="font-medium">Updated By:</span> {toDisplayValue(row.UpBy)}</p>
-                                    <p><span className="font-medium">Updated On:</span> {toDisplayValue(row.UpDt)}</p>
+                                    <p><span className="font-medium">Updated On:</span> {toDisplayValue(row.UpDt)}</p> */}
                                 </div>
                             </div>
 
@@ -288,8 +288,8 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                                     <p><span className="font-medium">Waste:</span> {toDisplayValue(row.Waste)}</p>
                                     <p><span className="font-medium">Total Quantity:</span> {toDisplayValue(row.TotalQty)}</p>
                                     <p><span className="font-medium">Physical Form:</span> {toDisplayValue(row.PSID)}</p>
-                                    <p><span className="font-medium">Waste Category ID:</span> {toDisplayValue(row.WCID)}</p>
-                                    <p><span className="font-medium">Waste ID:</span> {toDisplayValue(row.WID)}</p>
+                                    {/* <p><span className="font-medium">Waste Category ID:</span> {toDisplayValue(row.WCID)}</p>
+                                    <p><span className="font-medium">Waste ID:</span> {toDisplayValue(row.WID)}</p> */}
                                 </div>
                             </div>
                         </div>

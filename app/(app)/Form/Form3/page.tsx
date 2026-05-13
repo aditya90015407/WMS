@@ -34,6 +34,7 @@ type FormEntry = {
   dateOfIssuance: string;
   referenceNo: string;
   dispId: string;
+  genDept: string;
   deptId: string;
   dept: string;
   receiverId: string;
@@ -49,7 +50,7 @@ const toText = (value: unknown): string => {
 };
 
 const getDestinedDisplay = (entry: FormEntry): string => {
-  const disposerLabel = entry.disposer?.trim() || "";
+  const disposerLabel = entry.genDept?.trim() || "";
   const receiverLabel = entry.receiver?.trim() || "";
 
   if (disposerLabel && receiverLabel) {
@@ -80,10 +81,12 @@ const esc = (value: unknown): string =>
     .replaceAll("'", "&#39;");
 
 const createForm3Html = (entry: FormEntry): string => {
+  // console.log(entry)
+  const wasteLine1 = entry.waste || entry.wasteType || "";
+  const wasteLine2 = entry.Schedule || "";
+  const wasteLine3 = entry.sapWasteCode ? `Stream - ${entry.sapWasteCode}` : "";
 
-  const typeWithCategory = [entry.waste || entry.wasteType, entry.sapWasteCode, entry.Schedule]
-    .filter(Boolean)
-    .join(" / ");
+  // console.log(typeWithCategory)
   const quantUnit = [entry.quantity, entry.Unit]
     .filter(Boolean)
     .join(" / ");
@@ -93,7 +96,7 @@ const createForm3Html = (entry: FormEntry): string => {
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Form3_${esc(entry.code)}</title>
+
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; color: #111827; }
     h1, h2, p { margin: 0; }
@@ -113,10 +116,10 @@ const createForm3Html = (entry: FormEntry): string => {
   </div>
  
   <div class="mt4 small">
-    <p>1. Name and address of the facility : ${esc(entry.unitDesc)}</p>
-    <p class="mt2">2. Date of issuance of authorisation and its reference number : ${esc(
+    <p>1. Name and address of the facility :<strong> ${esc(entry.unitDesc)} </strong></p>
+    <p class="mt2">2. Date of issuance of authorisation and its reference number :<strong> ${esc(
     [entry.dateOfIssuance, entry.referenceNo].filter(Boolean).join(" ")
-  )}</p>
+  )} </strong> </p>
     <p class="mt2">3. Description of hazardous and other wastes handled (Generated or Received)</p>
   </div>
  
@@ -133,7 +136,12 @@ const createForm3Html = (entry: FormEntry): string => {
     <tbody>
       <tr>
         <td>${esc(entry.date)}</td>
-        <td>${esc(typeWithCategory)}</td>
+        <td>
+          ${esc(wasteLine1)}<br/>
+          ${esc(wasteLine2)}<br/>
+          ${esc(wasteLine3)}
+        </td>
+
         <td>${esc(quantUnit)}</td>
         <td>${esc(entry.storageMethod)}</td>
         <td>${esc(getDestinedDisplay(entry))}</td>
@@ -253,68 +261,70 @@ export default function Form3Page() {
     const formHtml = createForm3Html(entry);
     // console.log(entry.Schedule)
     const html = `<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>Form3_${entry.code}</title>
-  <style>
-    @page {
-      size: A4;
-      margin: 12mm;
-    }
- 
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: white;
-      font-family: Arial, sans-serif;
-    }
- 
-    body {
-      display: flex;
-      justify-content: center;
-    }
- 
-    #print-box {
-      width: 100%;
-      max-width: 800px;
-      background: white;
-    }
- 
-    #print-box table {
-      width: 100%;
-      border-collapse: collapse;
-    }
- 
-    #print-box th,
-    #print-box td {
-      border: 1px solid #334155;
-      padding: 8px;
-      font-size: 12px;
-      vertical-align: top;
-    }
- 
-    @media print {
-      body {
-        margin: 0;
-        padding: 0;
-      }
- 
-      #print-box {
-        box-shadow: none;
-        margin: 0;
-        width: 100%;
-        max-width: 100%;
-      }
-    }
-  </style>
-</head>
-<body>
-  <div id="print-box">
-    ${formHtml}
-  </div>
-</body>
-</html>`;
+            <html>
+            <head>
+              <meta charset="utf-8" />
+            
+              <style>
+                  @page {
+                    size: A4;
+                    margin: 0;
+                  }
+
+                  html, body {
+                    margin: 0;
+                    padding: 0;
+                  }
+
+                  body {
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                    color: #111827;
+                    -webkit-print-color-adjust: exact;
+                    print-color-adjust: exact;
+                  }
+
+                  h1, h2, p {
+                    margin: 0;
+                  }
+
+                  .center {
+                    text-align: center;
+                  }
+
+                  .mt2 { margin-top: 8px; }
+                  .mt4 { margin-top: 16px; }
+                  .mt10 { margin-top: 40px; }
+
+                  table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 12px;
+                  }
+
+                  th, td {
+                    border: 1px solid #cbd5e1;
+                    padding: 8px;
+                    font-size: 13px;
+                    text-align: left;
+                    vertical-align: top;
+                  }
+
+                  th {
+                    background: #f1f5f9;
+                  }
+
+                  .small {
+                    font-size: 13px;
+                  }
+                </style>
+            </head>
+            <body>
+              <div id="print-box">
+                ${formHtml}
+              </div>
+            </body>
+            </html>`;
 
     const printWindow = window.open("", "_blank", "width=900,height=700");
     if (!printWindow) {
@@ -513,11 +523,11 @@ export default function Form3Page() {
             </div>
 
             <div className="mt-4 space-y-2 text-xs text-slate-800 sm:text-sm">
-              <p>1. Name and address of the facility : {selectedEntry.unitDesc}</p>
+              <p>1. Name and address of the facility :<strong> {selectedEntry.unitDesc}</strong></p>
               <p>
                 2. Date of issuance of authorisation and its reference number :{" "}
-                {[selectedEntry.dateOfIssuance, "and", selectedEntry.referenceNo].filter(Boolean).join(" ")}
-              </p>
+                <strong> {[selectedEntry.dateOfIssuance, "and", selectedEntry.referenceNo].filter(Boolean).join(" ")}
+                </strong></p>
               <p>3. Description of hazardous and other wastes handled (Generated or Received)</p>
             </div>
 
@@ -536,9 +546,11 @@ export default function Form3Page() {
                   <tr>
                     <td className="whitespace-nowrap border border-slate-300 px-2 py-2">{selectedEntry.date}</td>
                     <td className="border border-slate-300 px-2 py-2">
-                      {[selectedEntry.waste || selectedEntry.wasteType, selectedEntry.sapWasteCode, selectedEntry.Schedule]
-                        .filter(Boolean)
-                        .join(" / ")}
+                      {selectedEntry.waste || selectedEntry.wasteType}
+                      <br />
+                      {selectedEntry.Schedule}
+                      <br />
+                      {selectedEntry.sapWasteCode ? `Stream - ${selectedEntry.sapWasteCode}` : ""}
 
                     </td>
 

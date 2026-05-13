@@ -3,6 +3,23 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import decrypt from "@/components/Decrypt";
+type Form10Row = {
+  ReceiverName?: string;
+  ReceiverAddress?: string;
+  ReceiverAuthNo?: string;
+
+  TransporterName?: string;
+  TransporterAddress?: string;
+  TransporterPhone?: string;
+  TransporterEmail?: string;
+
+  VehicleType?: string;
+  TransporterRegNo?: string;
+  VehicleRegNo?: string;
+
+  ManifestDocumentNo?: string;
+};
+
 
 type FinalDisposalRow = Record<string, string | number | boolean | null>;
 
@@ -12,8 +29,8 @@ const fields = [
     ["WasteCategory", "Waste Category"],
     ["Waste", "Waste Description"],
     ["TotalQty", "Total Quantity"],
-    ["NAME", "Recycler / Vendor Name"],
-    ["EMAIL", "Recycler Email"],
+    // ["NAME", "Recycler / Vendor Name"],
+    // ["EMAIL", "Recycler Email"],
     ["TransporterName", "Transporter Name"],
     ["TransporterAddress", "Transporter Address"],
     ["TransporterPhone", "Transporter Phone"],
@@ -40,7 +57,8 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
     const [decision, setDecision] = useState("");
     const [saving, setSaving] = useState(false);
     const [formData, setFormData] = useState<FinalDisposalRow>({});
-
+    
+      const [values, setValues] = useState<Form10Row>({});
     const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
 
@@ -89,68 +107,143 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
             // console.log(data)
         })
     }
-
+     
     const handleChange = (
-        key: string,
-        value: string
-    ) => {
-        setFormData((prev) => ({
-            ...prev,
-            [key]: value,
-        }));
-    };
+                key: string,
+                value: string
+            ) => {
+                setFormData((prev) => ({
+                    ...prev,
+                    [key]: value,
+                }));
+            };
 
 
-    const saveDecision = async (stsCode: 3 | 5, label: "Accepted" | "Rejected") => {
-        if (!row?.ID) {
-            setDecision("Invalid row ID");
-            return;
+    const onSubmit=async(e : React.FormEvent)=>{
+        e.preventDefault();
+
+        const payload={
+             ID: id,
+        TransporterName: formData.TransporterName ?? "",
+        TransporterAddress: formData.TransporterAddress ?? "",
+        TransporterPhone: formData.TransporterPhone ?? "",
+        TransporterEmail: formData.TransporterEmail ?? "",
+        VTID: formData.VehicleType ?? "",
+        TransporterRegNo: formData.TransporterRegNo ?? "",
+        VehicleRegNo: formData.VehicleRegNo ?? "",
+        ReceiverName:formData.ReceiverName ?? "",
+        ReceiverAddress: formData.ReceiverAddress ?? "",
+        ReceiverAuthNo: formData.ReceiverAuthNo ?? "",
         }
+        const res = await fetch("/api/SetData/UpdateFinalDisposalDetails", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                    });
 
-        setSaving(true);
+                    const data = await res.json();
+
+                    // console.log(data);
+                
+
+    }
 
 
-        if (stsCode == 3) {
-            UpdateDisposedWaste()
-        }
+    // const saveDecision = async (stsCode: 3 | 5, label: "Accepted" | "Rejected") => {
+    //     if (!row?.ID) {
+    //         setDecision("Invalid row ID");
+    //         return;
+    //     }
 
-        try {
-            console.log("Saving:", {
-                id: row.ID,
-                remarks,
-                stsCode
-            });
+    //     setSaving(true);
 
-            const res = await fetch("/api/SetData/SetDisposalApproval", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    FDDID: Number(row.ID),
-                    StsCode: stsCode,
-                    Remarks: remarks,
-                }),
-            });
 
-            const payload = await res.json();
+    //     if (stsCode == 3) {
+    //         UpdateDisposedWaste()
+    //     }
 
-            if (!res.ok) {
-                setDecision(payload.message || "Failed to save disposal approval");
-                return;
-            }
+    //     try {
+    //         console.log("Saving:", {
+    //             id: row.ID,
+    //             remarks,
+    //             stsCode
+    //         });
 
-            setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`);
+    //         const res = await fetch("/api/SetData/SetDisposalApproval", {
+    //             method: "POST",
+    //             headers: { "Content-Type": "application/json" },
+    //             body: JSON.stringify({
+    //                 FDDID: Number(row.ID),
+    //                 StsCode: stsCode,
+    //                 Remarks: remarks,
+    //             }),
+    //         });
 
-            if (stsCode === 3) {
-                router.back();
-            }
+    //         const payload = await res.json();
 
-        } catch (err) {
-            console.error(err);
-            setDecision("Failed to save disposal approval");
-        } finally {
-            setSaving(false);
-        }
-    };
+    //         if (!res.ok) {
+    //             setDecision(payload.message || "Failed to save disposal approval");
+    //             return;
+    //         }
+
+    //         setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`);
+
+    //         if (stsCode === 3) {
+    //             router.back();
+    //         }
+
+    //     } catch (err) {
+    //         console.error(err);
+    //         setDecision("Failed to save disposal approval");
+    //     } finally {
+    //         setSaving(false);
+    //     }
+    // };
+
+ const iddid = row?.IDDID;
+
+
+   
+   useEffect(() => {
+   const loadDetails = async () => {
+      if (!iddid) return;
+
+      const res = await fetch("/api/GetData/GetForm10Details", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ ID: iddid }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) return;
+
+      const rowData = Array.isArray(data.data)
+         ? data.data[0]
+         : data.data;
+
+      setRow(rowData);
+
+      setFormData({
+         ...rowData,
+
+         TransporterName: rowData.TransporterName ?? "",
+         TransporterAddress: rowData.TransporterAddress ?? "",
+         TransporterPhone: rowData.TransporterPhone ?? "",
+         TransporterEmail: rowData.TransporterEmail ?? "",
+         TransporterRegNo: rowData.TransporterRegNo ?? "",
+         VehicleType: rowData.VTID ?? "",
+         VehicleRegNo: rowData.VehicleRegNo ?? "",
+         ReceiverName: rowData.ReceiverName ?? "",
+         ReceiverAddress: rowData.ReceiverAddress ?? "",
+         ReceiverAuthNo: rowData.ReceiverAuthNo ?? "",
+      });
+   };
+
+   void loadDetails();
+}, [iddid]);
 
 
     useEffect(() => {
@@ -171,6 +264,7 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                 const match = rows.find((item: Record<string, unknown>) => String(item?.IDDID ?? "") === id) ?? null;
                 setRow(match);
                 setFormData(match || {});
+                // console.log(match,"MATCH");
                 if (!match) setError("Submitted disposal form not found");
             } catch {
                 setError("Failed to load submitted disposal form");
@@ -186,14 +280,12 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="w-full text-center">
-                    <h1 className="text-xl font-semibold text-teal-600"> Reverted Disposal - Non Hazardous</h1>
-                    {/* <p className="mt-2 text-sm text-slate-600">Verify the submitted non-hazardous disposal form before taking action.</p> */}
+                    <h1 className="text-2xl font-semibold text-teal-600">Disposal Approval - Non Hazardous</h1>
+                    <p className="mt-2 text-sm text-slate-600">Verify the submitted non-hazardous disposal form before taking action.</p>
                 </div>
-                {/* <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-1 py-2 text-sm text-slate-700 hover:bg-slate-50">
+                <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-1 py-2 text-sm text-slate-700 hover:bg-slate-50">
                     Back to Queue
-                </button> */}
-                <img src="/goback.png" alt="" className="cursor-pointer relative h-5 absolute top-0 right-10"
-                    onClick={() => router.back()} />
+                </button>
             </div>
 
             {loading && <p className="mt-4 text-sm text-slate-600">Loading submitted form...</p>}
@@ -210,13 +302,13 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                                 </tr>
                             </thead>
                             <tbody>
-                                {fields.map(([key, label]) => (
-                                    <tr key={key}>
-                                        <td className="border border-slate-200 px-3 py-2 align-top">
-                                            {label}
-                                        </td>
+                {fields.map(([key, label]) => (
+                    <tr key={key}>
+                        <td className="border border-slate-200 px-3 py-2 align-top">
+                            {label}
+                        </td>
 
-                                        <td className="border border-slate-200 px-3 py-2">
+                        <td className="border border-slate-200 px-3 py-2">
                                             <input
                                                 type="text"
                                                 value={String(formData[key] ?? "")}
@@ -229,40 +321,18 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                                     </tr>
                                 ))}
                             </tbody>
-                        </table>
-                    </div>
+                                                    </table>
+                                </div>
 
-                    <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                        <h2 className="text-sm font-semibold text-slate-900">Accept / Reject</h2>
-                        <p className="mt-1 text-xs text-slate-600">Add remarks and choose the action for this submitted form.</p>
-                        <div className="mt-2 text-xs text-slate-500">Review date: {today}</div>
-                        <textarea
-                            rows={4}
-                            value={remarks}
-                            onChange={(e) => setRemarks(e.target.value)}
-                            placeholder="Enter approval or rejection remarks"
-                            className="mt-3 w-full rounded border border-slate-300 px-3 py-2 text-sm"
-                        />
-                        <div className="mt-4 flex flex-wrap gap-3">
+                    <div className="mt-4 flex justify-center">
                             <button
-                                type="button"
-                                disabled={saving}
-                                onClick={() => void saveDecision(3, "Accepted")}
-                                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                                onClick={onSubmit}
+                                type="submit"
+                                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
                             >
-                                Accept
+                                Submit
                             </button>
-                            <button
-                                type="button"
-                                disabled={saving}
-                                onClick={() => void saveDecision(5, "Rejected")}
-                                className="rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800 disabled:opacity-60"
-                            >
-                                Reject
-                            </button>
-                        </div>
-
-                    </div>
+                     </div>
                 </>
             )}
         </section>

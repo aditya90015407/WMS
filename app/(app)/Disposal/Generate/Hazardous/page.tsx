@@ -171,7 +171,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       if (!iddid) return;
 
       try {
-        const res = await fetch("/api/GetData/GetSelectedVendorDetails", {
+        const res = await fetch("/api/GetData/GetInternalDisposalDetails", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ID: iddid }),
@@ -297,7 +297,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       }
     }
 
-    // router.push(`/Form/Form10?id=${iddid}`);
+    router.push(`/Form/Form10?id=${iddid}`);
 
   };
 
