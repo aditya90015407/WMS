@@ -128,7 +128,7 @@ const createForm3Html = (entry: FormEntry): string => {
       <tr>
         <th>Date</th>
         <th>Type of waste with category as per Schedules I,II and III of these rules</th>
-        <th>Total quantity(MT)</th>
+        <th>Total quantity</th>
         <th>Method of Storage</th>
         <th>Destined to or received from</th>
       </tr>
@@ -348,12 +348,15 @@ export default function Form3Page() {
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6 max-w-4xl mx-auto">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-teal-600">Form 3</h1>
+      <div className="text-center relative w-full">
+        <h1 className="text-xl font-bold text-teal-600">Form 3</h1>
         {/* <p className="text-sm italic text-slate-700">[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</p>
         <h2 className="mt-2 text-base font-semibold text-slate-900">
           FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES
         </h2> */}
+        <img src="/refresh.png" alt="" className="h-5 cursor-pointer absolute right-5 top-0"
+          onClick={() => window.location.reload()}
+        />
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
@@ -400,7 +403,7 @@ export default function Form3Page() {
                   </tr>
                 )}
                 {pagedRows.map((item, index) => (
-                  <tr key={`form3-entry-${(currentPage - 1) * PAGE_SIZE + index}`} className={getApprovalRowClass(item.approvalStatus)}>
+                  <tr key={`form3-entry-${(currentPage - 1) * PAGE_SIZE + index}`} className={getApprovalRowClass(item.stsCode)}>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.code}</td>
                     <td className="whitespace-nowrap border border-slate-300 px-2 py-0.5 text-slate-800">{item.date}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.wasteCategory}</td>
@@ -432,7 +435,7 @@ export default function Form3Page() {
                               title="Download Form 3"
                               aria-label="Download Form 3"
                             >
-                              <Download className="h-4 w-4" />
+                              <Download className="h-4 w-4 " />
                             </button>
                           </>
                         )}
@@ -588,7 +591,7 @@ export default function Form3Page() {
               <button
                 type="button"
                 onClick={() => onDownload(selectedEntry)}
-                className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
+                className=" cursor-pointer inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
               >
                 <Download className="h-4 w-4" />
                 Download

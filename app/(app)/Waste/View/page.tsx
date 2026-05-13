@@ -51,14 +51,20 @@ const getDestinedDisplay = (entry: FormEntry): string => {
   return disposerLabel;
 };
 
-const getApprovalRowClass = (status: string): string => {
-  const normalized = status.trim().toLowerCase();
-  // console.log(normalized)
-  if (normalized === "completed") return "bg-green-100";
-  if (normalized === "in progress") return "bg-yellow-100";
-  if (normalized === "rejected") return "bg-red-100";
+const getApprovalRowClass = (statusCode: string): string => {
+  // console.log(statusCode)
+  // const normalized = status.trim().toLowerCase();
+  // if (normalized === "approval completed") return "bg-green-100";
+  // if (normalized === "approval inprogress") return "bg-yellow-100";
+  // if (normalized === "rejected") return "bg-red-100";
+  if (statusCode == '2') return "bg-[#517cc2]"
+  if (statusCode == '3') return "bg-[#48ab6c]"
+  if (statusCode == '5') return "bg-[#EF4444]"
+  if (statusCode == '8') return "bg-[#c98e28]"
+  if (statusCode == '9') return "bg-[#0F766E]"
   return "";
 };
+
 
 // const { data: session, status } = useSession();
 
@@ -351,16 +357,23 @@ export default function WasteViewPage() {
   const [page, setPage] = useState(1);
   const { data: session } = useSession();
   const department = session?.user?.department ?? "";
+  const roleId = session?.user.roleId
 
 
-  // console.log(department)
+  // console.log(roleId, "role")
   useEffect(() => {
     const loadRows = async () => {
       setLoading(true);
       setError(null);
       try {
+        if (!roleId) return
         const params = new URLSearchParams();
-        params.set("flag", "GWT-ALL");
+        if (roleId == '2' || roleId == '8') {
+          params.set("flag", "GWT-ALL-BY-DEPT");
+        }
+        else {
+          params.set("flag", "GWT-ALL");
+        }
         const res = await fetch(`/api/auth/waste/view?${params.toString()}`, {
           method: "GET",
           cache: "no-store",
@@ -381,7 +394,7 @@ export default function WasteViewPage() {
     };
 
     void loadRows();
-  }, []);
+  }, [roleId]);
 
   const tableRows = useMemo<FormEntry[]>(() => {
     const sortedRows = [...rows].sort((a, b) => {
@@ -623,7 +636,7 @@ export default function WasteViewPage() {
 
 
   return (
-    <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6">
+    <section className="bg-emerald-50 mx-auto max-w-6xl rounded-2xl border border-slate-200 p-3 shadow-sm sm:p-6">
       <div className="text-center w-full relative ">
         <h1 className="text-xl font-bold text-teal-600">View Waste Details</h1>
         <img src="/refresh.png" alt="" className="absolute h-5 cursor-pointer right-4 top-1"
@@ -645,7 +658,7 @@ export default function WasteViewPage() {
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-slate-500 sm:max-w-sm"
           />
 
-          <div className="overflow-x-auto rounded-xl border border-slate-300">
+          <div className="overflow-x-auto rounded-xl border border-green-300">
             <table className="min-w-full border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-100">
@@ -671,15 +684,15 @@ export default function WasteViewPage() {
                 {pagedRows.map((item, index) => (
                   <tr
                     key={`waste-entry-${(currentPage - 1) * PAGE_SIZE + index}`}
-                    className={getApprovalRowClass(item.approvalStatus) + " cursor-pointer"}
+                    className={getApprovalRowClass(item.stsCode) + " cursor-pointer"}
                     onClick={() => setSelectedEntry(item)}
                   >
-                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.code}</td>
-                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.date}</td>
-                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.wasteCategory}</td>
-                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.waste}</td>
-                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.approvalStatus}</td>
-                    <td className="border border-slate-300 px-2 py-1 text-slate-800">{item.targetDate}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-50">{item.code}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-50">{item.date}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-50">{item.wasteCategory}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-50">{item.waste}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-50">{item.approvalStatus}</td>
+                    <td className="border border-slate-300 px-2 py-1 text-slate-50">{item.targetDate}</td>
 
                   </tr>
                 ))}

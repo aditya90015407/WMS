@@ -80,6 +80,7 @@ export async function POST(req: Request) {
                 .input("FLAG", sql.VarChar, "SetFinalDisposalDetailsAttachments")
                 .input("FDDID", sql.Int, Number(fddid))
                 .input("AttachPath", sql.VarChar, finalPartyDocName)
+                .input("EmpCode", empCode)
                 .execute("PRO-WMS_SET");
         }
 

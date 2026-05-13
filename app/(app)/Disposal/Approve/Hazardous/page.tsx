@@ -1,6 +1,6 @@
 "use client";
 
-import { POST } from "@/app/api/DownloadAttachments/route";
+import { POST } from "@/app/api/GetData/DownloadFinalDisposalAttachments/route";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import decrypt from "@/components/Decrypt";
@@ -55,6 +55,80 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
     //     TargetDate: string
     // }
     // const [wasteList, setWasteList] = useState<WasteList[]>([])
+
+
+    const [attachPaths, setAttachPaths] = useState<string[]>([])
+
+
+
+    async function GetFinalDisposalAttachments() {
+        const res = await fetch("/api/GetData/GetFinalDisposalAttachments", {
+            method: "POST",
+            body: JSON.stringify({ ID: id })
+        })
+        const data = await res.json()
+        setAttachPaths(data)
+        // console.log(data)
+    }
+
+    useEffect(() => {
+        // console.log("i am here")
+        if (!id || id == "") return
+        GetFinalDisposalAttachments()
+    }, [ready])
+
+    async function downloadAttachments() {
+        // setDownloading(true)
+        const payload = {
+            Attachments: attachPaths,
+        }
+        // console.log(payload)
+
+        const res = await fetch(`/api/GetData/DownloadFinalDisposalAttachments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        })
+        if (!res.ok) {
+            throw new Error("Download failed")
+        }
+
+        const data = await res.json()
+
+        // console.log(data, "dat")
+
+        data.files.forEach((file: any) => {
+            const a = document.createElement("a")
+            a.href = `/api/DownloadFiles?id=${encodeURIComponent(file.id)}`
+            a.download = file.name
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+        })
+        // data.files.forEach((file: any) => {
+        //     console.log(file)
+        //     const a = document.createElement("a")
+        //     a.href = file.url
+        //     a.download = file.name
+        //     a.click()
+        // })
+
+        // const blob = await res.blob()
+
+        // const url = window.URL.createObjectURL(blob)
+        // const a = document.createElement("a")
+
+        // a.href = url
+        // a.download = `FinalDisposalAttachments.zip`
+        // document.body.appendChild(a)
+        // a.click()
+
+        // a.remove()
+        // window.URL.revokeObjectURL(url)
+        // setDownloading(false)
+    }
+
+
 
 
     const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -255,7 +329,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                     onClick={() => router.push("/Disposal/Approve")}
                     className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50"
                 > */}
-                <img src="/goback.png" alt="" className="h-6  cursor-pointer"
+                <img src="/goback.png" alt="" className="h-6 cursor-pointer"
                     onClick={() => router.back()}
                 />
                 {/* </button> */}
@@ -327,6 +401,16 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                                 <p><span className="font-medium">Vehicle Reg No.:</span> {String(form10Row?.VehicleRegNo ?? row?.VehicleRegNo ?? "-")}</p>
                                 <p><span className="font-medium">Manifest Document No.:</span> {String(form10Row?.ManifestDocumentNo ?? "-")}</p>
                             </div>
+                        </div>
+                        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                            <h2 className="text-sm font-semibold text-slate-900">Disposal Attachments
+                                <span><img src="/downloadicon.png" alt="" className="h-6 my-1 mx-2"
+                                    onClick={downloadAttachments}
+                                /></span>
+                            </h2>
+                            {/* <div className="mt-3 grid gap-3 md:grid-cols-2 text-sm text-slate-700">
+                                <p><span className="font-medium">Download :</span> {String(form10Row?.TransporterName ?? row?.TransporterName ?? "-")}</p>
+                            </div> */}
                         </div>
 
 

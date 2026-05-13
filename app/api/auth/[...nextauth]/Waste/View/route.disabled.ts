@@ -2,6 +2,9 @@ export { };
 import { NextResponse } from "next/server";
 import * as sql from "mssql";
 import { getConnection } from "@/lib/dbConnect";
+import { useSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../options";
 
 export async function handleViewGet(request: Request) {
   try {
@@ -15,6 +18,10 @@ export async function handleViewGet(request: Request) {
     const smid = (searchParams.get("SMID") ?? "").trim();
     const aid = (searchParams.get("AID") ?? "").trim();
     const generationDate = (searchParams.get("GenerationDate") ?? "").trim();
+
+    const session = await getServerSession(authOptions)
+    const uid = session?.user.uid
+    const deptId = session?.user.deptId
 
     if (!flag) {
       return NextResponse.json(
@@ -55,6 +62,13 @@ export async function handleViewGet(request: Request) {
       viewRequest.input("GenerationDate", sql.NVarChar(20), generationDate);
     }
 
+    if (uid) {
+      viewRequest.input("UID", sql.NVarChar(20), uid);
+    }
+
+    if (deptId) {
+      viewRequest.input("DeptID", deptId)
+    }
     const result = await viewRequest.execute("PRO-WMS_GET");
     // console.log(result.recordset)
 

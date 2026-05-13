@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
@@ -88,6 +89,9 @@ export default function InternalPage() {
     void loadBase();
   }, []);
 
+  const { data: session } = useSession();
+
+
   useEffect(() => {
     const loadEditDetails = async () => {
       if (!iddid) return;
@@ -131,11 +135,17 @@ export default function InternalPage() {
         return;
       }
 
+      const sessionUid = String(session?.user?.uid ?? "").trim();
+      if (!sessionUid) return;
       setLoadingWaste(true);
+
       try {
         const res = await fetch(
-          `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(wasteCategory)}`,
-          { cache: "no-store" },
+          `/api/auth/Waste/generate?type=drop-waste-for-unit&wcid=${encodeURIComponent(wasteCategory)}&uid=${encodeURIComponent(sessionUid!)}`,
+          {
+            method: "GET",
+            cache: "no-store",
+          },
         );
         const payload = (await res.json()) as { success?: boolean; data?: Option[] };
         const data = payload.success && Array.isArray(payload.data) ? payload.data : [];
@@ -249,7 +259,7 @@ export default function InternalPage() {
 
       setLoadingUndisposed(true);
       try {
-        const res = await fetch("/api/GetData/GetAllUndisposedWaste", {
+        const res = await fetch("/api/GetData/GetAllUndisposedWasteByDept", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
