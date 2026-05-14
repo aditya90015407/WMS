@@ -44,7 +44,13 @@ export async function POST(req: Request) {
         }
 
         const salePoSoDoc = form.get("salePoSoDoc") as File | null;
-        const finalPartyDoc = form.get("finalPartyDoc") as File | null;
+        const finalPartyDocs = [
+            form.get("finalPartyDoc1") as File | null,
+            form.get("finalPartyDoc2") as File | null,
+            form.get("finalPartyDoc3") as File | null,
+            form.get("finalPartyDoc4") as File | null,
+            form.get("finalPartyDoc5") as File | null,
+        ];
         const documentProof = form.get("documentProof") as File | null;
 
         const saveDir = path.join(process.cwd(), "Attachments");
@@ -66,22 +72,29 @@ export async function POST(req: Request) {
                 buffer
             );
         };
-        if (finalPartyDoc) {
+        for (const file of finalPartyDocs) {
 
-            const finalPartyDocName =
-                generateUniqueFileName(
-                    finalPartyDoc.name || "final-party-doc"
-                );
+            if (file && file.size > 0) {
 
-            await saveFile(finalPartyDoc, finalPartyDocName);
+                const finalPartyDocName =
+                    generateUniqueFileName(
+                        file.name || "final-party-doc"
+                    );
 
-            await pool
-                .request()
-                .input("FLAG", sql.VarChar, "SetFinalDisposalDetailsAttachments")
-                .input("FDDID", sql.Int, Number(fddid))
-                .input("AttachPath", sql.VarChar, finalPartyDocName)
-                .input("EmpCode", empCode)
-                .execute("PRO-WMS_SET");
+                await saveFile(file, finalPartyDocName);
+
+                await pool
+                    .request()
+                    .input(
+                        "FLAG",
+                        sql.VarChar,
+                        "SetFinalDisposalDetailsAttachments"
+                    )
+                    .input("FDDID", sql.Int, Number(fddid))
+                    .input("EmpCode", sql.VarChar, empCode)
+                    .input("AttachPath", sql.VarChar, finalPartyDocName)
+                    .execute("PRO-WMS_SET");
+            }
         }
 
         if (documentProof) {
@@ -96,6 +109,7 @@ export async function POST(req: Request) {
                 .request()
                 .input("FLAG", sql.VarChar, "SetFinalDisposalDetailsAttachments")
                 .input("FDDID", sql.Int, Number(fddid))
+                .input("EmpCode", sql.VarChar, empCode)
                 .input("AttachPath", sql.VarChar, documentProofName)
                 .execute("PRO-WMS_SET");
 
@@ -117,6 +131,7 @@ export async function POST(req: Request) {
                 .request()
                 .input("FLAG", sql.VarChar, "SetFinalDisposalDetailsAttachments")
                 .input("FDDID", sql.Int, Number(fddid))
+                .input("EmpCode", sql.VarChar, empCode)
                 .input("AttachPath", sql.VarChar, salePoSoDocName)
                 // .input("Size", sql.Int, size)
                 .execute("PRO-WMS_SET");

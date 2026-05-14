@@ -708,7 +708,7 @@ export default function WasteViewPage() {
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-700 sm:text-sm">
             <p>
               Showing {pagedRows.length} of {filteredRows.length} records
-              {searchTerm.trim() ? " (filtered)" : ""} (Code Descending)
+              {/* {searchTerm.trim() ? " (filtered)" : ""} (Code Descending) */}
 
             </p>
             <div className="flex flex-wrap items-center gap-2">
@@ -736,7 +736,7 @@ export default function WasteViewPage() {
                       <button
                         type="button"
                         onClick={() => onDownload(selectedEntry)}
-                        className="inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
+                        className="cursor-pointer inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
                       >
                         <Download className="h-4 w-4" />
                         Form 3 PDF

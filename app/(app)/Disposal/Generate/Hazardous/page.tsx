@@ -32,13 +32,12 @@ type RowDef = {
 
 
 const rows: RowDef[] = [
-  { key: "wasteIds", field: "Waste ID/Batch ID", type: "multi-select", hint: "Comma separated IDs" },
+  { key: "wasteIds", field: "Waste ID/Batch ID", type: "auto", hint: "Comma separated IDs" },
   {
     key: "senderNameAddress",
     field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
     type: "select",
   },
-
 
   // {
   //   key: "senderAuthNo",
@@ -114,44 +113,38 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           cache: "no-store",
         });
 
-        const data = await res.json();
-        console.log("GetUnit response:", data);
+        const data1 = await res.json();
+        // console.log("GetUnit response:", data);
 
-        if (!res.ok || !Array.isArray(data)) {
+        if (!res.ok || !Array.isArray(data1)) {
           setUnitOptions([]);
           return;
         }
 
-        const options = data
-          .map(
-            (item: {
-              ID?: number | string;
-              UID?: number | string;
-              UnitID?: number | string;
-              NAME?: string;
-              Name?: string;
-              Unit?: string;
-              UnitDesc?: string;
-            }) => ({
-              id: String(item?.ID ?? item?.UID ?? item?.UnitID ?? "").trim(),
-              name: String(
-                item?.UnitDesc ?? item?.NAME ?? item?.Name ?? item?.Unit ?? "",
-              ).trim(),
-            }),
-          )
+        const options = data1
+          .map((item) => ({
+            id: String(item?.ID ?? item?.UID ?? item?.UnitID ?? "").trim(),
+            name: String(
+              item?.UnitDesc ??
+              item?.NAME ??
+              item?.Name ??
+              item?.Unit ??
+              ""
+            ).trim(),
+          }))
           .filter((item) => item.id && item.name);
 
-
         setUnitOptions(options);
-
-        if (options.length > 0) {
-          setValues((prev) => ({
-            ...prev,
-            senderNameAddress: typeof prev.senderNameAddress === "string" && prev.senderNameAddress
-              ? prev.senderNameAddress
-              : options[0].id,
-          }));
-        }
+        //       if (options.length > 0) {
+        //   setValues((prev) => ({
+        //     ...prev,
+        //     senderNameAddress:
+        //       typeof prev.senderNameAddress === "string" &&
+        //       prev.senderNameAddress
+        //         ? prev.senderNameAddress
+        //         : options[0].split("|")[0],
+        //   }));
+        // }
       } catch (error) {
         console.error("Failed to load unit options", error);
         setUnitOptions([]);
@@ -191,13 +184,13 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           "",
         );
 
-        console.log("Hazardous manifest row:", row);
-        console.log("Hazardous manifest being set:", manifestNo);
+        // console.log("Hazardous manifest row:", row);
+        // console.log("Hazardous manifest being set:", manifestNo);
 
         setValues((prev) => ({
           ...prev,
           wasteIds: [String(iddid)],
-          senderNameAddress: String(row?.UID ?? prev.senderNameAddress ?? ""),
+          // senderNameAddress: String(row?.UID ?? prev.senderNameAddress ?? ""),
           manifestNo,
 
           transporterNameAddress: `${row?.TransporterName ?? ""} ${row?.TransporterAddress ?? ""}`.trim(),
@@ -233,7 +226,10 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
     const formData = new FormData();
     formData.append("IDDID", iddid!);
-    formData.append("UID", String(values.senderNameAddress ?? ""));
+    formData.append(
+      "UID",
+      String(values.senderNameAddress ?? "")
+    );
     formData.append("TransporterName", String(values.transporterNameAddress ?? "").split(",")[0] ?? "");
     formData.append("TransporterAddress", String(values.transporterNameAddress ?? ""));
     formData.append("TransporterPhone", String(values.transporterPhoneEmail ?? "").split(",")[0] ?? "");
@@ -255,8 +251,12 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     if (values.salePoSoDoc instanceof File) {
       formData.append("salePoSoDoc", values.salePoSoDoc);
     }
-    if (values.finalPartyDoc instanceof File) {
-      formData.append("finalPartyDoc", values.finalPartyDoc);
+    for (let i = 1; i <= 5; i++) {
+      const file = values[`finalPartyDoc${i}`];
+
+      if (file instanceof File) {
+        formData.append(`finalPartyDoc${i}`, file)
+      }
     }
 
     const res = await fetch("/api/SetData/SetFinalDisposalDetails", {
@@ -282,7 +282,15 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       const attachmentFormData = new FormData();
       attachmentFormData.append("FDDID", fddid);
       attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
-      attachmentFormData.append("finalPartyDoc", values.finalPartyDoc);
+
+      for (let i = 1; i < 5; i++) {
+        const file = values[`finalPartyDoc${i}`];
+
+        if (file instanceof File) {
+          attachmentFormData.append(`finalPartDoc{i}`, file);
+
+        }
+      }
 
       const attachmentRes = await fetch("/api/SetData/SetFinalDisposalDetailsAttachments", {
         method: "POST",
@@ -361,42 +369,38 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     }
 
     if (row.type === "select") {
-      const options = row.key === "senderNameAddress" ? unitOptions : (row.options ?? []);
-      const currentValue = (v as string) ?? "";
+      const currentValue =
+        typeof v === "string" ? v : "";
 
       return (
         <select
-          id={row.key}
-          name={row.key}
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-          onChange={(e) => updateValue(row.key, e.target.value)}
-          value={currentValue || ""}
+          onChange={(e) =>
+            updateValue(row.key, e.target.value)
+          }
+          value={currentValue}
         >
           <option value="" disabled>
             Select
           </option>
+
           {row.key === "senderNameAddress"
-            ? (options as Option[]).map((op, index) => (
-              <option key={`${row.key}-${op.id}-${index}`} value={op.id}>
+            ? unitOptions.map((op) => (
+              <option key={op.id} value={op.id}>
                 {op.name}
               </option>
             ))
-            : (options as string[]).map((op, index) => {
-              const hasPipe = op.includes("|");
-              const value = hasPipe ? op.split("|")[0].trim() : op.trim();
-              const label = hasPipe ? op.split("|")[1].trim() : op.trim();
-
-              return (
-                <option key={`${row.key}-${value}-${index}`} value={value}>
-                  {label}
-                </option>
-              );
-            })}
-
+            : (row.options ?? []).map((op, index) => (
+              <option
+                key={`${row.key}-${index}`}
+                value={op}
+              >
+                {op}
+              </option>
+            ))}
         </select>
       );
     }
-
 
     if (row.type === "multi-select") {
       const arr = Array.isArray(v) ? v : [];
@@ -436,13 +440,49 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     }
 
     if (row.type === "file") {
+
+      if (row.key === "finalPartyDoc") {
+        return (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((num) => (
+              <div key={num} className="space-y-1">
+                <input
+                  type="file"
+                  accept=".pdf,.jpeg,.png,.jpg"
+                  className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                  onChange={(e) =>
+                    updateValue(`finalPartyDoc${num}`, e.target.files?.[0] ?? null
+
+                    )
+                  }
+                />
+
+                <p className="text-xs text-slate-500">
+                  File {num}
+                </p>
+                {values[`finalPartyDoc${num}`] instanceof File && (
+                  <p className="text-xs text-emerald-700">
+                    Selected: {
+                      (values[`finalPartyDoc${num}`] as File).name
+                    }
+                  </p>
+                )}
+              </div>
+            ))}
+
+
+          </div>
+
+        );
+      }
       return (
         <input
-
           type="file"
           accept=".pdf,.jpeg,.jpg,.png"
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-          onChange={(e) => updateValue(row.key, e.target.files?.[0] ?? null)}
+          onChange={(e) =>
+            updateValue(row.key, e.target.files?.[0] ?? null)
+          }
         />
       );
     }

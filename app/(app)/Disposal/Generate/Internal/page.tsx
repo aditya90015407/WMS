@@ -296,7 +296,8 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
                   Waste ID / Batch ID
                 </td>
                 <td className="border border-slate-200 px-4 py-3">
-                  <select
+                  {iddid}
+                  {/* <select
                     value={form.wasteIds[0] ?? ""}
                     onChange={(e) => onWasteIdsChange(e.target.value ? [e.target.value] : [])}
                     className="min-h-10 w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-slate-80"
@@ -307,7 +308,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
                         {item.id}
                       </option>
                     ))}
-                  </select>
+                  </select> */}
 
                 </td>
               </tr>

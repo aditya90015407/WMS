@@ -340,6 +340,7 @@ export default function WasteEditPage() {
     const storageMethod = smName;
     const unit = findOption(units, row.MUID || row.WTID, unitName);
 
+
     const nextState: EditState = {
       id: toText(row.ID),
       date: asDateValue(row.GenerationDate || row.GD),
@@ -352,7 +353,7 @@ export default function WasteEditPage() {
       quantity: toText(row.WasteQty || row.WQ),
       disposalTarget: asDateValue(row.TargetDate || row.TD),
       unit: unit?.id ?? "",
-      storageMethod: "",
+      storageMethod: smName,
       smid: ""
     };
     setEditState(nextState);
@@ -433,7 +434,7 @@ export default function WasteEditPage() {
         >
           Refresh
         </button> */}
-        <img src="/refresh.png" alt="" className="cursor-pointer h-4 "
+        <img src="/refresh.png" alt="" className="cursor-pointer h-5 "
           onClick={() => setRefreshSeed((x) => x + 1)}
         />
 
@@ -535,7 +536,7 @@ export default function WasteEditPage() {
               type="button"
               onClick={() => setPage(1)}
               disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               First
             </button>
@@ -543,7 +544,7 @@ export default function WasteEditPage() {
               type="button"
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Prev
             </button>
@@ -554,7 +555,7 @@ export default function WasteEditPage() {
               type="button"
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Next
             </button>
@@ -562,7 +563,7 @@ export default function WasteEditPage() {
               type="button"
               onClick={() => setPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Last
             </button>
@@ -572,7 +573,7 @@ export default function WasteEditPage() {
 
       {editState && (
         <div className="fixed inset-x-3 top-2 z-50 mx-auto w-full max-w-5xl max-h-[92vh] overflow-y-auto rounded-xl border border-slate-200 bg-white p-3 shadow-2xl md:inset-x-auto md:right-4 md:left-auto md:w-[min(94vw,64rem)] md:p-4">
-          <h3 className="text-sm font-semibold text-slate-800 text-center">Edit Waste Entry</h3>
+          <h3 className="text-md font-semibold text-teal-600 text-center">Edit Waste Entry</h3>
           <form onSubmit={onSave} className="mt-2 grid grid-cols-1 gap-2 md:mt-3 md:grid-cols-2 md:gap-3">
             <div className="md:col-span-2">
               <label className="mb-0.5 block text-xs font-semibold text-slate-700">
@@ -725,9 +726,9 @@ export default function WasteEditPage() {
                 required
                 value={editState.storage}
                 onChange={(e) => {
-                  console.log(e.target.value)
+                  // console.log(e.target.value)
                   const smethod = storageMethods.find(el => el.id == e.target.value)?.name
-                  console.log(smethod)
+                  // console.log(smethod)
                   setEditState((prev) =>
                     prev ? { ...prev, storage: e.target.value, smid: e.target.value, storageMethod: smethod! } : prev,
                   )
@@ -823,14 +824,14 @@ export default function WasteEditPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="rounded-lg bg-[#ff7b00ef] px-3 py-1.5 text-xs font-medium text-white"
+                className="cursor-pointer rounded-lg bg-[#ff7b00ef] px-3 py-1.5 text-xs font-medium text-white"
               >
                 {saving ? "Saving..." : "Save"}
               </button>
               <button
                 type="button"
                 onClick={() => setEditState(null)}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700"
+                className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700"
               >
                 Cancel
               </button>

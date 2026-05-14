@@ -379,13 +379,17 @@ export default function WasteApprove() {
                     <h1 className="text-lg font-semibold text-center text-teal-600"> Approve Registered Waste</h1>
 
                 </div>
-                <button
+                {/* <button
                     type="button"
                     onClick={() => setRefreshSeed((x) => x + 1)}
                     className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
                     Refresh
-                </button>
+                </button> */}
+
+                <img src="/refresh.png" alt="" className="h-4.5 me-3 cursor-pointer"
+                    onClick={() => setRefreshSeed((x) => x + 1)}
+                />
             </div>
 
             {/* <div className="mt-4 grid grid-cols-1 gap-0 md:grid-cols-2 lg:grid-cols-4">
