@@ -5,10 +5,13 @@ import React, { use, useEffect, useMemo, useState } from "react";
 import { redirect } from 'next/navigation';
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 
 export default function WasteApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const params = React.use(searchParams);
+
+    const router = useRouter()
 
     function normalizeData<T extends Record<string, any>>(row: T) {
         return Object.fromEntries(
@@ -224,6 +227,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                 "PSID": wasteData?.PSID,
                 "DID": wasteData?.DID,
                 "SMID": wasteData?.SMID,
+                "StorageMethod": wasteData?.StorageMethod,
                 "AID": wasteData?.AID,
                 "WasteQty": wasteData?.WasteQty,
                 "MUnit": wasteData?.MUnit,
@@ -235,7 +239,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
         // console.log(data)
 
         if (data.STATUS == 'Updated Successfully !') {
-            toast.success("Approved Successfully !")
+            toast.success("Updated Successfully !")
             redirect("./")
             return
         }
@@ -255,13 +259,18 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
             {/* <div className="text-center text-sm">Act on Waste</div> */}
 
             <div>
-                <div className="text-center text-orange-600 mb-5">
+                <div className="text-center font-semibold text-teal-600 mb-5">
                     Waste Details
                 </div>
-                <Link href="./">
+                <div>
+                    <img src="/refresh.png" alt="" className="absolute top-4 right-15 h-4.5 me-3 cursor-pointer"
+                        onClick={() => window.location.reload()}
+                    />
+                    <img src="/goback.png" alt="" className="h-4.5 absolute top-4 right-10 cursor-pointer"
+                        onClick={() => router.back()}
+                    />
 
-                    <img src="/goback.png" alt="" className="h-4 absolute top-4 right-10" />
-                </Link>
+                </div>
             </div>
 
             <form onSubmit={handleSubmit} action="">
@@ -362,11 +371,15 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                         <select name="" id=""
                             value={wasteData?.SMID}
                             onChange={(e) => {
+
+                                const smethod = storageMethod.find(el => el.ID == e.target.value)?.NAME
+                                console.log(smethod)
                                 setWasteData(prev => {
                                     if (!prev) return prev;
                                     return {
                                         ...prev,
-                                        SMID: e.target.value
+                                        SMID: e.target.value,
+                                        StorageMethod: smethod!
                                     };
                                 });
                             }}
@@ -379,6 +392,28 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                         </select>
 
                     </div>
+
+                    {
+                        wasteData?.SMID == '4' &&
+                        <div className="px-2 py-2 font-semibold text-xs">
+                            <label htmlFor="">Other Storage Method</label>
+                            <input type="text" name="" id=""
+                                required
+                                value={wasteData.StorageMethod == "Others" ? "" : wasteData.StorageMethod}
+                                onChange={(e) => {
+                                    setWasteData(prev => {
+                                        if (!prev) return prev;
+                                        return {
+                                            ...prev,
+                                            StorageMethod: e.target.value
+                                        };
+                                    });
+                                }}
+                                placeholder="Enter Storage Method"
+                                className="font-normal border border-gray-200 cursor-pointer p-2 mt-1 rounded-lg w-full text-xs focus:outline-none focus:ring-1 focus:ring-blue-400"
+                            />
+                        </div>
+                    }
 
 
                     <div className="px-2 py-2 font-semibold text-xs">
@@ -446,11 +481,16 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                             }}
                             className="font-normal border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
                         />
-                        <span
-                            className="font-normal p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
-                        >{wasteData?.MUnit}</span>
                     </div>
 
+                    <div className="px-2 py-2 font-semibold text-xs">
+                        <label htmlFor="">Measurement Unit : </label>
+                        <span
+                            className="font-normal p-0 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        >
+                            {wasteData?.MUnit}
+                        </span>
+                    </div>
                     {/* <div className="px-2 py-2 font-semibold text-xs">Approver : <span className="font-normal text-sm"> {wasteData?.Approver}</span></div> */}
                 </div>
 
@@ -463,7 +503,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                             <thead className="bg-slate-50">
                                 <tr >
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >ID</th>
+                                    >Action ID</th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Rejected By</th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"

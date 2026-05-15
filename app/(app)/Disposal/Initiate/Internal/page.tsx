@@ -215,7 +215,7 @@ export default function DisposalRecycleForm() {
             daysLeft,
             unit,
             muid,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
+            label: `${dept || "Dept"} - ${qtyLabel}  ${unit} - ${daysLeft} days left`,
           };
         });
 
@@ -420,11 +420,11 @@ export default function DisposalRecycleForm() {
                       />
                       <div className="flex flex-col">
                         <span className="text-sm text-slate-700">
-                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)}{" "}{item.unit || "N/A"}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
-                          {item.unit || "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}{" "}
+
                         </span>
                       </div>
                     </label>
@@ -482,7 +482,7 @@ export default function DisposalRecycleForm() {
         <div className="flex items-center justify-between border-t border-slate-200 pt-4">
           <button
             type="submit"
-            className="rounded-lg bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+            className="cursor-pointer rounded-lg bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800"
           >
             Submit
           </button>

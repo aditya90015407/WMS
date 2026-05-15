@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     const AID = body.AID
     const WasteQty = body.WasteQty
     const TargetDate = body.TargetDate
+    const StorageMethod = body.StorageMethod
 
     console.log(body, CrBy)
 
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
         .input("AID", AID)
         .input("WasteQty", WasteQty)
         .input("TargetDate", TargetDate)
+        .input("StorageMethod", StorageMethod)
         .input("CrBy", CrBy)
         .execute("PRO-WMS_SET");
 

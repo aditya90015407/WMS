@@ -315,8 +315,8 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
                     </div>
 
                     <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
-                        <h2 className="text-sm font-semibold text-slate-900">Disposal Attachments
-                            <span><img src="/downloadicon.png" alt="" className="h-6 my-1 mx-2"
+                        <h2 className="text-sm font-semibold text-slate-900 flex">Disposal Attachments :
+                            <span><img src="/downloadicon.png" alt="" className="cursor-pointer h-6  mx-2"
                                 onClick={downloadAttachments}
                             /></span>
                         </h2>
@@ -341,7 +341,7 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
                                 type="button"
                                 // disabled={saving}
                                 onClick={() => void saveDecision(3, "Accepted")}
-                                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                                className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
                             >
                                 Accept
                             </button>
@@ -349,7 +349,7 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
                                 type="button"
                                 // disabled={saving}
                                 onClick={() => void saveDecision(5, "Rejected")}
-                                className="rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800 disabled:opacity-60"
+                                className="cursor-pointer rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800 disabled:opacity-60"
                             >
                                 Reject
                             </button>

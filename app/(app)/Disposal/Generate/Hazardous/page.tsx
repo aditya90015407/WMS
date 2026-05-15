@@ -3,11 +3,11 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 
 
 type FieldType =
   | "multi-select"
+  | "select"
   | "select"
   | "text"
   | "textarea"
@@ -37,6 +37,12 @@ const rows: RowDef[] = [
     key: "senderNameAddress",
     field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
     type: "select",
+    //  options: [
+    //     "JSL (IND-IV-HW-587/6854)",
+    //     "JCL (IND-IV-HW-1225/6852)",
+    //     "JUSL (IND-IV-HW-1224/6858)",
+    //     "JFL (Not Available)",
+    //   ],
   },
 
   // {
@@ -103,6 +109,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
   const iddid = params.id;
+  const [MUID, setMUID] = useState<string>("");
   // const iddid = params.get("id") ?? "";
 
   useEffect(() => {
@@ -159,6 +166,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   }, [values.manifestNo]);
 
 
+
   useEffect(() => {
     const loadDetails = async () => {
       if (!iddid) return;
@@ -183,14 +191,16 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           row?.IDDID ??
           "",
         );
+        console.log(row?.MUID)
+        setMUID(String(row?.MUID ?? ""));
 
         // console.log("Hazardous manifest row:", row);
-        // console.log("Hazardous manifest being set:", manifestNo);
-
+        // // console.log("Hazardous manifest being set:", manifestNo);
+        //  console.log("Frontend API response:", data);
         setValues((prev) => ({
           ...prev,
           wasteIds: [String(iddid)],
-          // senderNameAddress: String(row?.UID ?? prev.senderNameAddress ?? ""),
+          senderNameAddress: String(row?.UID ?? prev.senderNameAddress ?? ""),
           manifestNo,
 
           transporterNameAddress: `${row?.TransporterName ?? ""} ${row?.TransporterAddress ?? ""}`.trim(),
@@ -207,6 +217,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           totalQty: String(row?.TotalQty ?? ""),
 
 
+
         }));
       } catch (err) {
         console.error("Failed to load hazardous form details", err);
@@ -218,7 +229,10 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
   const updateValue = (key: string, value: string | string[] | boolean | File | null) => {
 
+    //  console.log(key, value);
+
     setValues((prev) => ({ ...prev, [key]: value }));
+
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -245,8 +259,11 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     formData.append("NoOfContainers", String(values.containers ?? ""));
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", String(values.specialHandling ?? ""));
-    // formData.append("EmpCode", "YOUR_EMP_CODE");
+    formData.append("EmpCode", "YOUR_EMP_CODE");
     formData.append("DateOfDisposal", today);
+    formData.append("MUID", MUID);
+
+    // console.log(Object.fromEntries(formData.entries()));
 
     if (values.salePoSoDoc instanceof File) {
       formData.append("salePoSoDoc", values.salePoSoDoc);
@@ -305,7 +322,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       }
     }
 
-    router.push(`/Form/Form10?id=${iddid}`);
+    // router.push(`/Form/Form10?id=${iddid}`);
 
   };
 
@@ -390,17 +407,23 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
                 {op.name}
               </option>
             ))
-            : (row.options ?? []).map((op, index) => (
-              <option
-                key={`${row.key}-${index}`}
-                value={op}
-              >
-                {op}
-              </option>
-            ))}
+            : (row.options ?? []).map((op, index) => {
+              const value = op.split("|")[0];
+              const label = op.split("|")[1];
+
+              return (
+                <option
+                  key={`${row.key}-${index}`}
+                  value={value}
+                >
+                  {label}
+                </option>
+              );
+            })}
         </select>
       );
     }
+
 
     if (row.type === "multi-select") {
       const arr = Array.isArray(v) ? v : [];
@@ -522,14 +545,9 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="relative">
-        <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Generate - Hazardous</h1>
-        {/* <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p> */}
+      <h1 className="text-2xl font-semibold text-slate-900">Disposal Generate</h1>
+      <p className="mt-2 text-sm text-slate-600">Fill disposal manifest details below.</p>
 
-        <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
-        </Link>
-      </div>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full border-collapse text-sm">

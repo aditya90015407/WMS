@@ -5,10 +5,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import { redirect } from 'next/navigation';
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 
 export default function WasteApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
     const params = React.use(searchParams);
+
+    const router = useRouter()
 
     function normalizeData<T extends Record<string, any>>(row: T) {
         return Object.fromEntries(
@@ -164,7 +167,9 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                     <img src="/refresh.png" alt="" className="absolute top-4 right-15 h-4.5 me-3 cursor-pointer"
                         onClick={() => window.location.reload()}
                     />
-                    <img src="/goback.png" alt="" className="h-4.5 absolute top-4 right-10 cursor-pointer" />
+                    <img src="/goback.png" alt="" className="h-4.5 absolute top-4 right-10 cursor-pointer"
+                        onClick={() => router.back()}
+                    />
 
                 </div>
 

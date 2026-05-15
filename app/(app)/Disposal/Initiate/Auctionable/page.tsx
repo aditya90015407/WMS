@@ -236,7 +236,8 @@ export default function AuctionablePage() {
             daysLeft,
             unit,
             muid,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
+            label: `${dept || "Dept"} - ${qtyLabel}  ${unit} - ${daysLeft} days left`,
+            // label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
           };
         });
 
@@ -480,11 +481,11 @@ export default function AuctionablePage() {
                       />
                       <div className="flex flex-col">
                         <span className="text-sm text-slate-700">
-                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)}{" "}{item.unit || "N/A"}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
-                          {item.unit || "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}{" "}
+
                         </span>
                       </div>
                     </label>

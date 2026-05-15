@@ -230,7 +230,7 @@ export default function NonAuctionablePage() {
             daysLeft,
             unit,
             muid,
-            label: `${String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim()} - ${qty.toFixed(2)} - ${daysLeft ?? "N/A"}`,
+            label: `${String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim()} - ${qty.toFixed(2)} ${unit} - ${daysLeft ?? "N/A"} days left`,
           };
         });
 
@@ -315,7 +315,7 @@ export default function NonAuctionablePage() {
             daysLeft,
             unit,
             muid,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
+            label: `${dept || "Dept"} - ${qtyLabel} ${unit} - ${daysLeft} days left`,
           };
         });
 
@@ -552,11 +552,10 @@ export default function NonAuctionablePage() {
                       />
                       <div className="flex flex-col">
                         <span className="text-sm text-slate-700">
-                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)} {item.unit}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
-                          {item.unit || "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
                         </span>
                       </div>
                     </label>

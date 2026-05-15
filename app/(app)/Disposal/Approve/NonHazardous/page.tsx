@@ -282,8 +282,8 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
 
 
                     <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
-                        <h2 className="text-sm font-semibold text-slate-900">Disposal Attachments
-                            <span><img src="/downloadicon.png" alt="" className="h-6 my-1 mx-2"
+                        <h2 className="text-sm font-semibold text-slate-900 flex">Disposal Attachments :
+                            <span><img src="/downloadicon.png" alt="" className="cursor-pointer h-6 mx-2"
                                 onClick={downloadAttachments}
                             /></span>
                         </h2>

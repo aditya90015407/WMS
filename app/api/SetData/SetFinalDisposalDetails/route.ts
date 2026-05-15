@@ -3,6 +3,7 @@ import * as sql from "mssql";
 import { getConnection } from "@/lib/dbConnect";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { request } from "https";
 
 export async function POST(req: Request) {
   try {
@@ -22,19 +23,29 @@ export async function POST(req: Request) {
       throw new Error("SQL pool is not connected after getConnection()");
     }
 
-    console.log(form)
+
+    const UID = form.get("UID");
+    const VTID1 = form.get("VTID")
+    const VTID =
+      typeof VTID1 === "string"
+        ? VTID1.split("|")[0]
+        : "";
+
+    //  console.log("UIDI :", UID);
+    //  console.log("VTID :", VTID);
+    //  console.log(form.get("MUID"));
 
     const result = await pool
       .request()
       .input("FLAG", sql.NVarChar(50), "SetFinalDisposalDetails")
       .input("IDDID", sql.NVarChar(50), String(form.get("IDDID") ?? ""))
-      .input("UID", sql.NVarChar(50), String(form.get("UID") ?? ""))
+      .input("UID", sql.Int, Number(form.get("UID") ?? ""))
       .input("SenderAuthNo", sql.NVarChar(100), String(form.get("SenderAuthNo") ?? ""))
       .input("TransporterName", sql.NVarChar(200), String(form.get("TransporterName") ?? ""))
       .input("TransporterAddress", sql.NVarChar(300), String(form.get("TransporterAddress") ?? ""))
       .input("TransporterPhone", sql.NVarChar(50), String(form.get("TransporterPhone") ?? ""))
       .input("TransporterEmail", sql.NVarChar(100), String(form.get("TransporterEmail") ?? ""))
-      .input("VTID", sql.NVarChar(50), String(form.get("VTID") ?? ""))
+      .input("VTID", sql.Int(), Number(VTID ?? ""))
       .input("TransporterRegNo", sql.NVarChar(100), String(form.get("TransporterRegNo") ?? ""))
       .input("VehicleRegNo", sql.NVarChar(100), String(form.get("VehicleRegNo") ?? ""))
       .input("ReceiverName", sql.NVarChar(200), String(form.get("ReceiverName") ?? ""))
@@ -42,7 +53,8 @@ export async function POST(req: Request) {
       .input("ReceiverAuthNo", sql.NVarChar(100), String(form.get("ReceiverAuthNo") ?? ""))
       .input("TotalQty", sql.Decimal(18, 3), Number(form.get("TotalQty") ?? 0))
       .input("NoOfContainers", sql.Int, Number(form.get("NoOfContainers") ?? 0))
-
+      // .input("WasteType", sql.NVarChar(100), String(form.get("WasteType") ?? ""))
+      .input("MUID", sql.NVarChar(50), String(form.get("MUID") ?? ""))
       .input("PSID", sql.NVarChar(50), String(form.get("PSID") ?? ""))
       .input("SpecialHandlingInstructions", sql.NVarChar(300), String(form.get("SpecialHandlingInstructions") ?? ""))
       .input("EmpCode", sql.NVarChar(50), empCode)
@@ -51,7 +63,7 @@ export async function POST(req: Request) {
 
     const rows = result.recordset[0];
     const fddid = rows?.FDDID;
-    console.log(rows);
+    // console.log(fddid);
     return NextResponse.json({
       success: true,
       fddid,

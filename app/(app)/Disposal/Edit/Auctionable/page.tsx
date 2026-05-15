@@ -224,7 +224,7 @@ export default function AuctionablePage() {
             daysLeft,
             muid,
             unit,
-            label: `${dept} - ${qty.toFixed(2)} - ${daysLeft || "N/A"} - ${unit || "N/A"}`,
+            label: `${dept} - ${qty.toFixed(2)} ${unit} - ${daysLeft || "N/A"}  days left`,
           };
         });
 
@@ -309,7 +309,7 @@ export default function AuctionablePage() {
             daysLeft,
             unit,
             muid,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft || "N/A"} - ${unit || "N/A"}`,
+            label: `${dept || "Dept"} - ${qtyLabel} ${unit} - ${daysLeft || "N/A"} days left`,
           };
         });
 
@@ -685,10 +685,10 @@ export default function AuctionablePage() {
 
                       <div className="flex flex-col">
                         <span className="text-sm text-slate-700">
-                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)} {item.unit}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} - {item.unit || "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
                         </span>
                       </div>
                     </label>

@@ -27,6 +27,8 @@ export type FormEntry = {
   stsCode: string;
   genDept: string
   IDDID: string
+  CreatedBy: string
+  CrBy: string
 };
 
 const toText = (value: unknown): string => {
@@ -84,6 +86,8 @@ export const toForm3Entry = (row: ViewRow): FormEntry => ({
   wcid: toText(row.WCID ?? row["WCID"]),
   stsCode: toText(row.StsCode ?? row["StsCode"]),
   genDept: toText(row.GenDept),
-  IDDID: toText(row.IDDID)
+  IDDID: toText(row.IDDID),
+  CreatedBy: toText(row.CreatedBy),
+  CrBy: toText(row.CrBy)
 });
 

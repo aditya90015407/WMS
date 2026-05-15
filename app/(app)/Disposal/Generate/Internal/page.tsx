@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 type InternalDisposalFormState = {
@@ -12,6 +12,8 @@ type InternalDisposalFormState = {
   totalQuantity: string;
   physicalForm: string;
   documentProof: File | null;
+  munit: string,
+  muid: string
 };
 
 type WasteOption = {
@@ -41,6 +43,8 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     totalQuantity: "",
     physicalForm: "",
     documentProof: null,
+    munit: "",
+    muid: ""
   });
   const [disposedToOptions, setDisposedToOptions] = useState<InternalReceiverOption[]>([]);
   const [physicalFormOptions, setPhysicalFormOptions] = useState<PhysicalFormOption[]>([]);
@@ -125,6 +129,12 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
         const fetchedTotalQty = String(
           row?.TotalQty ?? row?.Quantity ?? row?.WasteQty ?? "",
         ).trim();
+        const fetchedMUnit = String(
+          row.MUnit,
+        ).trim();
+        const fetchedMUID = String(
+          row.MUID,
+        ).trim();
         const fetchedDisposalDate = String(
           row?.DateOfDisposal ?? row?.AuctionDate ?? row?.DisposalDate ?? "",
         )
@@ -160,6 +170,8 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
           wasteDescription: fetchedWasteDescription,
           totalQuantity: fetchedTotalQty,
           physicalForm: fetchedPhysicalForm,
+          munit: fetchedMUnit,
+          muid: fetchedMUID
         }));
       } catch (error) {
         console.error("Failed to load internal disposal details", error);
@@ -187,18 +199,19 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     const formData = new FormData();
     formData.append("IDDID", iddid!);
     // formData.append("UID", String(wasteIdsArr[0] ?? ""));
-    formData.append("SenderAuthNo", "");
-    formData.append("TransporterName", "");
-    formData.append("TransporterAddress", "");
-    formData.append("TransporterPhone", "");
-    formData.append("TransporterEmail", "");
-    formData.append("VTID", "");
-    formData.append("TransporterRegNo", "");
-    formData.append("VehicleRegNo", "");
-    formData.append("ReceiverName", String(selectedReceiver?.IRName ?? ""));
-    formData.append("ReceiverAddress", "");
-    formData.append("ReceiverAuthNo", String(form.disposedTo ?? ""));
+    // formData.append("SenderAuthNo", "");
+    // formData.append("TransporterName", "");
+    // formData.append("TransporterAddress", "");
+    // formData.append("TransporterPhone", "");
+    // formData.append("TransporterEmail", "");
+    // formData.append("VTID", "");
+    // formData.append("TransporterRegNo", "");
+    // formData.append("VehicleRegNo", "");
+    // formData.append("ReceiverName", String(selectedReceiver?.IRName ?? ""));
+    // formData.append("ReceiverAddress", "");
+    // formData.append("ReceiverAuthNo", String(form.disposedTo ?? ""));
     formData.append("TotalQty", String(Number(form.totalQuantity ?? 0)));
+    formData.append("MUID", String(form.muid));
     formData.append("NoOfContainers", "0");
     formData.append("PSID", String(form.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", "");
@@ -249,8 +262,9 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
       alert(result.message || "Save failed");
       return;
     }
+    redirect("./")
 
-    alert("Saved successfully");
+    // alert("Saved successfully");
   };
 
   return (
@@ -259,8 +273,11 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
         <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Generate - Internal</h1>
         {/* <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p> */}
 
+        <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0 right-15 "
+          onClick={() => window.location.reload()}
+        />
         <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-5" />
         </Link>
       </div>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
@@ -352,12 +369,18 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
                   Total Quantity
                 </td>
                 <td className="border border-slate-200 px-4 py-3">
-                  <input
+                  {/* <input
                     readOnly
-                    value={form.totalQuantity}
+                    value={form.totalQuantity}{form.munit}
                     placeholder="Quantity shall be automatically add up from ID selection"
                     className="w-full rounded-md border border-slate-200 bg-slate-100 px-3 py-2 text-slate-700"
-                  />
+                  /> */}
+
+                  <div
+                    className="w-full rounded-md border border-slate-200 bg-slate-100 px-3 py-2 text-slate-700"
+                  >
+                    {form.totalQuantity}{" "}{form.munit}
+                  </div>
                 </td>
               </tr>
 
@@ -404,7 +427,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
                 <td className="border border-slate-200 px-4 py-3">
                   <button
                     type="submit"
-                    className="rounded-md bg-emerald-700 px-4 py-2 font-medium text-white hover:bg-emerald-800"
+                    className="cursor-pointer rounded-md bg-emerald-700 px-4 py-2 font-medium text-white hover:bg-emerald-800"
                   >
                     Submit
                   </button>

@@ -2,7 +2,6 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 
 type FieldType =
   | "date"
@@ -15,7 +14,10 @@ type FieldType =
   | "file"
   | "auto";
 
+
+
 type RowDef = {
+
   key: string;
   field: string;
   type: FieldType;
@@ -25,7 +27,7 @@ type RowDef = {
 
 const rows: RowDef[] = [
   { key: "disposalDate", field: "Date", type: "date", hint: "Date of disposal (within 90 days of generation)" },
-  { key: "wasteIds", field: "Waste ID/Batch ID", type: "auto", hint: "Comma separated IDs" },
+  { key: "wasteIds", field: "Waste ID/Batch ID", type: "multi-select" },
   {
     key: "senderNameAddress",
     field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
@@ -55,7 +57,7 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
   const params = React.use(searchParams)
   const iddid = params.id;
   // const iddid = params.get("id") ?? "";
-
+  const [MUID, setMUID] = useState<string>("");
   const [values, setValues] = useState<Record<string, string | string[] | File | null>>({
     disposalDate: today,
   });
@@ -77,7 +79,7 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
         });
 
         const data = await res.json();
-        console.log("GetUnit response:", data);
+        // console.log("GetUnit response:", data);
 
         if (!res.ok || !Array.isArray(data)) {
           setUnitOptions([]);
@@ -136,9 +138,10 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
         if (!res.ok || !data.success) return;
 
         const row = Array.isArray(data.data) ? data.data[0] : data.data;
-
+        setMUID(String(row?.MUID ?? ""));
         setValues((prev) => ({
           ...prev,
+          senderNameAddress: String(row?.UID ?? prev.senderNameAddress ?? ""),
           disposalDate: today,
           wasteIds: [String(iddid)],
           transporterNameAddress: `${row?.TransporterName ?? ""} ${row?.TransporterAddress ?? ""}`.trim(),
@@ -188,8 +191,9 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
     formData.append("NoOfContainers", "0");
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", "");
-    // formData.append("EmpCode", "YOUR_EMP_CODE");
+    formData.append("EmpCode", "YOUR_EMP_CODE");
     formData.append("DateOfDisposal", String(values.disposalDate ?? today));
+    formData.append("MUID", MUID);
 
     if (values.salePoSoDoc instanceof File) {
       formData.append("salePoSoDoc", values.salePoSoDoc);
@@ -278,6 +282,7 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
       );
     }
 
+
     if (row.type === "textarea") {
       return (
         <textarea
@@ -335,35 +340,29 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
                 {op.name}
               </option>
             ))
-            : (row.options ?? []).map((op, index) => (
-              <option
-                key={`${row.key}-${index}`}
-                value={op}
-              >
-                {op}
-              </option>
-            ))}
+            : (row.options ?? []).map((op, index) => {
+              const value = op.split("|")[0];
+              const label = op.split("|")[1];
+
+              return (
+                <option
+                  key={`${row.key}-${index}`}
+                  value={value}
+                >
+                  {label}
+                </option>
+              );
+            })}
         </select>
       );
     }
-
     if (row.type === "multi-select") {
       const arr = Array.isArray(v) ? v : [];
+
       return (
-        <input
-          className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-          placeholder={row.hint ?? "Comma separated IDs"}
-          value={arr.join(", ")}
-          onChange={(e) =>
-            updateValue(
-              row.key,
-              e.target.value
-                .split(",")
-                .map((x) => x.trim())
-                .filter(Boolean),
-            )
-          }
-        />
+        <div className="px-3 py-2 bg-slate-100 rounded border">
+          {arr.length > 0 ? arr.join(", ") : "-"}
+        </div>
       );
     }
 
@@ -432,14 +431,9 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="relative">
-        <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Generate - Non Hazardous</h1>
-        {/* <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p> */}
+      <h1 className="text-2xl font-semibold text-slate-900">Disposal Generate - Non Hazardous</h1>
+      <p className="mt-2 text-sm text-slate-600">Fill non-hazardous disposal details below.</p>
 
-        <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
-        </Link>
-      </div>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full border-collapse text-sm">
@@ -465,5 +459,5 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
         </button>
       </form>
     </section>
-  );
-}
+  )
+};
