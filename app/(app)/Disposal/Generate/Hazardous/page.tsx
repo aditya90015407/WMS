@@ -3,11 +3,11 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
 
 
 type FieldType =
   | "multi-select"
+  | "select"
   | "select"
   | "text"
   | "textarea"
@@ -32,13 +32,18 @@ type RowDef = {
 
 
 const rows: RowDef[] = [
-  { key: "wasteIds", field: "Batch ID", type: "multi-select", hint: "Comma separated IDs" },
+  { key: "wasteIds", field: "Waste ID/Batch ID", type: "auto", hint: "Comma separated IDs" },
   {
     key: "senderNameAddress",
     field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
     type: "select",
+    //  options: [
+    //     "JSL (IND-IV-HW-587/6854)",
+    //     "JCL (IND-IV-HW-1225/6852)",
+    //     "JUSL (IND-IV-HW-1224/6858)",
+    //     "JFL (Not Available)",
+    //   ],
   },
-
 
   // {
   //   key: "senderAuthNo",
@@ -104,6 +109,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
   const iddid = params.id;
+  const [MUID, setMUID] = useState<string>("");
   // const iddid = params.get("id") ?? "";
 
   useEffect(() => {
@@ -114,44 +120,38 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           cache: "no-store",
         });
 
-        const data = await res.json();
-        console.log("GetUnit response:", data);
+        const data1 = await res.json();
+        // console.log("GetUnit response:", data);
 
-        if (!res.ok || !Array.isArray(data)) {
+        if (!res.ok || !Array.isArray(data1)) {
           setUnitOptions([]);
           return;
         }
 
-        const options = data
-          .map(
-            (item: {
-              ID?: number | string;
-              UID?: number | string;
-              UnitID?: number | string;
-              NAME?: string;
-              Name?: string;
-              Unit?: string;
-              UnitDesc?: string;
-            }) => ({
-              id: String(item?.ID ?? item?.UID ?? item?.UnitID ?? "").trim(),
-              name: String(
-                item?.UnitDesc ?? item?.NAME ?? item?.Name ?? item?.Unit ?? "",
-              ).trim(),
-            }),
-          )
+        const options = data1
+          .map((item) => ({
+            id: String(item?.ID ?? item?.UID ?? item?.UnitID ?? "").trim(),
+            name: String(
+              item?.UnitDesc ??
+              item?.NAME ??
+              item?.Name ??
+              item?.Unit ??
+              ""
+            ).trim(),
+          }))
           .filter((item) => item.id && item.name);
 
-
         setUnitOptions(options);
-
-        if (options.length > 0) {
-          setValues((prev) => ({
-            ...prev,
-            senderNameAddress: typeof prev.senderNameAddress === "string" && prev.senderNameAddress
-              ? prev.senderNameAddress
-              : options[0].id,
-          }));
-        }
+        //       if (options.length > 0) {
+        //   setValues((prev) => ({
+        //     ...prev,
+        //     senderNameAddress:
+        //       typeof prev.senderNameAddress === "string" &&
+        //       prev.senderNameAddress
+        //         ? prev.senderNameAddress
+        //         : options[0].split("|")[0],
+        //   }));
+        // }
       } catch (error) {
         console.error("Failed to load unit options", error);
         setUnitOptions([]);
@@ -166,12 +166,13 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   }, [values.manifestNo]);
 
 
+
   useEffect(() => {
     const loadDetails = async () => {
       if (!iddid) return;
 
       try {
-        const res = await fetch("/api/GetData/GetSelectedVendorDetails", {
+        const res = await fetch("/api/GetData/GetInternalDisposalDetails", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ID: iddid }),
@@ -190,10 +191,12 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           row?.IDDID ??
           "",
         );
+        console.log(row?.MUID)
+        setMUID(String(row?.MUID ?? ""));
 
-        console.log("Hazardous manifest row:", row);
-        console.log("Hazardous manifest being set:", manifestNo);
-
+        // console.log("Hazardous manifest row:", row);
+        // // console.log("Hazardous manifest being set:", manifestNo);
+        //  console.log("Frontend API response:", data);
         setValues((prev) => ({
           ...prev,
           wasteIds: [String(iddid)],
@@ -211,7 +214,8 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           Waste: String(row?.Waste ?? ""),
-          totalQty: String(String(row?.TotalQty ?? "") + " " + String(row?.MUnit)),
+          totalQty: String(row?.TotalQty ?? ""),
+
 
 
         }));
@@ -225,7 +229,10 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
   const updateValue = (key: string, value: string | string[] | boolean | File | null) => {
 
+    //  console.log(key, value);
+
     setValues((prev) => ({ ...prev, [key]: value }));
+
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -233,7 +240,10 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
     const formData = new FormData();
     formData.append("IDDID", iddid!);
-    formData.append("UID", String(values.senderNameAddress ?? ""));
+    formData.append(
+      "UID",
+      String(values.senderNameAddress ?? "")
+    );
     formData.append("TransporterName", String(values.transporterNameAddress ?? "").split(",")[0] ?? "");
     formData.append("TransporterAddress", String(values.transporterNameAddress ?? ""));
     formData.append("TransporterPhone", String(values.transporterPhoneEmail ?? "").split(",")[0] ?? "");
@@ -251,12 +261,19 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     formData.append("SpecialHandlingInstructions", String(values.specialHandling ?? ""));
     formData.append("EmpCode", "YOUR_EMP_CODE");
     formData.append("DateOfDisposal", today);
+    formData.append("MUID", MUID);
+
+    // console.log(Object.fromEntries(formData.entries()));
 
     if (values.salePoSoDoc instanceof File) {
       formData.append("salePoSoDoc", values.salePoSoDoc);
     }
-    if (values.finalPartyDoc instanceof File) {
-      formData.append("finalPartyDoc", values.finalPartyDoc);
+    for (let i = 1; i <= 5; i++) {
+      const file = values[`finalPartyDoc${i}`];
+
+      if (file instanceof File) {
+        formData.append(`finalPartyDoc${i}`, file)
+      }
     }
 
     const res = await fetch("/api/SetData/SetFinalDisposalDetails", {
@@ -278,10 +295,19 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       return;
     }
 
-    if (values.salePoSoDoc instanceof File) {
+    if (values.salePoSoDoc instanceof File && values.finalPartyDoc instanceof File) {
       const attachmentFormData = new FormData();
       attachmentFormData.append("FDDID", fddid);
       attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+
+      for (let i = 1; i < 5; i++) {
+        const file = values[`finalPartyDoc${i}`];
+
+        if (file instanceof File) {
+          attachmentFormData.append(`finalPartDoc{i}`, file);
+
+        }
+      }
 
       const attachmentRes = await fetch("/api/SetData/SetFinalDisposalDetailsAttachments", {
         method: "POST",
@@ -360,38 +386,40 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     }
 
     if (row.type === "select") {
-      const options = row.key === "senderNameAddress" ? unitOptions : (row.options ?? []);
-      const currentValue = (v as string) ?? "";
+      const currentValue =
+        typeof v === "string" ? v : "";
 
       return (
         <select
-          id={row.key}
-          name={row.key}
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-          onChange={(e) => updateValue(row.key, e.target.value)}
-          value={currentValue || ""}
+          onChange={(e) =>
+            updateValue(row.key, e.target.value)
+          }
+          value={currentValue}
         >
           <option value="" disabled>
             Select
           </option>
+
           {row.key === "senderNameAddress"
-            ? (options as Option[]).map((op, index) => (
-              <option key={`${row.key}-${op.id}-${index}`} value={op.id}>
+            ? unitOptions.map((op) => (
+              <option key={op.id} value={op.id}>
                 {op.name}
               </option>
             ))
-            : (options as string[]).map((op, index) => {
-              const hasPipe = op.includes("|");
-              const value = hasPipe ? op.split("|")[0].trim() : op.trim();
-              const label = hasPipe ? op.split("|")[1].trim() : op.trim();
+            : (row.options ?? []).map((op, index) => {
+              const value = op.split("|")[0];
+              const label = op.split("|")[1];
 
               return (
-                <option key={`${row.key}-${value}-${index}`} value={value}>
+                <option
+                  key={`${row.key}-${index}`}
+                  value={value}
+                >
                   {label}
                 </option>
               );
             })}
-
         </select>
       );
     }
@@ -435,13 +463,49 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     }
 
     if (row.type === "file") {
+
+      if (row.key === "finalPartyDoc") {
+        return (
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5].map((num) => (
+              <div key={num} className="space-y-1">
+                <input
+                  type="file"
+                  accept=".pdf,.jpeg,.png,.jpg"
+                  className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                  onChange={(e) =>
+                    updateValue(`finalPartyDoc${num}`, e.target.files?.[0] ?? null
+
+                    )
+                  }
+                />
+
+                <p className="text-xs text-slate-500">
+                  File {num}
+                </p>
+                {values[`finalPartyDoc${num}`] instanceof File && (
+                  <p className="text-xs text-emerald-700">
+                    Selected: {
+                      (values[`finalPartyDoc${num}`] as File).name
+                    }
+                  </p>
+                )}
+              </div>
+            ))}
+
+
+          </div>
+
+        );
+      }
       return (
         <input
-
           type="file"
           accept=".pdf,.jpeg,.jpg,.png"
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-          onChange={(e) => updateValue(row.key, e.target.files?.[0] ?? null)}
+          onChange={(e) =>
+            updateValue(row.key, e.target.files?.[0] ?? null)
+          }
         />
       );
     }
@@ -481,14 +545,9 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="relative">
-        <h1 className="text-xl font-semibold text-cyan-600 text-center">Disposal Generate - Hazardous</h1>
-        <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p>
+      <h1 className="text-2xl font-semibold text-slate-900">Disposal Generate</h1>
+      <p className="mt-2 text-sm text-slate-600">Fill disposal manifest details below.</p>
 
-        <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
-        </Link>
-      </div>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full border-collapse text-sm">

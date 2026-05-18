@@ -327,13 +327,17 @@ export default function WasteApprove() {
           {/* <h1 className="text-sm text-center font-semibold text-slate-900"> Active Auctions List</h1> */}
 
         </div>
-        <button
+        {/* <button
           type="button"
           onClick={() => setRefreshSeed((x) => x + 1)}
           className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
           Refresh
-        </button>
+        </button> */}
+
+        <img src="/refresh.png" alt="" className="cursor-pointer h-5 mx-2"
+          onClick={() => setRefreshSeed((x) => x + 1)}
+        />
       </div>
 
       {loading && (
@@ -425,7 +429,7 @@ export default function WasteApprove() {
               type="button"
               onClick={() => setPage(1)}
               disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               First
             </button>
@@ -433,7 +437,7 @@ export default function WasteApprove() {
               type="button"
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Prev
             </button>
@@ -444,7 +448,7 @@ export default function WasteApprove() {
               type="button"
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Next
             </button>
@@ -452,7 +456,7 @@ export default function WasteApprove() {
               type="button"
               onClick={() => setPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Last
             </button>

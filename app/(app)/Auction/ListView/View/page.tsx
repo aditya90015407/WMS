@@ -61,7 +61,7 @@ const getDisplayHeader = (header: string): string => {
 
 export default function WasteApprove({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
 
-    const params=React.use(searchParams);
+    const params = React.use(searchParams);
 
 
     function normalizeData<T extends Record<string, any>>(row: T) {
@@ -124,6 +124,27 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
     const [storageMethods, setStorageMethods] = useState<Option[]>([]);
     const [receivers, setReceivers] = useState<Option[]>([]);
 
+    type Vendor = {
+        ID: string
+        VID: string
+        NAME: string
+        EMAIL: string
+        StsCode: string
+        Status: string
+        TransporterName: string
+        TransporterAddress: string,
+        TransporterPhone: string,
+        TransporterEmail: string,
+        VTID: string,
+        TransporterRegNo: string,
+        VehicleRegNo: string,
+        ReceiverName: string,
+        ReceiverAddress: string,
+        ReceiverAuthNo: string
+        VendorCode: string
+    }
+
+    const [selectedVendor, setSelectedVendor] = useState<Vendor>()
 
     const router = useRouter()
 
@@ -185,6 +206,7 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                     data?: Array<Record<string, unknown>>;
                     message?: string;
                 };
+                // console.log(rawData.data)
                 if (!res2.ok || !rawData.success || !Array.isArray(rawData.data)) {
                     setAllAuctionParticipants([]);
                     setError(rawData.message || "Failed to load auction participants");
@@ -193,6 +215,17 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
 
                 const data = rawData.data.map(normalizeData) as AuctionParticipants[];
                 setAllAuctionParticipants(data)
+
+
+                const res3 = await fetch(`/api/GetData/GetSelectedVendorDetails`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ ID: auctionId }),
+                });
+
+                const res3data = await res3.json()
+                // console.log(res3data.data)
+                setSelectedVendor(res3data.data[0])
 
             } catch {
                 setRows([]);
@@ -351,17 +384,23 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
     return (
         <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                    <h1 className="text-lg  font-semibold text-slate-900">View Auction Participants</h1>
+                <div className="w-full">
+                    <h1 className="text-lg  font-semibold text-teal-600 text-center">View Auction Participants</h1>
 
                 </div>
-                <button
+                {/* <button
                     type="button"
                     onClick={() => setRefreshSeed((x) => x + 1)}
                     className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
                     Refresh
-                </button>
+                </button> */}
+                <img src="/refresh.png" alt="" className="cursor-pointer h-5 mx-2"
+                    onClick={() => setRefreshSeed((x) => x + 1)}
+                />
+                <img src="/goback.png" alt="" className="cursor-pointer h-5 mx-1"
+                    onClick={() => router.back()} />
+
             </div>
 
             {/* <div className="mt-4 grid grid-cols-1 gap-0 md:grid-cols-2 lg:grid-cols-4">
@@ -555,7 +594,7 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                                             const encryptedID = await encrypt(row.ID!.toString());
                                             router.push(`./View/FullView?id=${encryptedID}`);
                                         }}
-                                        className="cursor-pointer"
+                                        className={`cursor-pointer ${row.ID == selectedVendor?.ID ? "bg-green-300" : ""}`}
                                     >
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
@@ -600,12 +639,17 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                             </tbody>
                         </table>
                     </div>
+
+                    <div className="text-sm my-2 text-cyan-700">
+                        <span className="text-xs font-semibold text-teal-600">Selected Vendor : </span> {selectedVendor?.NAME} ({selectedVendor?.VendorCode})
+                    </div>
+
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700">
                         <button
                             type="button"
                             onClick={() => setPage(1)}
                             disabled={currentPage === 1}
-                            className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                            className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                         >
                             First
                         </button>
@@ -613,7 +657,7 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                             type="button"
                             onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                            className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                         >
                             Prev
                         </button>
@@ -624,7 +668,7 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                             type="button"
                             onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
-                            className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                            className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                         >
                             Next
                         </button>
@@ -632,13 +676,14 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                             type="button"
                             onClick={() => setPage(totalPages)}
                             disabled={currentPage === totalPages}
-                            className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                            className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                         >
                             Last
                         </button>
                     </div>
                 </>
-            )}
-        </section>
+            )
+            }
+        </section >
     );
 }

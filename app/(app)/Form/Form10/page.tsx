@@ -250,11 +250,15 @@ export default function Form10Page() {
 
   return (
     <section className="mx-auto max-w-7xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-teal-600">FORM 10 LIST</h1>
+      <div className="text-center relative">
+        <h1 className="text-xl font-bold text-teal-600">Form 10 List</h1>
         {/* <p className="mt-1 text-sm text-slate-600">
           Disposal records available for Form 10 view and download.
         </p> */}
+
+        <img src="/refresh.png" alt="" className="h-5 cursor-pointer absolute right-5 top-0"
+          onClick={() => window.location.reload()}
+        />
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
@@ -324,14 +328,14 @@ export default function Form10Page() {
                               // setClickedrow(row)
                             }}
 
-                            className="rounded bg-blue-700 px-3 py-1 text-white hover:bg-blue-800"
+                            className="cursor-pointer rounded bg-blue-700 px-3 py-1 text-white hover:bg-blue-800"
                           >
                             View
                           </button>
                           <button
                             type="button"
                             onClick={() => downloadForm10(row)}
-                            className="inline-flex items-center gap-1 rounded bg-emerald-700 px-3 py-1 text-white hover:bg-emerald-800"
+                            className="cursor-pointer inline-flex items-center gap-1 rounded bg-emerald-700 px-3 py-1 text-white hover:bg-emerald-800"
                           >
                             <Download className="h-3.5 w-3.5" />
                             Download
@@ -359,7 +363,7 @@ export default function Form10Page() {
                   type="button"
                   onClick={() => setPage(1)}
                   disabled={currentPage === 1}
-                  className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                  className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                 >
                   First
                 </button>
@@ -367,7 +371,7 @@ export default function Form10Page() {
                   type="button"
                   onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                  className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                 >
                   Prev
                 </button>
@@ -378,7 +382,7 @@ export default function Form10Page() {
                   type="button"
                   onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                  className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                 >
                   Next
                 </button>
@@ -386,7 +390,7 @@ export default function Form10Page() {
                   type="button"
                   onClick={() => setPage(totalPages)}
                   disabled={currentPage === totalPages}
-                  className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                  className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                 >
                   Last
                 </button>

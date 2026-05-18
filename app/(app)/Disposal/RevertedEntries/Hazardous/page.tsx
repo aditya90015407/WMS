@@ -1,243 +1,366 @@
 "use client";
 
-import { POST } from "@/app/api/DownloadAttachments/route";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import decrypt from "@/components/Decrypt";
+
 type FinalDisposalRow = Record<string, unknown>;
 
+type Form10Row = {
+  ReceiverName?: string;
+  ReceiverAddress?: string;
+  ReceiverAuthNo?: string;
+
+  TransporterName?: string;
+  TransporterAddress?: string;
+  TransporterPhone?: string;
+  TransporterEmail?: string;
+
+  VehicleType?: string;
+  TransporterRegNo?: string;
+  VehicleRegNo?: string;
+
+  ManifestDocumentNo?: string;
+};
+
 const toDisplayValue = (value: unknown) => {
-    if (value === null || value === undefined || value === "") return "-";
-    if (Array.isArray(value)) return value.join(", ");
-    if (typeof value === "object") return JSON.stringify(value);
-    return String(value);
+  if (value === null || value === undefined || value === "") return "-";
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
 };
 
 export default function DisposalApproveHazardousPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
-    const router = useRouter();
-    // const params = useSearchParams();
-    const [id, setId] = useState("");
-    const [ready, setReady] = useState(false);
+  const router = useRouter();
+  // const searchParams = useSearchParams();
+  const params=React.use(searchParams)
 
-    const params = React.use(searchParams);
-    const encryptedId = params.id ?? "";
-    // const id = encryptedId ? await decrypt(encryptedId) : "";
-    useEffect(() => {
-        const handleDecrypt = async () => {
-            const decryptedId: string = encryptedId ? (await decrypt(encryptedId)) ?? "" : "";
-            setId(decryptedId);
-            setReady(true);
-            // use id here (set state, etc.)
-        };
+  const encryptedId = params.id;
 
-        void handleDecrypt();
-    }, [encryptedId]);
-    const [row, setRow] = useState<FinalDisposalRow | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [remarks, setRemarks] = useState("");
-    const [decision, setDecision] = useState("");
-    const [saving, setSaving] = useState(false);
-    const [form10Row, setForm10Row] = useState<Record<string, unknown> | null>(null);
-    const [vendorDetail, setVendorDetails] = useState<Record<string, unknown> | null>(null);
+  const [id, setId] = useState("");
+  const [ready, setReady] = useState(false);
 
-    // type WasteList = {
-    //     IDID: string
-    //     WRID: string
-    //     GenerationDate: string
-    //     WasteQty: string
-    //     Waste: string
-    //     CrDt: string
-    //     CrBy: string
-    //     UpBy: string
-    //     UpDt: string
-    //     DeptDesc: string
-    //     TargetDate: string
-    // }
-    // const [wasteList, setWasteList] = useState<WasteList[]>([])
+  const [row, setRow] = useState<FinalDisposalRow | null>(null);
 
+  const [form10Row, setForm10Row] = useState<Form10Row | null>(null);
 
-    const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  // editable values
+  const [values, setValues] = useState<Form10Row>({});
 
-    async function UpdateDisposedWaste() {
-        const res = await fetch("/api/GetData/GetWasteListByIDDID", {
-            method: "POST",
-            body: JSON.stringify({ "id": row?.IDDID })
-        })
+  const [vendorDetail, setVendorDetails] =
+    useState<Record<string, unknown> | null>(null);
 
-        const data = await res.json()
-        // console.log(data.data)
-        const wasteItems = data.data
-        // setWasteList(data.data)
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-        // console.log("i am disposing waste")
-        // if (!wasteList) return
-        // console.log("i am here to disposing waste")
-        // console.log(wasteList)
-        wasteItems?.map(async (item: any) => {
-            const res = await fetch("/api/SetData/UpdateDisposedWaste", {
-                method: "POST",
-                body: JSON.stringify({ "WRID": item.WRID })
-            })
+  const [remarks, setRemarks] = useState("");
+  const [decision, setDecision] = useState("");
+  const [saving, setSaving] = useState(false);
 
-            const data = await res.json()
+  const today = useMemo(
+    () => new Date().toISOString().slice(0, 10),
+    []
+  );
 
-            // console.log(data)
-        })
-    }
+  // decrypt id
+  useEffect(() => {
+    const handleDecrypt = async () => {
+      const decryptedId = encryptedId
+        ? (await decrypt(encryptedId)) ?? ""
+        : "";
 
-    // useEffect(() => {
-    //     UpdateDisposedWaste()
-    // }, [wasteList])
-
-    const saveDecision = async (stsCode: 3 | 5, label: "Accepted" | "Rejected") => {
-        if (!row?.ID) return;
-
-        setSaving(true);
-
-
-        if (stsCode == 3) {
-            UpdateDisposedWaste()
-        }
-
-        try {
-            const res = await fetch("/api/SetData/SetDisposalApproval", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    FDDID: Number(row.ID),
-                    StsCode: stsCode,
-                    Remarks: remarks,
-                }),
-            });
-
-            const payload = await res.json();
-
-            if (!res.ok || !payload.success) {
-                setDecision(payload.message || "Failed to save disposal approval");
-                return;
-            }
-
-            setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`);
-
-            if (stsCode == 3 && row?.ID) {
-                router.push(`/Form/Form10?fddid=${row.ID}&iddid=${row.IDDID}`)
-
-            }
-        } catch (err) {
-            console.error("Failed to save disposal approval", err);
-            setDecision("Failed to save disposal approval");
-        } finally {
-            setSaving(false);
-        }
+      setId(decryptedId);
+      setReady(true);
     };
 
-    useEffect(() => {
-        const loadRow = async () => {
-            if (!ready) return;
-            if (!id) {
+    void handleDecrypt();
+  }, [encryptedId]);
 
-                setLoading(false);
-                setError("Missing record id");
-                return;
-            }
+  // load main row
+  useEffect(() => {
+    const loadRow = async () => {
+      if (!ready) return;
 
-            try {
-                const res = await fetch("/api/GetData/GetAllFinalRejectedDisposalList", {
-                    method: "GET",
-                    cache: "no-store",
-                });
-                // console.log("HEYYYYYYYYYY")
-                const rawData = await res.json();
-                // console.log(rawData)
-                const rows = Array.isArray(rawData)
-                    ? rawData
-                    : Array.isArray(rawData?.data)
-                        ? rawData.data
-                        : [];
-                // console.log(rows,"ROWS")
+      if (!id) {
+        setLoading(false);
+        setError("Missing record id");
+        return;
+      }
 
-                const match =
-                    rows.find((item: Record<string, unknown>) => String(item?.IDDID ?? "") === id) ?? null;
-                console.log("Page id:", id);
-                console.log("Rows:", rows);
-                console.log("Matched row:", match);
+      try {
+        const res = await fetch(
+          "/api/GetData/GetAllFinalRejectedDisposalList",
+          {
+            method: "GET",
+            cache: "no-store",
+          }
+        );
 
-                setRow(match);
+        const rawData = await res.json();
 
-                if (!match) {
-                    setError("Submitted disposal form not found");
-                }
-            } catch {
-                setError("Failed to load submitted disposal form");
-            } finally {
-                setLoading(false);
-            }
+        const rows = Array.isArray(rawData)
+          ? rawData
+          : Array.isArray(rawData?.data)
+          ? rawData.data
+          : [];
+
+        const match =
+          rows.find(
+            (item: Record<string, unknown>) =>
+              String(item?.IDDID ?? "") === id
+          ) ?? null;
+
+        console.log("Page id:", id);
+        console.log("Rows:", rows);
+        console.log("Matched row:", match);
+
+        setRow(match);
+
+        if (!match) {
+          setError("Submitted disposal form not found");
+        }
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load submitted disposal form");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void loadRow();
+  }, [id, ready]);
+
+  // load form10 details
+  useEffect(() => {
+    const loadForm10Details = async () => {
+      if (!row?.IDDID) return;
+
+      try {
+        const res = await fetch("/api/GetData/GetForm10Details", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ID: String(row.IDDID),
+          }),
+        });
+
+        const payload = await res.json();
+
+        console.log("GetForm10Details payload:", payload);
+
+        if (!res.ok || !payload.success) {
+          setForm10Row(null);
+          return;
+        }
+
+        const formRow = Array.isArray(payload.data)
+          ? payload.data[0]
+          : payload.data;
+
+        setForm10Row(formRow ?? null);
+
+       
+        setValues(formRow ?? {});
+      } catch (error) {
+        console.error("Failed to load Form 10 details", error);
+        setForm10Row(null);
+      }
+    };
+
+    void loadForm10Details();
+  }, [row?.IDDID]);
+
+  // load vendor details
+  useEffect(() => {
+    const loadVendorDetails = async () => {
+      if (!row?.IDDID) return;
+
+      try {
+        const res = await fetch(
+          "/api/GetData/GetSelectedVendorDetails",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              ID: String(row.IDDID),
+            }),
+          }
+        );
+
+        const payload = await res.json();
+
+        if (!res.ok || !payload.success) {
+          setVendorDetails(null);
+          return;
+        }
+
+        const vendorRow = Array.isArray(payload.data)
+          ? payload.data[0]
+          : payload.data;
+
+        setVendorDetails(vendorRow ?? null);
+      } catch (error) {
+        console.error("Failed to load vendor details", error);
+        setVendorDetails(null);
+      }
+    };
+
+    void loadVendorDetails();
+  }, [row?.IDDID]);
+
+  // update field helper
+  const updateValue = (
+    key: keyof Form10Row,
+    value: string
+  ) => {
+    setValues((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
+  // update disposed waste
+  async function UpdateDisposedWaste() {
+    if (!row?.IDDID) return;
+
+    try {
+      const res = await fetch(
+        "/api/GetData/GetWasteListByIDDID",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            id: row.IDDID,
+          }),
+        }
+      );
+
+      const data = await res.json();
+
+      const wasteItems = data.data ?? [];
+
+      await Promise.all(
+        wasteItems.map((item: any) =>
+          fetch("/api/SetData/UpdateDisposedWaste", {
+            method: "POST",
+            body: JSON.stringify({
+              WRID: item.WRID,
+            }),
+          })
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update disposed waste", error);
+    }
+  }
+  console.log(values)
+  // submit
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+     
+    try {
+      setSaving(true);
+
+      const formData = new FormData();
+
+      formData.append("ID", id);
+
+      formData.append(
+        "TransporterName",
+        String(values.TransporterName ?? "")
+      );
+
+      formData.append(
+        "TransporterAddress",
+        String(values.TransporterAddress ?? "")
+      );
+
+      formData.append(
+        "TransporterPhone",
+        String(values.TransporterPhone ?? "")
+      );
+
+      formData.append(
+        "TransporterEmail",
+        String(values.TransporterEmail ?? "")
+      );
+
+      formData.append(
+        "VTID",
+        String(values.VehicleType ?? "")
+      );
+
+      formData.append(
+        "TransporterRegNo",
+        String(values.TransporterRegNo ?? "")
+      );
+
+      formData.append(
+        "VehicleRegNo",
+        String(values.VehicleRegNo ?? "")
+      );
+
+      formData.append(
+        "ReceiverName",
+        String(values.ReceiverName ?? "")
+      );
+
+      formData.append(
+        "ReceiverAddress",
+        String(values.ReceiverAddress ?? "")
+      );
+
+      formData.append(
+        "ReceiverAuthNo",
+        String(values.ReceiverAuthNo ?? "")
+      );
+
+      const payload = {
+        ID: id,
+        TransporterName: values.TransporterName ?? "",
+        TransporterAddress: values.TransporterAddress ?? "",
+        TransporterPhone: values.TransporterPhone ?? "",
+        TransporterEmail: values.TransporterEmail ?? "",
+        VTID: values.VehicleType ?? "",
+        TransporterRegNo: values.TransporterRegNo ?? "",
+        VehicleRegNo: values.VehicleRegNo ?? "",
+        ReceiverName: values.ReceiverName ?? "",
+        ReceiverAddress: values.ReceiverAddress ?? "",
+        ReceiverAuthNo: values.ReceiverAuthNo ?? "",
         };
 
-        void loadRow();
-    }, [id, ready]);
+    // console.log("Payload for submission:", payload);
+      const res = await fetch(
+        "/api/SetData/UpdateFinalDisposalDetails",
+        {
+          method: "POST",
+           headers: {
+            "Content-Type": "application/json",
+            },
+          body: JSON.stringify(payload),
+        }
+      );
 
-    useEffect(() => {
-        const loadForm10Details = async () => {
-            if (!row?.IDDID) return;
+      const result = await res.json();
 
-            try {
-                const res = await fetch("/api/GetData/GetForm10Details", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ ID: String(row.IDDID) }),
-                });
+      if (!res.ok || !result.success) {
+        alert(result.message );
+        return;
+      }
 
-                const payload = await res.json();
-                //   console.log("GetForm10Details payload:", payload);
+      alert("Saved successfully");
 
-                if (!res.ok || !payload.success) {
-                    setForm10Row(null);
-                    return;
-                }
-
-                const formRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
-                setForm10Row(formRow ?? null);
-            } catch (error) {
-                console.error("Failed to load Form 10 details", error);
-                setForm10Row(null);
-            }
-        };
-
-        void loadForm10Details();
-    }, [row?.IDDID]);
-
-
-    useEffect(() => {
-        const loadVendorDetails = async () => {
-            if (!row?.IDDID) {
-                return;
-            }
-            try {
-                const res = await fetch("/api/GetData/GetSelectedVendorDetails", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ ID: String(row.IDDID) }),
-                });
-                const payload = await res.json();
-                // console.log("Vendor Details:",payload.data);
-                if (!res.ok || !payload.success) {
-                    setVendorDetails(null);
-                    return;
-                }
-                const vendorRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
-                setVendorDetails(vendorRow ?? null);
-            } catch (error) {
-                console.log("Failed to load Details", error);
-                setVendorDetails(null);
-            }
-        };
-        void loadVendorDetails();
-
-    }, [row?.IDDID]);
-
-
+      console.log(result);
+    } catch (error) {
+      console.error("Submit failed", error);
+      alert("Something went wrong");
+    } finally {
+      setSaving(false);
+    }
+  };
 
     return (
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -253,7 +376,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
 
                 <button
                     type="button"
-                    onClick={() => router.push("/Disposal/Approve")}
+                    onClick={() => router.push("/Disposal/")}
                     className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50"
                 >
                     <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
@@ -285,7 +408,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                                 <p><span className="font-medium">Waste Category:</span> {toDisplayValue(row.WasteCategory)}</p>
                                 <p><span className="font-medium">Waste:</span> {toDisplayValue(row.Waste)}</p>
                                 <p><span className="font-medium">Total Quantity:</span> {toDisplayValue(row.TotalQty)}</p>
-                                <p><span className="font-medium">Physical Form:</span> {toDisplayValue(row.PSID)}</p>
+                                <p><span className="font-medium">Physical Form:</span> {toDisplayValue(row.PhysicalState)}</p>
                                 <p><span className="font-medium">Waste Category ID:</span> {toDisplayValue(row.WCID)}</p>
                                 <p><span className="font-medium">Waste ID:</span> {toDisplayValue(row.WID)}</p>
                             </div>
@@ -293,7 +416,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                     </div>
 
                     <div className="mt-4 grid gap-4 md:grid-cols-2">
-                        <div className="rounded-xl border border-slate-200 bg-white p-4">
+                       <div className="flex flex-col">
                             <h2 className="text-sm font-semibold text-slate-900">Vendor / Recycler Details</h2>
                             <div className="mt-3 space-y-2 text-sm text-slate-700">
                                 <p><span className="font-medium">Name:</span> {String(vendorDetail?.NAME ?? "-")}</p>
@@ -304,28 +427,187 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
 
                         <div className="rounded-xl border border-slate-200 bg-white p-4">
                             <h2 className="text-sm font-semibold text-slate-900">Receiver Details</h2>
-                            <div className="mt-3 space-y-2 text-sm text-slate-700">
-                                <p><span className="font-medium">Receiver Name:</span> {String(form10Row?.ReceiverName ?? row?.ReceiverName ?? "-")}</p>
-                                <p><span className="font-medium">Receiver Address:</span> {String(form10Row?.ReceiverAddress ?? row?.ReceiverAddress ?? "-")}</p>
-                                <p><span className="font-medium">Receiver Auth No.:</span> {String(form10Row?.ReceiverAuthNo ?? row?.ReceiverAuthNo ?? "-")}</p>
+                            <div className="flex flex-col">
+                                <span className="font-medium">Receiver Name:</span> 
+                                <input
+                                  type="text"
+                                  value = {form10Row?.ReceiverName}
+                                  onChange={(e)=>
+                                    setForm10Row({
+                                        ...form10Row,
+                                        ReceiverName : e.target.value,
+                                    })
+                                  }
+                                   className="mt-1 rounded border border-slate-300 px-2 py-1"
+                                />
+                                
+                                <span className="font-medium">Receiver Address:</span> 
+                                <input
+                                 type ="text"
+                                 value ={form10Row?.ReceiverAddress}
+                                 onChange={(e)=>
+                                    setForm10Row({
+                                        ...form10Row,
+                                        ReceiverAddress : e.target.value,
+                                    })
+                                   }
+                                   className="mt-1 rounded border border-slate-300 px-2 py-1"   
+                                />
+                                
+                              
+                                <span className="font-medium">Receiver Auth No.:</span> 
+                                <input
+                                type="text"
+                                value ={form10Row?.ReceiverAuthNo}
+                                onChange={(e)=>
+                                    setForm10Row({
+                                        ...form10Row,
+                                        ReceiverAuthNo : e.target.value,
+                                    })
+                                }
+                                />
                             </div>
                         </div>
 
                     </div>
 
                     <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
-                        <h2 className="text-sm font-semibold text-slate-900">Transport Details</h2>
-                        <div className="mt-3 grid gap-3 md:grid-cols-2 text-sm text-slate-700">
-                            <p><span className="font-medium">Transporter Name:</span> {String(form10Row?.TransporterName ?? row?.TransporterName ?? "-")}</p>
-                            <p><span className="font-medium">Transporter Address:</span> {String(form10Row?.TransporterAddress ?? row?.TransporterAddress ?? "-")}</p>
-                            <p><span className="font-medium">Transporter Phone:</span> {String(form10Row?.TransporterPhone ?? row?.TransporterPhone ?? "-")}</p>
-                            <p><span className="font-medium">Transporter Email:</span> {String(form10Row?.TransporterEmail ?? row?.TransporterEmail ?? "-")}</p>
-                            <p><span className="font-medium">Vehicle Type:</span> {String(form10Row?.VehicleType ?? "-")}</p>
-                            <p><span className="font-medium">Transporter Reg No.:</span> {String(form10Row?.TransporterRegNo ?? row?.TransporterRegNo ?? "-")}</p>
-                            <p><span className="font-medium">Vehicle Reg No.:</span> {String(form10Row?.VehicleRegNo ?? row?.VehicleRegNo ?? "-")}</p>
-                            <p><span className="font-medium">Manifest Document No.:</span> {String(form10Row?.ManifestDocumentNo ?? "-")}</p>
-                        </div>
+                        <h2 className="text-sm font-semibold text-slate-900">
+                            Transport Details
+                        </h2>
+
+                <div className="mt-3 grid gap-3 md:grid-cols-2 text-sm text-slate-700">
+
+                    <div className="flex flex-col">
+                    <span className="font-medium">Transporter Name:</span>
+
+                    <input
+                        type="text"
+                        value={form10Row?.TransporterName ?? ""}
+                        onChange={(e) =>
+                        setForm10Row({
+                            ...form10Row,
+                            TransporterName: e.target.value,
+                        })
+                        }
+                        className="mt-1 rounded border border-slate-300 px-2 py-1"
+                    />
                     </div>
+
+                    <div className="flex flex-col">
+                    <span className="font-medium">Transporter Address:</span>
+
+                    <input
+                        type="text"
+                        value={form10Row?.TransporterAddress ?? ""}
+                        onChange={(e) =>
+                        setForm10Row({
+                            ...form10Row,
+                            TransporterAddress: e.target.value,
+                        })
+                        }
+                        className="mt-1 rounded border border-slate-300 px-2 py-1"
+                    />
+                    </div>
+
+                    <div className="flex flex-col">
+                    <span className="font-medium">Transporter Phone:</span>
+
+                    <input
+                        type="text"
+                        value={form10Row?.TransporterPhone ?? ""}
+                        onChange={(e) =>
+                        setForm10Row({
+                            ...form10Row,
+                            TransporterPhone: e.target.value,
+                        })
+                        }
+                        className="mt-1 rounded border border-slate-300 px-2 py-1"
+                    />
+                    </div>
+
+                    <div className="flex flex-col">
+                    <span className="font-medium">Transporter Email:</span>
+
+                    <input
+                        type="email"
+                        value={form10Row?.TransporterEmail ?? ""}
+                        onChange={(e) =>
+                        setForm10Row({
+                            ...form10Row,
+                            TransporterEmail: e.target.value,
+                        })
+                        }
+                        className="mt-1 rounded border border-slate-300 px-2 py-1"
+                    />
+                    </div>
+
+                    <div className="flex flex-col">
+                    <span className="font-medium">Vehicle Type:</span>
+
+                    <input
+                        type="text"
+                        value={form10Row?.VehicleType ?? ""}
+                        onChange={(e) =>
+                        setForm10Row({
+                            ...form10Row,
+                            VehicleType: e.target.value,
+                        })
+                        }
+                        className="mt-1 rounded border border-slate-300 px-2 py-1"
+                    />
+                    </div>
+
+                    <div className="flex flex-col">
+                    <span className="font-medium">Transporter Reg No.:</span>
+
+                    <input
+                        type="text"
+                        value={form10Row?.TransporterRegNo ?? ""}
+                        onChange={(e) =>
+                        setForm10Row({
+                            ...form10Row,
+                            TransporterRegNo: e.target.value,
+                        })
+                        }
+                        className="mt-1 rounded border border-slate-300 px-2 py-1"
+                    />
+                    </div>
+
+                    <div className="flex flex-col">
+                    <span className="font-medium">Vehicle Reg No.:</span>
+
+                    <input
+                        type="text"
+                        value={form10Row?.VehicleRegNo ?? ""}
+                        onChange={(e) =>
+                        setForm10Row({
+                            ...form10Row,
+                            VehicleRegNo: e.target.value,
+                        })
+                        }
+                        className="mt-1 rounded border border-slate-300 px-2 py-1"
+                    />
+                    </div>
+
+                    <div className="flex flex-col">
+                    <span className="font-medium">Manifest Document No.:</span>
+
+                    <input
+                        type="text"
+                        value={form10Row?.ManifestDocumentNo ?? ""}
+                        onChange={(e) =>
+                        setForm10Row({
+                            ...form10Row,
+                            ManifestDocumentNo: e.target.value,
+                        })
+                        }
+                        className="mt-1 rounded border border-slate-300 px-2 py-1"
+                    />
+                    </div>
+
+                </div>
+                </div>
 
 
                     <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
@@ -354,47 +636,15 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                         </div>
                     </div>
 
-                    <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                        <h2 className="text-sm font-semibold text-slate-900">Accept / Reject</h2>
-                        <p className="mt-1 text-xs text-slate-600">
-                            Add remarks and choose the action for this submitted form.
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">Review Date: {today}</p>
-
-                        <textarea
-                            rows={4}
-                            value={remarks}
-                            onChange={(e) => setRemarks(e.target.value)}
-                            placeholder="Enter approval or rejection remarks"
-                            className="mt-3 w-full rounded border border-slate-300 px-3 py-2 text-sm"
-                        />
-
-                        <div className="mt-4 flex flex-wrap gap-3">
+                            <div className="mt-4 flex justify-center">
                             <button
-                                type="button"
-                                disabled={saving}
-                                onClick={() => void saveDecision(3, "Accepted")}
-                                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                                onClick={onSubmit}
+                                type="submit"
+                                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
                             >
-                                Accept
+                                Submit
                             </button>
-
-                            <button
-                                type="button"
-                                disabled={saving}
-                                onClick={() => void saveDecision(5, "Rejected")}
-                                className="rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800 disabled:opacity-60"
-                            >
-                                Reject
-                            </button>
-                        </div>
-
-                        {decision ? (
-                            <div className="mt-4 rounded border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-                                {decision}
                             </div>
-                        ) : null}
-                    </div>
                 </>
             )}
         </section>

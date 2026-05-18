@@ -70,10 +70,14 @@ export default function DisposalListPage() {
   return (
     <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="w-full">
+        <div className="w-full relative">
           <h1 className="text-lg text-center font-semibold text-teal-600">
             Generate Final Disposal
           </h1>
+
+          <img src="/refresh.png" alt="" className="h-5 cursor-pointer absolute top-1 right-5"
+            onClick={() => window.location.reload()}
+          />
           {/* <h1 className="text-sm text-center font-semibold text-slate-900">
             Active Auctions List
           </h1> */}
@@ -105,7 +109,7 @@ export default function DisposalListPage() {
                     Remarks
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
-                    Date
+                    Disposal/Auction Date
                   </th>
                 </tr>
               </thead>
@@ -151,7 +155,7 @@ export default function DisposalListPage() {
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.WasteCategory}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.Remarks}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                      {row.AuctionDate || row.CrDt?.split("T")[0]}
+                      {row.AuctionDate}
                     </td>
                   </tr>
                 ))}

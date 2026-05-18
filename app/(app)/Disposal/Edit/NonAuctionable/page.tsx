@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Newspaper } from "lucide-react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
@@ -125,6 +126,9 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
     void loadEditDetails();
   }, [iddid]);
 
+  const { data: session } = useSession();
+
+
   useEffect(() => {
     const loadWaste = async () => {
       if (!wasteCategory) {
@@ -134,11 +138,18 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
         return;
       }
 
+
+      const sessionUid = String(session?.user?.uid ?? "").trim();
+      if (!sessionUid) return;
       setLoadingWaste(true);
+
       try {
         const res = await fetch(
-          `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(wasteCategory)}`,
-          { cache: "no-store" },
+          `/api/auth/Waste/generate?type=drop-waste-for-unit&wcid=${encodeURIComponent(wasteCategory)}&uid=${encodeURIComponent(sessionUid!)}`,
+          {
+            method: "GET",
+            cache: "no-store",
+          },
         );
         const payload = (await res.json()) as { success?: boolean; data?: Option[] };
         const data = payload.success && Array.isArray(payload.data) ? payload.data : [];
@@ -219,7 +230,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
             daysLeft,
             unit,
             muid,
-            label: `${String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim()} - ${qty.toFixed(2)} - ${daysLeft ?? "N/A"}`,
+            label: `${String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim()} - ${qty.toFixed(2)} ${unit} - ${daysLeft ?? "N/A"} days left`,
           };
         });
 
@@ -251,7 +262,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
 
       setLoadingUndisposed(true);
       try {
-        const res = await fetch("/api/GetData/GetAllUndisposedWaste", {
+        const res = await fetch("/api/GetData/GetAllUndisposedWasteByDept", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -304,7 +315,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
             daysLeft,
             unit,
             muid,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
+            label: `${dept || "Dept"} - ${qtyLabel} ${unit} - ${daysLeft} days left`,
           };
         });
 
@@ -541,11 +552,10 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
                       />
                       <div className="flex flex-col">
                         <span className="text-sm text-slate-700">
-                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)} {item.unit}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
-                          {item.unit || "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
                         </span>
                       </div>
                     </label>

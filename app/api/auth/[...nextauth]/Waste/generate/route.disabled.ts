@@ -148,6 +148,7 @@ export async function handleGenerateGet(request: Request) {
       });
     }
 
+
     if (type === "drop-waste-for-unit") {
       if (!wcid || !uid) {
         return NextResponse.json(

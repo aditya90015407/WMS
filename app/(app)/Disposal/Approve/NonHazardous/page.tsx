@@ -62,6 +62,78 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
     }, [encryptedId]);
 
 
+    const [attachPaths, setAttachPaths] = useState<string[]>([])
+
+
+
+    async function GetFinalDisposalAttachments() {
+        const res = await fetch("/api/GetData/GetFinalDisposalAttachments", {
+            method: "POST",
+            body: JSON.stringify({ ID: id })
+        })
+        const data = await res.json()
+        setAttachPaths(data)
+        // console.log(data)
+    }
+
+    useEffect(() => {
+        // console.log("i am here")
+        if (!id || id == "") return
+        GetFinalDisposalAttachments()
+    }, [ready])
+
+    async function downloadAttachments() {
+        // setDownloading(true)
+        const payload = {
+            Attachments: attachPaths,
+        }
+        // console.log(payload)
+
+        const res = await fetch(`/api/GetData/DownloadFinalDisposalAttachments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        })
+        if (!res.ok) {
+            throw new Error("Download failed")
+        }
+
+        const data = await res.json()
+
+        // console.log(data, "dat")
+
+        data.files.forEach((file: any) => {
+            const a = document.createElement("a")
+            a.href = `/api/DownloadFiles?id=${encodeURIComponent(file.id)}`
+            a.download = file.name
+            document.body.appendChild(a)
+            a.click()
+            a.remove()
+        })
+        // data.files.forEach((file: any) => {
+        //     console.log(file)
+        //     const a = document.createElement("a")
+        //     a.href = file.url
+        //     a.download = file.name
+        //     a.click()
+        // })
+
+        // const blob = await res.blob()
+
+        // const url = window.URL.createObjectURL(blob)
+        // const a = document.createElement("a")
+
+        // a.href = url
+        // a.download = `FinalDisposalAttachments.zip`
+        // document.body.appendChild(a)
+        // a.click()
+
+        // a.remove()
+        // window.URL.revokeObjectURL(url)
+        // setDownloading(false)
+    }
+
+
 
     async function UpdateDisposedWaste() {
         const res = await fetch("/api/GetData/GetWasteListByIDDID", {
@@ -115,6 +187,7 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     FDDID: Number(row.ID),
+                    IDDID: row.IDDID,
                     StsCode: stsCode,
                     Remarks: remarks,
                 }),
@@ -174,12 +247,13 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="w-full text-center">
-                    <h1 className="text-2xl font-semibold text-teal-600">Disposal Approval - Non Hazardous</h1>
+                    <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Approval - Non Hazardous</h1>
                     <p className="mt-2 text-sm text-slate-600">Verify the submitted non-hazardous disposal form before taking action.</p>
                 </div>
-                <button type="button" onClick={() => router.push("/Disposal/Approve")} className="rounded border border-slate-300 px-1 py-2 text-sm text-slate-700 hover:bg-slate-50">
-                    Back to Queue
-                </button>
+
+                <img src="/goback.png" alt="" className="h-6 cursor-pointer"
+                    onClick={() => router.back()}
+                />
             </div>
 
             {loading && <p className="mt-4 text-sm text-slate-600">Loading submitted form...</p>}
@@ -204,6 +278,18 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+
+
+                    <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                        <h2 className="text-sm font-semibold text-slate-900 flex">Disposal Attachments :
+                            <span><img src="/downloadicon.png" alt="" className="cursor-pointer h-6 mx-2"
+                                onClick={downloadAttachments}
+                            /></span>
+                        </h2>
+                        {/* <div className="mt-3 grid gap-3 md:grid-cols-2 text-sm text-slate-700">
+                                <p><span className="font-medium">Download :</span> {String(form10Row?.TransporterName ?? row?.TransporterName ?? "-")}</p>
+                            </div> */}
                     </div>
 
                     <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">

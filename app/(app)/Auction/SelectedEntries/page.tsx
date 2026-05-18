@@ -50,7 +50,7 @@ export default function SelectedEntriesPage() {
 
         const data = await res.json();
 
-        // console.log(data)
+        console.log(data)
 
         if (!res.ok) {
           setRows([]);
@@ -119,7 +119,7 @@ export default function SelectedEntriesPage() {
             <thead className="bg-slate-50">
               <tr>
                 <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
-                  IDDID
+                  Auction ID
                 </th>
                 <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
                   Auction Date

@@ -299,13 +299,18 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
                     <h1 className="text-sm text-center font-semibold text-teal-600"> Applicants List</h1>
 
                 </div>
-                <button
+                {/* <button
                     type="button"
                     onClick={() => setRefreshSeed((x) => x + 1)}
                     className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
                 >
                     Refresh
-                </button>
+                </button> */}
+                <img src="/refresh.png" alt="" className="h-5 cursor-pointer"
+                    onClick={() => setRefreshSeed((x) => x + 1)}
+                />
+                <img src="/goback.png" alt="" className="cursor-pointer h-5 "
+                    onClick={() => router.back()} />
             </div>
 
 

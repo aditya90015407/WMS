@@ -48,10 +48,12 @@ export async function POST(req: Request) {
       ? generateUniqueFileName(salePoSoDoc.name || "sale-poso")
       : "";
 
-    const saveDir = "D:\\WMS UPDATE\\WMS-main\\Attachments";
-    if (!fs.existsSync(saveDir)) {
-      fs.mkdirSync(saveDir, { recursive: true });
-    }
+    // const saveDir = "D:\\WMS UPDATE\\WMS-main\\Attachments";
+    const rootdir = process.cwd()
+    const saveDir = `${rootdir}/Attachments`;
+    // console.log(saveDir)
+    if (!fs.existsSync(saveDir)) fs.mkdirSync(saveDir, { recursive: true });
+
 
     const saveFile = async (file: File | null, fileName: string) => {
       if (!file || !fileName) return;
@@ -60,8 +62,8 @@ export async function POST(req: Request) {
     };
 
     await saveFile(salePoSoDoc, salePoSoDocName);
-    console.log({fddid,salePoSoDocName})
-    const res=await pool
+    console.log({ fddid, salePoSoDocName })
+    const res = await pool
       .request()
       .input("FLAG", sql.VarChar, "SetFinalDisposalDetailsAttachments")
       .input("FDDID", sql.Int, fddid)
@@ -69,11 +71,11 @@ export async function POST(req: Request) {
       // .input("FinalPartyDoc", sql.VarChar, finalPartyDocName)
       // .input("EmpCode", sql.VarChar, empCode)
       .execute("PRO-WMS_SET");
-  //  console.log(res);
+    //  console.log(res);
     return NextResponse.json({
       success: true,
       message: "Disposal attachments saved successfully",
-     
+
     });
 
   } catch (err: any) {

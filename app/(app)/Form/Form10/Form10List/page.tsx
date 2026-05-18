@@ -23,7 +23,7 @@ const initialFormState: Form10Data = {
   receiverAuthorizationNo: "",
   wasteDescription: "",
   totalQuantity: "",
-  quantityUnit: "m3",
+  quantityUnit: "",
   noOfContainers: "",
   physicalForm: "",
   specialHandlingInfo: "",
@@ -216,8 +216,14 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
           receiverEmail: getFirstValue(row, ["ReceiverEmail"]),
           receiverAuthorizationNo: getFirstValue(row, ["ReceiverAuthorizationNo", "ReceiverAuthNo"]),
           wasteDescription: getFirstValue(row, ["WasteDescription", "Waste"]),
-          totalQuantity: getFirstValue(row, ["TotalQuantity", "TotalQty"]),
-          quantityUnit: getFirstValue(row, ["QuantityUnit"]) || "m3",
+          totalQuantity:
+            getFirstValue(row, ["MUnit"]) === "KG"
+              ? String(
+                Number(getFirstValue(row, ["TotalQuantity", "TotalQty"])) / 1000
+              )
+              : getFirstValue(row, ["TotalQuantity", "TotalQty"]),
+
+          quantityUnit: getFirstValue(row, ["MUnit"]),
           noOfContainers: getFirstValue(row, ["NoOfContainers"]),
           physicalForm: mapPhysicalForm(getFirstValue(row, ["PhysicalForm", "PSID"])),
           specialHandlingInfo: getFirstValue(row, ["SpecialHandlingInfo", "SpecialHandlingInstructions"]),

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 
 type Option = { id: string; name: string };
@@ -64,6 +65,18 @@ export default function DisposalRecycleForm() {
     void loadBase();
   }, []);
 
+  const { data: session } = useSession();
+
+  // useEffect(() => {
+  //   if (session?.user?.uid && session?.user?.deptId) {
+  //     setForm((prev) => ({
+  //       ...prev,
+  //       UID: String(session.user.uid),
+  //       DeptID: String(session.user.deptId),
+  //     }));
+  //   }
+  // }, [session]);
+
   useEffect(() => {
     const loadWaste = async () => {
       if (!wasteCategory) {
@@ -74,12 +87,19 @@ export default function DisposalRecycleForm() {
         return;
       }
 
+      const sessionUid = String(session?.user?.uid ?? "").trim();
+      if (!sessionUid) return;
       setLoadingWaste(true);
+
       try {
         const res = await fetch(
-          `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(wasteCategory)}`,
-          { cache: "no-store" },
+          `/api/auth/Waste/generate?type=drop-waste-for-unit&wcid=${encodeURIComponent(wasteCategory)}&uid=${encodeURIComponent(sessionUid!)}`,
+          {
+            method: "GET",
+            cache: "no-store",
+          },
         );
+
         const payload = await res.json();
         setWasteOptions(payload.success && Array.isArray(payload.data) ? payload.data : []);
         setSelectedWasteId("");
@@ -142,7 +162,7 @@ export default function DisposalRecycleForm() {
 
       setLoadingUndisposed(true);
       try {
-        const res = await fetch("/api/GetData/GetAllUndisposedWaste", {
+        const res = await fetch("/api/GetData/GetAllUndisposedWasteByDept", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -195,7 +215,7 @@ export default function DisposalRecycleForm() {
             daysLeft,
             unit,
             muid,
-            label: `${dept || "Dept"} - ${qtyLabel} - ${daysLeft} -${unit}`,
+            label: `${dept || "Dept"} - ${qtyLabel}  ${unit} - ${daysLeft} days left`,
           };
         });
 
@@ -400,11 +420,11 @@ export default function DisposalRecycleForm() {
                       />
                       <div className="flex flex-col">
                         <span className="text-sm text-slate-700">
-                          {item.dept || "Dept"} - {item.qty.toFixed(2)}
+                          {item.dept || "Dept"} - {item.qty.toFixed(2)}{" "}{item.unit || "N/A"}
                         </span>
                         <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"} -{" "}
-                          {item.unit || "N/A"}
+                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}{" "}
+
                         </span>
                       </div>
                     </label>
@@ -462,7 +482,7 @@ export default function DisposalRecycleForm() {
         <div className="flex items-center justify-between border-t border-slate-200 pt-4">
           <button
             type="submit"
-            className="rounded-lg bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800"
+            className="cursor-pointer rounded-lg bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800"
           >
             Submit
           </button>

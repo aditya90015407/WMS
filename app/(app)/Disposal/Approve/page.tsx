@@ -15,6 +15,7 @@ type FinalDisposalRow = {
     TotalQty?: string | number;
     Status?: string;
     CrDt?: string;
+    MUnit: string
 };
 
 function normalizeData<T extends Record<string, unknown>>(row: T) {
@@ -140,6 +141,9 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Quantity
                                     </th>
+                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                                        Disposal Type
+                                    </th>
                                     {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Status
                                     </th> */}
@@ -186,7 +190,10 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                             {String(row.Waste ?? "")}
                                         </td>
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                                            {String(row.TotalQty ?? "")}
+                                            {String(row.TotalQty ?? "")}{" "}{row.MUnit}
+                                        </td>
+                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                            {String(row.DisType ?? "")}
                                         </td>
                                         {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.Status ?? "")}
@@ -202,7 +209,7 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                             type="button"
                             onClick={() => setPage(1)}
                             disabled={currentPage === 1}
-                            className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                            className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                         >
                             First
                         </button>
@@ -210,7 +217,7 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                             type="button"
                             onClick={() => setPage((prev) => Math.max(1, prev - 1))}
                             disabled={currentPage === 1}
-                            className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                            className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                         >
                             Prev
                         </button>
@@ -221,7 +228,7 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                             type="button"
                             onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
                             disabled={currentPage === totalPages}
-                            className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                            className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                         >
                             Next
                         </button>
@@ -229,7 +236,7 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                             type="button"
                             onClick={() => setPage(totalPages)}
                             disabled={currentPage === totalPages}
-                            className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+                            className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
                         >
                             Last
                         </button>

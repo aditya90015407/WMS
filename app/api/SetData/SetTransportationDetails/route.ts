@@ -1,6 +1,8 @@
 import { getConnection } from "@/lib/dbConnect";
 import { NextResponse } from "next/server";
 import sql from "mssql";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function POST(req: Request) {
 
@@ -9,6 +11,9 @@ export async function POST(req: Request) {
     if (!pool || !pool.connected) {
       throw new Error("Could Not Connect to DataBase")
     }
+
+    const session = await getServerSession(authOptions)
+    const EmpCode = session?.user.id
 
     const {
       APID,
@@ -47,6 +52,7 @@ export async function POST(req: Request) {
       .input("ReceiverName", sql.VarChar, ReceiverName ?? "")
       .input("ReceiverAddress", sql.VarChar, ReceiverAddress ?? "")
       .input("ReceiverAuthNo", sql.VarChar, ReceiverAuthNo ?? "")
+      .input("EmpCode", EmpCode)
       .execute("PRO-WMS_SET");
     // console.log(result)
 

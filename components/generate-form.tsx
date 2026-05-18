@@ -673,7 +673,7 @@ export default function GenerateForm({
   return (
     <form onSubmit={handleSubmit} className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
       <div>
-        <label className="mb-1 block text-sm font-bold text-slate-700">Date</label>
+        <label className="mb-1 block text-sm font-bold text-slate-700">Generation Date</label>
         <input
           type="date"
           value={form.date}
@@ -849,7 +849,7 @@ export default function GenerateForm({
           <label className="mb-1 block text-sm font-bold text-slate-700">Storage Method</label>
           <input
             type="text"
-            value={form.storageMethod}
+            value={(form.storage == '4' && form.storageMethod == "Others") ? "" : form.storageMethod}
             onChange={(e) => updateField("storageMethod", e.target.value)}
             className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
             placeholder="Enter Storage Method"
@@ -859,7 +859,7 @@ export default function GenerateForm({
       }
 
       <div>
-        <label className="mb-1 block text-sm font-bold text-slate-700">Dis-Target</label>
+        <label className="mb-1 block text-sm font-bold text-slate-700">Disposal Target</label>
         <input
           type="date"
           value={form.disposalTarget}
@@ -929,19 +929,19 @@ export default function GenerateForm({
         <div className="fixed right-4 top-4 z-50 w-[min(92vw,19.6rem)] rounded-xl border border-slate-200 bg-white p-4 shadow-2xl">
           <h3 className="text-sm font-semibold text-slate-800">Review Details</h3>
           <div className="mt-3 grid grid-cols-1 gap-1 text-sm text-slate-700">
-            <p><span className="font-medium">Date:</span> {form.date || "-"}</p>
+            <p><span className="font-medium">Generation Date:</span> {form.date || "-"}</p>
             <p><span className="font-medium">Category:</span> {getOptionName(categories, form.categoryId) || "-"}</p>
             <p><span className="font-medium">Waste:</span> {getOptionName(availableWaste, form.wasteId) || "-"}</p>
-            <p><span className="font-medium">Unit:</span> {getOptionName(units, form.unitId) || "-"}</p>
+            {/* <p><span className="font-medium">Unit:</span> {getOptionName(units, form.unitId) || "-"}</p> */}
             <p><span className="font-medium">Receiver:</span> {getOptionName(receivers, form.receiver) || "-"}</p>
             <p><span className="font-medium">Disposer:</span> {getOptionName(disposers, form.disposer) || "-"}</p>
-            <p><span className="font-medium">Phy- State:</span> {getOptionName(physicalStates, form.physicalState) || "-"}</p>
+            <p><span className="font-medium">Physical State:</span> {getOptionName(physicalStates, form.physicalState) || "-"}</p>
             <p><span className="font-medium">Storage:</span> {getOptionName(storageMethods, form.storage) || "-"}</p>
             {
               form.storage == '4' &&
               <p><span className="font-medium">Storage Method:</span>  {form.storageMethod}</p>
             }
-            <p><span className="font-medium">Dis-Target:</span> {form.disposalTarget || "-"}</p>
+            <p><span className="font-medium">Disposal Target:</span> {form.disposalTarget || "-"}</p>
             <p><span className="font-medium">Quantity:</span> {`${form.quantity} ${getOptionName(units, form.unitId)}` || "-"}</p>
           </div>
           <div className="mt-4 flex items-center gap-2">
@@ -955,7 +955,7 @@ export default function GenerateForm({
             </button>
             <button
               type="button"
-              onClick={() => { setShowReview(false); router.back() }}
+              onClick={() => { setShowReview(false); }}
               className="cursor-pointer rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700"
             >
               Edit
