@@ -122,13 +122,13 @@ export default function AppNavbar() {
             aria-label="Open profile"
           >
             {/* <UserCircle2 className="h-9 w-9" /> */}
-            <img src="/image.png" alt="" className="h-10.5 w-10.5  cursor-pointer" />
+            <img src="/image5.png" alt="" className="h-9 w-9 cursor-pointer " />
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white py-4 px-6 shadow-lg">
-              <p className="text-sm font-semibold tracking-wide text-emerald-600 mt-2">
-                Profile
+            <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white pb-3 px-6 shadow-lg">
+              <p className="text-sm font-semibold tracking-wide text-[#2563EB] text-center font-[cursive] mt-2">
+                My Profile
               </p>
               <div className="mt-3 space-y-2 text-sm">
                 <p className="text-slate-800">
@@ -177,7 +177,7 @@ export default function AppNavbar() {
                 ) : !assignedRole ? (
                   <p className="text-sm text-slate-600">Not assigned yet</p>
                 ) : null} */}
-                <div className="pt-3">
+                <div className="pt-0.5">
                   <button
                     type="button"
                     onClick={handleLogout}

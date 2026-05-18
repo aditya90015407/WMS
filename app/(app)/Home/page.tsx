@@ -40,17 +40,17 @@ export default function HomePage() {
 
   return (
     <main
-      className="relative min-h-screen bg-cover bg-center bg-no-repeat p-2 md:p-4"
-      style={{ backgroundImage: 'url("/homepage.png")' }}
+      className="relative min-h-screen bg-cover bg-center bg-no-repeat "
+    // style={{ backgroundImage: 'url("/homepage.png")' }}
     >
-      <h1 className="font-medium text-md text-center text-gray-950">
-        Hello ! <span className="text-lg px-1 py-0.5  text-teal-700 bg-[#dfe6ed] rounded  font-semibold opacity-75">{session?.user.username} </span>
+      <img src="/homepage.png" alt="" className="h-[400px] w-full" />
+      <h1 className="font-medium text-md text-center text-gray-950 place-self-center mt-1.5">
+        Hello! <span className="text-lg px-1 py-0.5  text-teal-700  rounded  font-semibold opacity-75">{session?.user.username}</span>.
+        {/* <br /> */}
+        You are logged in as <span className="ps-1 py-0.5 text-[#b5056c] text-lg rounded font-semibold opacity-75">{session?.user.roleName}</span>.
         <br />
-        You are logged in as <span className="px-1 py-0.5 text-emerald-700 bg-[#dfe6ed] rounded font-semibold opacity-75">{session?.user.roleName} </span>
-        <br />
-        <span className="text-xs">Use the navigation menu to get started</span>
+        <span className="text-xs">Use the navigation menu on the left to get started</span>
       </h1>
-      {/* <img src="/homepage.png" alt="" className="w-full" /> */}
 
       {/* <div className="absolute bg-white/75" />
       <div className="relative mx-auto max-w-6xl space-y-8">

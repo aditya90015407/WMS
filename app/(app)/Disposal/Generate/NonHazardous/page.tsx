@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 type FieldType =
@@ -9,6 +9,7 @@ type FieldType =
   | "multi-select"
   | "select"
   | "text"
+  | "view"
   | "textarea"
   | "number"
   | "phone-email"
@@ -42,8 +43,8 @@ const rows: RowDef[] = [
   { key: "vehicleRegNo", field: "Vehicle registration No.", type: "text", hint: "Enter vehicle number" },
   { key: "receiverName", field: "Receiver Name", type: "text", hint: "Enter receiver name" },
   { key: "receiverAddress", field: "Address", type: "textarea", hint: "Enter receiver address" },
-  { key: "wasteDescription", field: "Waste Description", type: "text" },
-  { key: "totalQty", field: "Total Quantity", type: "text" },
+  { key: "wasteDescription", field: "Waste Description", type: "view" },
+  { key: "totalQty", field: "Total Quantity", type: "view" },
   { key: "physicalForm", field: "Physical Form", type: "select", options: ["1|Solid", "2|Semisolid", "3|Sludge", "4|Oily", "5|Tarry", "6|Slurry", "7|Liquid"] },
   { key: "salePoSoDoc", field: "Document for Sale PO/SO to be uploaded for external disposal", type: "file" },
   {
@@ -57,6 +58,7 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
   const iddid = params.id;
+  const router = useRouter();
   // const iddid = params.get("id") ?? "";
   const [MUID, setMUID] = useState<string>("");
   const [values, setValues] = useState<Record<string, string | string[] | File | null>>({
@@ -139,6 +141,7 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
         if (!res.ok || !data.success) return;
 
         const row = Array.isArray(data.data) ? data.data[0] : data.data;
+        // console.log(row);
         setMUID(String(row?.MUID ?? ""));
         setValues((prev) => ({
           ...prev,
@@ -151,10 +154,11 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
           vehicleRegNo: String(row?.VehicleRegNo ?? ""),
           receiverName: String(row?.ReceiverName ?? ""),
           receiverAddress: String(row?.ReceiverAddress ?? ""),
+          receiverAuthNo: String(row?.ReceiverAuthNo ?? " "),
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           wasteDescription: String(row?.Waste ?? ""),
-          totalQty: String(row?.TotalQty ?? ""),
+          totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
         }));
       } catch (err) {
         console.error("Failed to load non-hazardous form details", err);
@@ -186,13 +190,13 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
     formData.append("VehicleRegNo", String(values.vehicleRegNo ?? ""));
     formData.append("ReceiverName", String(values.receiverName ?? ""));
     formData.append("ReceiverAddress", String(values.receiverAddress ?? ""));
-    formData.append("ReceiverAuthNo", "");
-    formData.append("TotalQty", String(Number(values.totalQty ?? 0)));
+    formData.append("ReceiverAuthNo", String(values.receiverAuthNo ?? ""));
+    formData.append("TotalQty", String((values.totalQty ?? 0)).split(" ")[0]);
     formData.append("Waste", String(values.wasteDescription ?? ""));
     formData.append("NoOfContainers", "0");
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", "");
-    formData.append("EmpCode", "YOUR_EMP_CODE");
+    // formData.append("EmpCode", "YOUR_EMP_CODE");
     formData.append("DateOfDisposal", String(values.disposalDate ?? today));
     formData.append("MUID", MUID);
 
@@ -254,6 +258,7 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
         return;
       }
     }
+    // router.back();
   };
 
 
@@ -279,6 +284,16 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
           placeholder={row.hint ?? ""}
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
           onChange={(e) => updateValue(row.key, e.target.value)}
+        />
+      );
+    }
+
+    if (row.type === "view") {
+      return (
+        <input
+          readOnly
+          value={typeof v === "string" ? v : ""}
+          className="w-full rounded border border-slate-200 bg-slate-100 px-2 py-1 text-sm text-slate-700"
         />
       );
     }

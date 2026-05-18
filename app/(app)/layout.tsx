@@ -35,7 +35,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <AppNavbar />
       <div className="flex min-h-[calc(100vh-4rem)]">
         <AppSidebar />
-        <main className="flex-1 p-4 md:p-6">{children}</main>
+        <main className="flex-1 p-3">{children}</main>
       </div>
     </div>
   );

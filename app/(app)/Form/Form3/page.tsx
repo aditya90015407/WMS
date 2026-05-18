@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Download } from "lucide-react";
 import { toForm3Entry } from "@/lib/form3-columns";
 import { it } from "node:test";
+import { useSession } from "next-auth/react";
 
 type ViewRow = Record<string, string | number | null>;
 
@@ -40,6 +41,7 @@ type FormEntry = {
   receiverId: string;
   wcid: string;
   stsCode: string;
+  EN: string,
 };
 
 const PAGE_SIZE = 10;
@@ -95,74 +97,177 @@ const createForm3Html = (entry: FormEntry): string => {
   return `<!doctype html>
 <html>
 <head>
-  <meta charset="utf-8" />
-
+<meta charset="utf-8" />
+ 
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; color: #111827; }
-    h1, h2, p { margin: 0; }
-    .center { text-align: center; }
-    .mt2 { margin-top: 8px; } .mt4 { margin-top: 16px; } .mt10 { margin-top: 40px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #cbd5e1; padding: 8px; font-size: 13px; text-align: left; vertical-align: top; }
-    th { background: #f1f5f9; }
-    .small { font-size: 13px; }
-  </style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      color: #111827;
+    }
+ 
+    h1, h2, p {
+      margin: 0;
+    }
+ 
+    .center {
+      text-align: center;
+    }
+ 
+    .mt2 {
+      margin-top: 8px;
+    }
+ 
+    .mt4 {
+      margin-top: 16px;
+    }
+ 
+    .mt10 {
+      margin-top: 40px;
+    }
+ 
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+ 
+    th, td {
+      border: 1px solid #cbd5e1;
+      padding: 8px;
+      font-size: 13px;
+      text-align: left;
+      vertical-align: top;
+    }
+ 
+    th {
+      background: #f1f5f9;
+    }
+ 
+    .small {
+      font-size: 13px;
+    }
+ 
+    .signature {
+      text-align: right;
+    }
+</style>
 </head>
+ 
 <body>
-  <div class="center">
-    <h1>FORM 3</h1>
-    <p class="small"><i>[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</i></p>
-    <h2 class="mt2">FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES</h2>
-  </div>
+<div class="center">
+<h1>FORM 3</h1>
+ 
+    <p class="small">
+<i>[See rules 6(5), 13(7), 14(6), 16(5) and 20(1)]</i>
+</p>
+ 
+    <h2 class="mt2">
+      FORMAT FOR MAINTAINING RECORDS OF HAZARDOUS AND OTHER WASTES
+</h2>
+</div>
  
   <div class="mt4 small">
-    <p>1. Name and address of the facility :<strong> ${esc(entry.unitDesc)} </strong></p>
-    <p class="mt2">2. Date of issuance of authorisation and its reference number :<strong> ${esc(
-    [entry.dateOfIssuance, entry.referenceNo].filter(Boolean).join(" ")
-  )} </strong> </p>
-    <p class="mt2">3. Description of hazardous and other wastes handled (Generated or Received)</p>
-  </div>
+<p>
+      1. Name and address of the facility :
+<strong>${esc(entry.unitDesc)}</strong>
+</p>
+ 
+    <p class="mt2">
+      2. Date of issuance of authorisation and its reference number :
+<strong>
+        ${esc(
+    [entry.dateOfIssuance, entry.referenceNo]
+      .filter(Boolean)
+      .join(" ")
+  )}
+</strong>
+</p>
+ 
+    <p class="mt2">
+      3. Description of hazardous and other wastes handled
+      (Generated or Received)
+</p>
+</div>
  
   <table>
-    <thead>
-      <tr>
-        <th>Date</th>
-        <th>Type of waste with category as per Schedules I,II and III of these rules</th>
+<thead>
+<tr>
+<th>Date</th>
+ 
+        <th>
+          Type of waste with category as per
+          Schedules I, II and III of these rules
+</th>
+ 
         <th>Total quantity</th>
+ 
         <th>Method of Storage</th>
+ 
         <th>Destined to or received from</th>
-      </tr>
-    </thead>
+</tr>
+</thead>
+ 
     <tbody>
-      <tr>
-        <td>${esc(entry.date)}</td>
+<tr>
+<td>${esc(entry.date)}</td>
+ 
         <td>
           ${esc(wasteLine1)}<br/>
           ${esc(wasteLine2)}<br/>
           ${esc(wasteLine3)}
-        </td>
-
-        <td>${esc(quantUnit)}</td>
-        <td>${esc(entry.storageMethod)}</td>
-        <td>${esc(getDestinedDisplay(entry))}</td>
-      </tr>
-    </tbody>
-  </table>
+</td>
  
-  <p class="mt4 small"><i>* Fill up above table separately for indigenous and imported waste.</i></p>
+        <td>${esc(quantUnit)}</td>
+ 
+        <td>${esc(entry.storageMethod)}</td>
+ 
+        <td>${esc(getDestinedDisplay(entry))}</td>
+</tr>
+</tbody>
+</table>
+ 
+  <p class="mt4 small">
+<i>
+      * Fill up above table separately for indigenous and imported waste.
+</i>
+</p>
  
   <div class="mt4 small">
-    <p>4. Date wise description of management of hazardous and other wastes including products sent and to whom in case of recyclers or pre-processor or utiliser:</p>
-    <p class="mt2">5. Date of environmental monitoring (as per authorisation or guidelines of Central Pollution Control Board):</p>
-  </div>
+<p>
+      4. Date wise description of management of hazardous and other wastes
+      including products sent and to whom in case of recyclers or
+      pre-processor or utiliser:
+</p>
  
-  <div class="mt10 small" style="display:flex;justify-content:space-between;align-items:flex-end;">
-    <div>
-      <p>Date: ${esc(entry.date)}</p>
-      <p class="mt2">Place: </p>
-    </div>
-    <p><b>Signature of occupier</b></p>
-  </div>
+    <p class="mt2">
+      5. Date of environmental monitoring
+      (as per authorisation or guidelines of Central Pollution Control Board):
+</p>
+</div>
+ 
+  <div
+    class="mt10 small"
+    style="display:flex;justify-content:space-between;align-items:flex-end;"
+>
+<div>
+<p>Date: ${esc(entry.date)}</p>
+ 
+      <p class="mt2">Place:</p>
+</div>
+ 
+    <div class="signature">
+<p>
+<strong>
+          ${esc((entry?.EN || "").split("(")[0])}
+</strong>
+</p>
+ 
+      <p>
+<b>Signature of occupier</b>
+</p>
+</div>
+</div>
 </body>
 </html>`;
 };
@@ -174,6 +279,8 @@ export default function Form3Page() {
   const [selectedEntry, setSelectedEntry] = useState<FormEntry | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
+  const { data: session, status } = useSession();
+  // console.log(session?.user?.username);
 
   useEffect(() => {
     const loadRows = async () => {
@@ -238,6 +345,7 @@ export default function Form3Page() {
         item.receiver,
         item.approvalStatus,
         item.wcid,
+        item.EN,
       ]
         .join(" ")
         .toLowerCase()
@@ -264,18 +372,18 @@ export default function Form3Page() {
             <html>
             <head>
               <meta charset="utf-8" />
-            
+           
               <style>
                   @page {
                     size: A4;
                     margin: 0;
                   }
-
+ 
                   html, body {
                     margin: 0;
                     padding: 0;
                   }
-
+ 
                   body {
                     font-family: Arial, sans-serif;
                     padding: 20px;
@@ -283,25 +391,25 @@ export default function Form3Page() {
                     -webkit-print-color-adjust: exact;
                     print-color-adjust: exact;
                   }
-
+ 
                   h1, h2, p {
                     margin: 0;
                   }
-
+ 
                   .center {
                     text-align: center;
                   }
-
+ 
                   .mt2 { margin-top: 8px; }
                   .mt4 { margin-top: 16px; }
                   .mt10 { margin-top: 40px; }
-
+ 
                   table {
                     width: 100%;
                     border-collapse: collapse;
                     margin-top: 12px;
                   }
-
+ 
                   th, td {
                     border: 1px solid #cbd5e1;
                     padding: 8px;
@@ -309,11 +417,11 @@ export default function Form3Page() {
                     text-align: left;
                     vertical-align: top;
                   }
-
+ 
                   th {
                     background: #f1f5f9;
                   }
-
+ 
                   .small {
                     font-size: 13px;
                   }
@@ -584,7 +692,15 @@ export default function Form3Page() {
                 <p>Date: {selectedEntry.date || "...................."}</p>
                 <p className="mt-2">Place: ....................</p>
               </div>
-              <p className="font-semibold">Signature of occupier</p>
+              <div className="flex flex-col items-center">
+                <p>
+                  <strong>{(selectedEntry.EN).split("(")[0]}</strong>
+                </p>
+
+                <p className="font-semibold">
+                  Signature of occupier
+                </p>
+              </div>
             </div>
 
             <div className="mt-4 flex justify-end">

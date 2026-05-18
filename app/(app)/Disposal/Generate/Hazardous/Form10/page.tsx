@@ -96,11 +96,11 @@ export default function HazardousForm10Page({ searchParams }: { searchParams: Pr
 
         const data = await res.json();
 
-        console.log("Form10 id:", id);
-        console.log("Form10 raw data:", data);
-        console.log("res.ok:", res.ok);
-        console.log("data.success:", data.success);
-        console.log("data.data:", data.data);
+        // console.log("Form10 id:", id);
+        // console.log("Form10 raw data:", data);
+        // console.log("res.ok:", res.ok);
+        // console.log("data.success:", data.success);
+        // console.log("data.data:", data.data);
 
         if (!res.ok || !data.success) {
           setStatus(data.message || "Failed to load Form 10 details.");

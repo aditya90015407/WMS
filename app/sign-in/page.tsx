@@ -105,7 +105,7 @@ export default function LoginPage() {
         const role = getSessionRole(session);
         const empCode = getSessionEmpCode(session) ?? employeeCode;
         toast.success(
-          `Login successful | Emp Code: ${empCode} | Role: ${role ?? "UNKNOWN"}`,
+          `Login successful `,
         );
         router.push("/Home");
         return;
