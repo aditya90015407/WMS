@@ -121,7 +121,8 @@ export default function AppNavbar() {
             className="rounded-full p-1 text-slate-700 transition hover:bg-slate-100"
             aria-label="Open profile"
           >
-            <UserCircle2 className="h-9 w-9" />
+            {/* <UserCircle2 className="h-9 w-9" /> */}
+            <img src="/image.png" alt="" className="h-10.5 w-10.5  cursor-pointer" />
           </button>
 
           {isOpen && (
@@ -195,9 +196,10 @@ export default function AppNavbar() {
         </div>
       </div>
       {/* <div className="border-t border-slate-200 bg-emerald-400 px-4 py-2"> */}
-      <div className="border-t border-slate-200 bg-white px-4 py-2">
+      <div className="border-t border-slate-200 px-4 py-2">
 
-        <div className="flex w-full justify-start ">
+        <div className="flex w-full justify-start  ">
+          <span className="text-xs font-medium tracking-wide text-teal-600 py-1.5 mx-2">Current Page : </span>
           <div className="bg-emerald-600 inline-flex flex-wrap items-center justify-center gap-1 rounded-full border border-slate-200  px-3 py-1.5">
             {breadcrumbParts.map((part, index) => (
               <div key={`nav-${part}-${index}`} className=" flex items-center gap-1">

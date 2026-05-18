@@ -208,13 +208,16 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
             {/* <div className="text-center text-sm">Act on Waste</div> */}
 
             <div>
-                <div className="text-center text-orange-600 mb-5">
+                <div className="text-center text-teal-600 mb-5 font-semibold">
                     Participant's Details
                 </div>
-                {/* <Link href="./">
 
-                    <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
-                </Link> */}
+                <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-5 right-19 "
+                    onClick={() => window.location.reload()}
+                />
+                <Link href="./">
+                    <img src="/goback.png" alt="" className="h-6 absolute top-4 right-9" />
+                </Link>
             </div>
 
             <form onSubmit={handleSubmit} action="">

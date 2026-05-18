@@ -37,8 +37,6 @@ export async function POST(req: Request) {
     const blueBookFileName = generateUniqueFileName(blueBookFile?.name ?? "bluebook.png");
     const regCertFileName = generateUniqueFileName(regCertFile?.name ?? "regcert.png");
 
-    // const saveDir = "D:\\WMS UPDATE\\WMS-main\\Attachments";
-
     const rootdir = process.cwd()
     const saveDir = `${rootdir}/Attachments`;
     // console.log(saveDir)

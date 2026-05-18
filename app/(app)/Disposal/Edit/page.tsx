@@ -43,7 +43,7 @@ export default function DisposalEditPage() {
       setError(null);
 
       try {
-        const res = await fetch("/api/GetData/GetAllInitiatedDisposalListEdit ", {
+        const res = await fetch("/api/GetData/GetAllInitiatedDisposalListEdit", {
           method: "GET",
           cache: "no-store",
         });
@@ -138,6 +138,9 @@ export default function DisposalEditPage() {
           />
         </div>
 
+        <img src="/refresh.png" alt="" className="h-4.5 me-3 cursor-pointer"
+          onClick={() => window.location.reload()}
+        />
 
       </div>
 
@@ -216,7 +219,7 @@ export default function DisposalEditPage() {
               type="button"
               onClick={() => setPage(1)}
               disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               First
             </button>
@@ -224,7 +227,7 @@ export default function DisposalEditPage() {
               type="button"
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Prev
             </button>
@@ -235,7 +238,7 @@ export default function DisposalEditPage() {
               type="button"
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Next
             </button>
@@ -243,7 +246,7 @@ export default function DisposalEditPage() {
               type="button"
               onClick={() => setPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Last
             </button>

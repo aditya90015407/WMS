@@ -310,16 +310,19 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
       <Toaster />
 
       <div>
-        <div className="text-center text-orange-600 mb-5 text-2xl font-bold">
+        <div className="text-center text-teal-600 mb-5 text-xl font-bold">
           Apply for Auction
         </div>
         <Link href="./">
-          <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
+          <img src="/goback.png" alt="" className="h-6 absolute top-4 right-17" />
         </Link>
+        <img src="/refresh.png" alt="" className=" h-4.5 me-3 cursor-pointer absolute top-5 right-7"
+          onClick={() => window.location.reload()}
+        />
       </div>
 
-      <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <h2 className="text-sm font-semibold text-slate-800 mb-3">
+      <div className="mb-6 rounded-xl border border-slate-200 bg-emerald-50 p-4">
+        <h2 className="text-sm font-semibold text-teal-500 mb-3">
           Auction Details
         </h2>
 
@@ -431,8 +434,9 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <label className="font-semibold">Recycler Name</label>
+            <label className="font-semibold">Vendor Name</label>
             <input
+              readOnly
               type="text"
               value={recyclerName}
               onChange={(e) => setRecyclerName(e.target.value)}
@@ -444,6 +448,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
           <div>
             <label className="font-semibold">Vendor Code</label>
             <input
+              readOnly
               type="text"
               value={vendorId}
               onChange={(e) => setVendorId(e.target.value)}
@@ -453,8 +458,9 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
           </div>
 
           <div>
-            <label className="font-semibold">Recycler Email</label>
+            <label className="font-semibold">Vendor Email</label>
             <input
+              readOnly
               type="email"
               value={recyclerEmail}
               onChange={(e) => setRecyclerEmail(e.target.value)}

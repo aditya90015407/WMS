@@ -41,33 +41,45 @@ export default function HomePage() {
   return (
     <main
       className="relative min-h-screen bg-cover bg-center bg-no-repeat p-2 md:p-4"
-    // style={{ backgroundImage: 'url("/wms pic.jpg")' }}
+      style={{ backgroundImage: 'url("/homepage.png")' }}
     >
-      <div className="absolute inset-0 bg-white/75" />
-      <div className="relative z-10 mx-auto max-w-6xl space-y-8">
-        <section className="rounded-3xl border border-emerald-100 bg-white/90 p-8 shadow-sm md:p-10">
-          {/* <p className="mb-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
+      <h1 className="font-medium text-md text-center text-gray-950">
+        Hello ! <span className="text-lg px-1 py-0.5  text-teal-700 bg-[#dfe6ed] rounded  font-semibold opacity-75">{session?.user.username} </span>
+        <br />
+        You are logged in as <span className="px-1 py-0.5 text-emerald-700 bg-[#dfe6ed] rounded font-semibold opacity-75">{session?.user.roleName} </span>
+        <br />
+        <span className="text-xs">Use the navigation menu to get started</span>
+      </h1>
+      {/* <img src="/homepage.png" alt="" className="w-full" /> */}
+
+      {/* <div className="absolute bg-white/75" />
+      <div className="relative mx-auto max-w-6xl space-y-8">
+        <section className="rounded-3xl p-8 shadow-sm md:p-10"> */}
+
+      {/* <p className="mb-3 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700">
             Waste Management System
           </p> */}
-          <h1 className="font-bold text-md text-center text-slate-500">
-            Hello ! <span className="text-rose-400 text-xl">{session?.user.username} </span>
+      {/* <h1 className="font-medium text-md text-center text-gray-500">
+            Hello ! <span className="text-[#4795ed] text-lg font-semibold">{session?.user.username} </span>
             <br />
             Welcome to <span className="text-teal-600 text-xl">Waste Management System</span>
-          </h1>
-          {/* <h1 className="text-3xl font-bold text-slate-900 md:text-2xl">
+            <br />
+            You are logged in as <span className="px-1 py-0.5 text-[#db0058] font-semibold">{session?.user.roleName} </span>
+          </h1> */}
+      {/* <h1 className="text-3xl font-bold text-slate-900 md:text-2xl">
             Digital platform for tracking, controlling, and improving waste
             management operations
           </h1> */}
-          {/* <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-600 md:text-sm">
+      {/* <p className="mt-4 max-w-4xl text-sm leading-7 text-slate-600 md:text-sm">
             This application is built to monitor waste generation, standardize
             handling workflows, and provide actionable insights for operational
             and environmental performance. It helps teams capture accurate data,
             maintain compliance, and drive continuous improvement in waste
             reduction practices.
           </p> */}
-        </section>
+      {/* </section> */}
 
-        {/* <section className="grid gap-4 md:grid-cols-3">
+      {/* <section className="grid gap-4 md:grid-cols-3">
           {modules.map((item) => (
             <article
               key={item.title}
@@ -83,7 +95,7 @@ export default function HomePage() {
           ))}
         </section> */}
 
-        {/* <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
+      {/* <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm md:p-10">
           <h2 className="text-xl font-semibold text-slate-900">
             What This Application Delivers
           </h2>
@@ -98,7 +110,7 @@ export default function HomePage() {
             ))}
           </ul>
         </section> */}
-      </div>
-    </main>
+      {/* </div> */}
+    </main >
   );
 }

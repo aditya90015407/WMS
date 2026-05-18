@@ -3,6 +3,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 
 type FieldType =
@@ -172,7 +173,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       if (!iddid) return;
 
       try {
-        const res = await fetch("/api/GetData/GetInternalDisposalDetails", {
+        const res = await fetch("/api/GetData/GetSelectedVendorDetails", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ID: iddid }),
@@ -545,9 +546,17 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-900">Disposal Generate</h1>
-      <p className="mt-2 text-sm text-slate-600">Fill disposal manifest details below.</p>
+      <div className="relative">
+        <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Generate - Hazardous</h1>
+        {/* <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p> */}
 
+        <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0 right-15 "
+          onClick={() => window.location.reload()}
+        />
+        <Link href="./">
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-5" />
+        </Link>
+      </div>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full border-collapse text-sm">

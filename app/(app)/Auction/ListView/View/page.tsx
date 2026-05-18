@@ -381,11 +381,27 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
     }, [query, filters]);
 
 
+    const [IDDID, SetIDDID] = useState("")
+
+    async function SetID() {
+
+        const encoded = params.id;
+        const id = await decrypt(encoded!)
+        SetIDDID(id)
+    }
+
+    useEffect(() => {
+        if (!params.id) return
+        SetID()
+    }, [params])
+
+
     return (
         <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="w-full">
-                    <h1 className="text-lg  font-semibold text-teal-600 text-center">View Auction Participants</h1>
+                    <h1 className="text-lg  font-semibold text-teal-600 text-center">View Participants </h1>
+                    <h1 className="text-sm  font-semibold text-teal-600 text-center">Auction ID: {IDDID} </h1>
 
                 </div>
                 {/* <button
@@ -640,9 +656,19 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                         </table>
                     </div>
 
-                    <div className="text-sm my-2 text-cyan-700">
-                        <span className="text-xs font-semibold text-teal-600">Selected Vendor : </span> {selectedVendor?.NAME} ({selectedVendor?.VendorCode})
-                    </div>
+                    {
+                        selectedVendor &&
+                        <div className="text-sm my-2 text-cyan-700">
+                            <span className="text-xs font-semibold text-teal-600">Selected Vendor : </span> {selectedVendor?.NAME} ({selectedVendor?.VendorCode})
+                        </div>
+                    }
+
+                    {
+                        !selectedVendor &&
+                        <div className="text-sm my-2 text-cyan-700">
+                            <span className="text-xs font-semibold text-rose-600">No vendor has been finalised yet</span>
+                        </div>
+                    }
 
                     <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700">
                         <button

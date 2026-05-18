@@ -334,7 +334,7 @@ export const authOptions: NextAuthOptions = {
         safeSessionUser.roleId =
           typeof tokenClaims.roleId === "string" ? tokenClaims.roleId : undefined;
         safeSessionUser.roleName =
-          typeof tokenClaims.roleName === "string" ? tokenClaims.roleName : undefined;
+          typeof tokenClaims.roleName === "string" ? tokenClaims.roleName : "";
         safeSessionUser.loginDate =
           typeof tokenClaims.loginDate === "string"
             ? tokenClaims.loginDate

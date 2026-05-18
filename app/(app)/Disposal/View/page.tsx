@@ -176,6 +176,9 @@ export default function DisposalEditPage() {
                     />
                 </div>
 
+                <img src="/refresh.png" alt="" className="h-4.5 me-3 cursor-pointer"
+                    onClick={() => window.location.reload()}
+                />
 
             </div>
 

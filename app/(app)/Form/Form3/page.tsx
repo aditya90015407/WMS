@@ -470,7 +470,7 @@ export default function Form3Page() {
               type="button"
               onClick={() => setPage(1)}
               disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               First
             </button>
@@ -478,7 +478,7 @@ export default function Form3Page() {
               type="button"
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Prev
             </button>
@@ -487,7 +487,7 @@ export default function Form3Page() {
               type="button"
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Next
             </button>
@@ -495,7 +495,7 @@ export default function Form3Page() {
               type="button"
               onClick={() => setPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
+              className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50"
             >
               Last
             </button>

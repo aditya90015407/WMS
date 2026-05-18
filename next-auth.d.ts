@@ -15,6 +15,7 @@ declare module "next-auth" {
       WMSUnit?: string
       WMSDept?: string
       roleId?: string
+      roleName: string
     };
   }
 

@@ -85,12 +85,12 @@ export default function AppSidebar() {
 
   return (
     <aside
-      className={`shrink-0 border-r border-slate-200 bg-white transition-all duration-200 ${collapsed ? "w-20" : "w-64"
+      className={`shrink-0 border-r border-slate-200 bg-white transition-all duration-200 ${collapsed ? "w-20" : "w-58"
         }`}
     >
       <div className="flex h-full flex-col p-3">
         <div className="mb-4 flex items-center justify-between">
-          <button
+          {/* <button
             type="button"
             onClick={() => setCollapsed((prev) => !prev)}
             className="rounded-md p-1 text-slate-600 hover:bg-slate-100"
@@ -101,7 +101,7 @@ export default function AppSidebar() {
             ) : (
               <ChevronLeft className="h-4 w-4" />
             )}
-          </button>
+          </button> */}
         </div>
 
         {collapsed ? (
@@ -117,7 +117,7 @@ export default function AppSidebar() {
             href="/Home"
             className="block rounded-md px-2 py-1 text-sm font-bold tracking-wide text-slate-800 hover:bg-slate-100"
           >
-            Dashboard
+            Home
           </Link>
         )}
 
@@ -142,7 +142,7 @@ export default function AppSidebar() {
                       <button
                         type="button"
                         onClick={() => toggleMenu(parent.MenuID)}
-                        className={`w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
+                        className={`cursor-pointer w-full rounded-lg py-2 text-sm font-semibold text-slate-800 hover:bg-slate-100 ${collapsed
                           ? "flex items-center justify-center px-2"
                           : "flex items-center justify-between px-3"
                           }`}
