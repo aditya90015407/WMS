@@ -16,6 +16,7 @@ type EditPayload = {
   quantity?: string;
   disposalTarget?: string;
   storageMethod: string
+  smid: string
 };
 
 export async function handleEditPost(request: Request) {
@@ -86,7 +87,7 @@ export async function handleEditPost(request: Request) {
       .input("PSID", sql.NVarChar(20), body.physicalState as string)
       .input("DID", sql.NVarChar(20), body.disposer as string)
       .input("SMID", sql.NVarChar(20), body.storage as string)
-      .input("AID", sql.NVarChar(20), body.receiver as string)
+      .input("AID", body.receiver)
       .input("WasteQty", sql.Decimal(18, 2), wasteQty)
       .input("GenerationDate", sql.Date, body.date as string)
       .input("TargetDate", sql.Date, body.disposalTarget as string)

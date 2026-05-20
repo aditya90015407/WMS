@@ -57,7 +57,6 @@ export default function LoginPage() {
   //   console.log(await encrypt("AppDbUser"))
   //   console.log(await encrypt("MAKV2SPBNI99212"))
   //   console.log(await encrypt("1433"))
-  //   console.log(await decrypt("ESQgJHjlA6vEgITOupoKwh2P35WJ7Y7oDu4aSJdYwQQ"))
   // }
 
   // useEffect(() => {

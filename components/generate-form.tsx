@@ -92,6 +92,8 @@ export default function GenerateForm({
   const [disposers, setDisposers] = useState<Option[]>([]);
   const [form3Search, setForm3Search] = useState("");
 
+  const [selectedWID, setSelectedWID] = useState("")
+
   const [physicalStates, setPhysicalStates] = useState<Option[]>([]);
   const [storageMethods, setStorageMethods] = useState<Option[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -215,6 +217,9 @@ export default function GenerateForm({
           );
           return;
         }
+
+        console.log(payload, "payload off receiver")
+
         if (Array.isArray(payload.data)) {
           setReceivers((prev) => mergeOptions(payload.data!, prev));
           if (payload.data.length === 0) {
@@ -224,16 +229,66 @@ export default function GenerateForm({
           setReceivers([]);
           setReceiverError("Receiver API returned invalid data");
         }
+
+
+        const selectedWaste = availableWaste.find((item) => item.id === selectedWID);
+
+        const mappingWID = String(selectedWaste?.wid ?? selectedWID).trim();
+        const mappingWAID = String(selectedWaste?.waid ?? selectedWID).trim();
+
+        // console.log(selectedWaste)
+
+        const res2 = await fetch(
+          `/api/auth/Waste/generate?type=drop-item-select&WID=${encodeURIComponent(mappingWID)}&WAID=${encodeURIComponent(mappingWAID)}&ID=${encodeURIComponent(selectedWID)}`,
+          {
+            method: "GET",
+            cache: "no-store",
+          },
+        );
+        const data = await res2.json()
+        const payload2 = data.data
+
+        // console.log(payload2, "payload of drop-item-select")
+        // console.log(receivers, "all receivers ")
+
+        const matchedReceivers = payload.data!.filter(
+          (el) => payload2.some((item: any) => item.AID == el.id)
+        );
+        console.log(matchedReceivers, "matched receivers up")
+
+        setReceivers(matchedReceivers);
+
+
+        if (matchedReceivers.length == 1) {
+          // console.log("Hi I am here up 1 ")
+          const mappedReceiverId = matchedReceivers[0]?.id ?? "";
+          // console.log(mappedReceiverId, "maprecvid")
+          // console.log(receivers)
+          // const mappedReceiverName = payload[0].Receiver?.trim() ?? "";
+          const receiverById = payload.data!.find((item) => item.id == mappedReceiverId)?.id ?? "0";
+
+
+          // console.log(mappedReceiverId, "maprecvid", receiverById, "recbyid")
+          setForm((prev) => ({
+            ...prev,
+            receiver: receiverById,
+            // disposer: resolvedDisposerId,
+          }));
+          // console.log("Hi i am after settting receiverid")
+          // setIsMappedPairLocked(true);
+        }
+
       } catch {
         setReceivers([]);
-        setReceiverError("Receiver API request failed");
+        // setReceiverError("Receiver API request failed");
       } finally {
         setLoadingReceivers(false);
       }
     };
 
     void loadReceivers();
-  }, []);
+  }, [form.wasteId]);
+
 
   useEffect(() => {
     const loadDisposers = async () => {
@@ -250,6 +305,8 @@ export default function GenerateForm({
           message?: string;
           error?: string;
         };
+
+        // console.log(payload)
         if (!res.ok || !payload.success) {
           setDisposers([]);
           setDisposerError(
@@ -258,9 +315,21 @@ export default function GenerateForm({
           return;
         }
         if (Array.isArray(payload.data)) {
-          setDisposers((prev) => mergeOptions(payload.data!, prev));
-          if (payload.data.length === 0) {
-            setDisposerError("No active disposers found");
+          // setDisposers((prev) => mergeOptions(payload.data!, prev));
+          // if (payload.data.length === 0) {
+          //   setDisposerError("No active disposers found");
+          // }
+
+          const deptId = String(session?.user?.deptId)
+          const matchedDisposers = payload.data.filter(
+            (item) => item.id == '20' || item.id == deptId
+          );
+          // console.log(matchedDisposers, "macthe")
+
+          setDisposers(matchedDisposers);
+
+          if (matchedDisposers.length === 0) {
+            setDisposerError("No matching disposers found");
           }
         } else {
           setDisposers([]);
@@ -275,7 +344,7 @@ export default function GenerateForm({
     };
 
     void loadDisposers();
-  }, []);
+  }, [form.wasteId]);
 
   useEffect(() => {
     const loadPhysicalStates = async () => {
@@ -415,22 +484,31 @@ export default function GenerateForm({
     // const dispId = await data[0].ID
     // console.log(dispId)
     if (!data || data.length == 0) return
-    const dispId = data[0].ID
-    // console.log(dispId)
+    // const dispId = data[0].ID
+    // setDisposers(data)
+    // console.log(data)
 
-    if (dispId == 1) {
-      setForm((prev) => ({
-        ...prev,
-        disposer: '20',
-      }));
+    if (data.length == 1) {
+      const dispId = data[0].id
+      // console.log(dispId)
+      if (dispId == 1) {
+        setForm((prev) => ({
+          ...prev,
+          disposer: '20',
+        }));
+      }
+      else {
+        // console.log(" ai am hf")
+        setForm((prev) => ({
+          ...prev,
+          disposer: String(session?.user?.deptId),
+        }));
+      }
     }
-    else if (dispId == 2) {
-      setForm((prev) => ({
-        ...prev,
-        disposer: String(session?.user?.deptId),
-      }));
-    }
+
   }
+
+
 
   useEffect(() => {
     if (form.wasteId == "" || form.categoryId == "" || form.UID == "") return;
@@ -501,122 +579,165 @@ export default function GenerateForm({
   const onWasteChange = async (value: string) => {
     const selectedWaste = availableWaste.find((item) => item.id === value);
     const quickReceiverId = String(selectedWaste?.receiverId ?? "").trim();
-    const quickDisposerId = String(selectedWaste?.disposerId ?? "").trim();
-    const hasQuickMapping =
-      quickReceiverId.length > 0 && quickDisposerId.length > 0;
+    // const quickDisposerId = String(selectedWaste?.disposerId ?? "").trim();
+    // const hasQuickMapping =
+    //   quickReceiverId.length > 0 && quickDisposerId.length > 0;
 
-    if (hasQuickMapping) {
-      setReceivers((prev) =>
-        mergeOptions(
-          [{ id: quickReceiverId, name: `Mapped Receiver (${quickReceiverId})` }],
-          prev,
-        ),
-      );
-      setDisposers((prev) =>
-        mergeOptions(
-          [{ id: quickDisposerId, name: `Mapped Disposer (${quickDisposerId})` }],
-          prev,
-        ),
-      );
-    }
+    // if (hasQuickMapping) {
+    //   setReceivers((prev) =>
+    //     mergeOptions(
+    //       [{ id: quickReceiverId, name: `Mapped Receiver (${quickReceiverId})` }],
+    //       prev,
+    //     ),
+    //   );
+    //   setDisposers((prev) =>
+    //     mergeOptions(
+    //       [{ id: quickDisposerId, name: `Mapped Disposer (${quickDisposerId})` }],
+    //       prev,
+    //     ),
+    //   );
+    // }
 
-    setForm((prev) => ({
-      ...prev,
-      wasteId: value,
-      receiver: hasQuickMapping ? quickReceiverId : "",
-      disposer: hasQuickMapping ? quickDisposerId : "",
-    }));
-    setIsMappedPairLocked(hasQuickMapping);
+    // setForm((prev) => ({
+    //   ...prev,
+    //   wasteId: value,
+    //   // receiver: hasQuickMapping ? quickReceiverId : "",
+    //   // disposer: hasQuickMapping ? quickDisposerId : "",
+    // }));
+    // setIsMappedPairLocked(hasQuickMapping);
     const mappingWID = String(selectedWaste?.wid ?? value).trim();
     const mappingWAID = String(selectedWaste?.waid ?? value).trim();
-    if (!value || !mappingWID) return;
+    // if (!value || !mappingWID) return;
 
-    try {
-      const res = await fetch(
-        `/api/auth/Waste/generate?type=drop-item-select&WID=${encodeURIComponent(mappingWID)}&WAID=${encodeURIComponent(mappingWAID)}&ID=${encodeURIComponent(value)}`,
-        {
-          method: "GET",
-          cache: "no-store",
-        },
-      );
-      const payload = (await res.json()) as {
-        success?: boolean;
-        data?: {
-          receiverId?: string;
-          // disposerId?: string;
-          receiverName?: string;
-          // disposerName?: string;
-        };
-      };
+    // try {
+    //   const res = await fetch(
+    //     `/api/auth/Waste/generate?type=drop-item-select&WID=${encodeURIComponent(mappingWID)}&WAID=${encodeURIComponent(mappingWAID)}&ID=${encodeURIComponent(value)}`,
+    //     {
+    //       method: "GET",
+    //       cache: "no-store",
+    //     },
+    //   );
+    //   const data = await res.json()
+    //   const payload = data.data
+    //   // console.log(data)
 
-      // console.log(payload)
+    //   // const payload = data as {
+    //   //   success?: boolean;
+    //   //   data?: {
+    //   //     receiverId?: string;
+    //   //     // disposerId?: string;
+    //   //     receiverName?: string;
+    //   //     // disposerName?: string;
+    //   //   };
+    //   // };
+    //   // console.log(payload, "Payload from drop-item-select")
+    //   // console.log(receivers, "all receivers")
 
-      const mappedReceiverId = payload.data?.receiverId?.trim() ?? "";
-      // const mappedDisposerId = payload.data?.disposerId?.trim() ?? "";
-      const mappedReceiverName = payload.data?.receiverName?.trim() ?? "";
-      // const mappedDisposerName = payload.data?.disposerName?.trim() ?? "";
+    //   const matchedReceivers = receivers.filter(
+    //     (el) => payload.some((item: any) => item.AID == el.id)
+    //   );
+    //   // console.log(matchedReceivers, "matched receivers")
 
-      const receiverById = receivers.find((item) => item.id === mappedReceiverId);
-      // const disposerById = disposers.find((item) => item.id === mappedDisposerId);
-      const receiverByName =
-        mappedReceiverName.length > 0
-          ? receivers.find(
-            (item) => normalizeText(item.name) === normalizeText(mappedReceiverName),
-          )
-          : undefined;
-      // const disposerByName =
-      //   mappedDisposerName.length > 0
-      //     ? disposers.find(
-      //       (item) => normalizeText(item.name) === normalizeText(mappedDisposerName),
-      //     )
-      //     : undefined;
+    //   // setReceivers(matchedReceivers);
 
-      const resolvedReceiverId =
-        receiverById?.id ?? receiverByName?.id ?? mappedReceiverId;
+    //   if (payload.length == 1) {
+    //     // console.log("Hi I am here")
+    //     const mappedReceiverId = payload[0]?.AID ?? "";
+    //     // console.log(mappedReceiverId, "maprecvid")
+    //     // console.log(receivers)
+    //     // const mappedReceiverName = payload[0].Receiver?.trim() ?? "";
+    //     const receiverById = receivers.find((item) => item.id == mappedReceiverId)?.id ?? "0";
+    //     // const receiverByName =
+    //     //   mappedReceiverName.length > 0
+    //     //     ? receivers.find(
+    //     //       (item) => normalizeText(item.name) === normalizeText(mappedReceiverName),
+    //     //     )
+    //     //     : undefined;
 
-      // const resolvedDisposerId =
-      //   disposerById?.id ?? disposerByName?.id ?? mappedDisposerId;
+    //     // console.log(mappedReceiverId, "maprecvid", receiverById, "recbyid")
+    //     setForm((prev) => ({
+    //       ...prev,
+    //       receiver: receiverById,
+    //       // disposer: resolvedDisposerId,
+    //     }));
+    //     // setIsMappedPairLocked(true);
+    //   }
+    //   // else {
+    //   //   setForm((prev) => ({
+    //   //     ...prev,
+    //   //     receiver: "",
+    //   //     // disposer: resolvedDisposerId,
+    //   //   }));
+    //   //   setIsMappedPairLocked(false);
+    //   // }
 
-      const hasMapping =
-        res.ok &&
-        payload.success === true &&
-        resolvedReceiverId.length > 0
-      // && resolvedDisposerId.length > 0;
 
-      if (!hasMapping) return;
+    //   // const mappedReceiverId = payload.data?.receiverId?.trim() ?? "";
+    //   // const mappedDisposerId = payload.data?.disposerId?.trim() ?? "";
+    //   // const mappedReceiverName = payload.data?.receiverName?.trim() ?? "";
+    //   // const mappedDisposerName = payload.data?.disposerName?.trim() ?? "";
 
-      setReceivers((prev) =>
-        mergeOptions(
-          [
-            {
-              id: resolvedReceiverId,
-              name: mappedReceiverName || `Mapped Receiver (${resolvedReceiverId})`,
-            },
-          ],
-          prev,
-        ),
-      );
-      // setDisposers((prev) =>
-      //   mergeOptions(
-      //     [
-      //       {
-      //         id: resolvedDisposerId,
-      //         name: mappedDisposerName || `Mapped Disposer (${resolvedDisposerId})`,
-      //       },
-      //     ],
-      //     prev,
-      //   ),
-      // );
+    //   // const receiverById = receivers.find((item) => item.id === mappedReceiverId);
+    //   // const disposerById = disposers.find((item) => item.id === mappedDisposerId);
+    //   // const receiverByName =
+    //   //   mappedReceiverName.length > 0
+    //   //     ? receivers.find(
+    //   //       (item) => normalizeText(item.name) === normalizeText(mappedReceiverName),
+    //   //     )
+    //   //     : undefined;
+    //   // const disposerByName =
+    //   //   mappedDisposerName.length > 0
+    //   //     ? disposers.find(
+    //   //       (item) => normalizeText(item.name) === normalizeText(mappedDisposerName),
+    //   //     )
+    //   //     : undefined;
 
-      setForm((prev) => ({
-        ...prev,
-        receiver: resolvedReceiverId,
-        // disposer: resolvedDisposerId,
-      }));
-      setIsMappedPairLocked(true);
-    } catch {
-      // Keep manual selection enabled if mapping request fails.
-    }
+    //   // const resolvedReceiverId =
+    //   //   receiverById?.id ?? receiverByName?.id ?? mappedReceiverId;
+
+    //   // const resolvedDisposerId =
+    //   //   disposerById?.id ?? disposerByName?.id ?? mappedDisposerId;
+
+    //   // const hasMapping =
+    //   //   res.ok &&
+    //   //   payload.success === true &&
+    //   //   resolvedReceiverId.length > 0
+    //   // && resolvedDisposerId.length > 0;
+
+    //   // if (!hasMapping) return;
+
+    //   // setReceivers((prev) =>
+    //   //   mergeOptions(
+    //   //     [
+    //   //       {
+    //   //         id: resolvedReceiverId,
+    //   //         name: mappedReceiverName || `Mapped Receiver (${resolvedReceiverId})`,
+    //   //       },
+    //   //     ],
+    //   //     prev,
+    //   //   ),
+    //   // );
+    //   // setDisposers((prev) =>
+    //   //   mergeOptions(
+    //   //     [
+    //   //       {
+    //   //         id: resolvedDisposerId,
+    //   //         name: mappedDisposerName || `Mapped Disposer (${resolvedDisposerId})`,
+    //   //       },
+    //   //     ],
+    //   //     prev,
+    //   //   ),
+    //   // );
+
+    //   // setForm((prev) => ({
+    //   //   ...prev,
+    //   //   receiver: resolvedReceiverId,
+    //   //   // disposer: resolvedDisposerId,
+    //   // }));
+    //   // setIsMappedPairLocked(true);
+    // } catch {
+    //   // Keep manual selection enabled if mapping request fails.
+    // }
   };
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -712,7 +833,15 @@ export default function GenerateForm({
         <label className="mb-1 block text-sm font-bold text-slate-700">Waste</label>
         <select
           value={form.wasteId}
-          onChange={(e) => onWasteChange(e.target.value)}
+          onChange={(e) => {
+            setForm((prev) => ({
+              ...prev,
+              wasteId: e.target.value,
+              // receiver: hasQuickMapping ? quickReceiverId : "",
+              // disposer: hasQuickMapping ? quickDisposerId : "",
+            }));
+            setSelectedWID(e.target.value); onWasteChange(e.target.value)
+          }}
           className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
           required
           disabled={!form.categoryId || loadingWaste}
@@ -859,7 +988,7 @@ export default function GenerateForm({
       }
 
       <div>
-        <label className="mb-1 block text-sm font-bold text-slate-700">Disposal Target</label>
+        <label className="mb-1 block text-sm font-bold text-slate-700">Targetted Disposal Date</label>
         <input
           type="date"
           value={form.disposalTarget}
@@ -941,7 +1070,7 @@ export default function GenerateForm({
               form.storage == '4' &&
               <p><span className="font-medium">Storage Method:</span>  {form.storageMethod}</p>
             }
-            <p><span className="font-medium">Disposal Target:</span> {form.disposalTarget || "-"}</p>
+            <p><span className="font-medium">Targetted Disposal Date:</span> {form.disposalTarget || "-"}</p>
             <p><span className="font-medium">Quantity:</span> {`${form.quantity} ${getOptionName(units, form.unitId)}` || "-"}</p>
           </div>
           <div className="mt-4 flex items-center gap-2">

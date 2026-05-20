@@ -172,6 +172,7 @@ export async function handleGenerateGet(request: Request) {
 
 
     if (type === "drop-item-select") {
+      // console.log("i was called ")
       if (!wid && !waid && !optionId) {
         return NextResponse.json(
           { success: false, message: "Missing wid/waid/id" },
@@ -179,9 +180,14 @@ export async function handleGenerateGet(request: Request) {
         );
       }
 
+      // console.log( wid, waid)
+
+
       const candidates = Array.from(
         new Set([wid, waid, optionId].map((value) => value.trim()).filter(Boolean)),
       );
+
+      const uid = session?.user.uid
 
       let result: sql.IProcedureResult<unknown> | null = null;
       for (const candidate of candidates) {
@@ -189,30 +195,27 @@ export async function handleGenerateGet(request: Request) {
           .request()
           .input("FLAG", "DROP-ITEM-SELECT")
           .input("WID", sql.NVarChar(20), candidate)
+          .input("UID", uid)
           .execute("PRO-WMS_GET");
         if ((result.recordset?.length ?? 0) > 0) break;
       }
 
-      const firstRow = result?.recordset?.[0] as WasteAssignmentRow | undefined;
-      // console.log(firstRow)
-      const mappingRow = (firstRow ?? {}) as MasterOptionRow;
-      const receiverId =
-        getMappedId(mappingRow, ["AID", "ReceiverID", "RCVRID", "RID"]) ?? "";
-      // const disposerId =
-      //   getMappedId(mappingRow, ["DeptID", "DID", "DisposerID", "DISPOID"]) ?? "";
-      const receiverName =
-        getMappedId(mappingRow, ["Receiver", "ReceiverName", "RName"]) ?? "";
+      // const firstRow = result?.recordset?.[0] as WasteAssignmentRow | undefined;
+      // // console.log(firstRow)
+      // const mappingRow = (firstRow ?? {}) as MasterOptionRow;
+      // const receiverId =
+      //   getMappedId(mappingRow, ["AID", "ReceiverID", "RCVRID", "RID"]) ?? "";
+      // // const disposerId =
+      // //   getMappedId(mappingRow, ["DeptID", "DID", "DisposerID", "DISPOID"]) ?? "";
+      // const receiverName =
+      //   getMappedId(mappingRow, ["Receiver", "ReceiverName", "RName"]) ?? "";
       // const disposerName =
       //   getMappedId(mappingRow, ["Dept", "Department", "Disposer", "DName"]) ?? "";
 
+      // console.log(result?.recordset, uid, wid, waid)
       return NextResponse.json({
         success: true,
-        data: {
-          receiverId,
-          // disposerId,
-          receiverName,
-          // disposerName,
-        },
+        data: result?.recordset
       });
     }
 
@@ -276,6 +279,7 @@ export async function handleGenerateGet(request: Request) {
           { status: 400 },
         );
       }
+      console.log("hii am ", wcid, uid, wid)
 
       const result = await pool
         .request()
@@ -285,11 +289,11 @@ export async function handleGenerateGet(request: Request) {
         .input("WID", wid)
         .execute("PRO-WMS_GET");
 
-      // console.log(result.recordset)
+      console.log(result.recordset)
 
       return NextResponse.json({
         success: true,
-        data: (result.recordset),
+        data: (result.recordset as MasterOptionRow[]).map(toOption),
       });
     }
 
