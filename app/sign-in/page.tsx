@@ -64,9 +64,9 @@ export default function LoginPage() {
   // }, [])
 
 
-  const currenturl = new URL(window.location.href)
-  const params = currenturl.search
-  const QueryString = params.split("?QS=")[1]
+  // const currenturl = new URL(window.location.href)
+  // const params = currenturl.search
+  // const QueryString = params.split("?QS=")[1]
 
   // console.log(currenturl, "currenturl")
   // console.log(params, "params")
@@ -105,7 +105,7 @@ export default function LoginPage() {
   const onSubmit = async () => {
     clearErrors();
 
-    console.log(employeeCode, password)
+    // console.log(employeeCode, password)
 
     if (!employeeCode.trim()) {
       setUsernameError("Employee Code is required");
