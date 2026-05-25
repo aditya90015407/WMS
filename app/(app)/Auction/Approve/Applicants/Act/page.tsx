@@ -367,6 +367,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                         <label className="font-semibold">Remarks</label>
                         <textarea
                             // type="text"
+                            required
                             rows={1}
                             placeholder=""
                             // value={complaint.date}

@@ -110,6 +110,7 @@ export async function handleGenerateGet(request: Request) {
     // const deptId = (searchParams.get("DeptID") ?? searchParams.get("DeptId") ?? "").trim();
     const waid = (searchParams.get("WAID") ?? searchParams.get("waid") ?? "").trim();
     const optionId = (searchParams.get("ID") ?? searchParams.get("id") ?? "").trim();
+    const plantunitid = (searchParams.get("plantunitid") ?? "").trim();
 
     const session = await getServerSession(authOptions)
     const uid = session?.user.uid
@@ -162,6 +163,27 @@ export async function handleGenerateGet(request: Request) {
         .input("FLAG", "DROP-WASTE-For-Unit")
         .input("WCID", wcid)
         .input("UID", uid)
+        .execute("PRO-WMS_GET");
+
+      return NextResponse.json({
+        success: true,
+        data: (result.recordset as MasterOptionRow[]).map(toWasteOption),
+      });
+    }
+
+    if (type === "drop-waste-for-plantunit") {
+      if (!wcid || !plantunitid) {
+        return NextResponse.json(
+          { success: false, message: "Missing wcid or plantunitid" },
+          { status: 400 },
+        );
+      }
+
+      const result = await pool
+        .request()
+        .input("FLAG", "DROP-WASTE-For-Unit")
+        .input("WCID", wcid)
+        .input("UID", plantunitid)
         .execute("PRO-WMS_GET");
 
       return NextResponse.json({
@@ -279,7 +301,7 @@ export async function handleGenerateGet(request: Request) {
           { status: 400 },
         );
       }
-      console.log("hii am ", wcid, uid, wid)
+      // console.log("hii am ", wcid, uid, wid)
 
       const result = await pool
         .request()
@@ -289,7 +311,7 @@ export async function handleGenerateGet(request: Request) {
         .input("WID", wid)
         .execute("PRO-WMS_GET");
 
-      console.log(result.recordset)
+      // console.log(result.recordset)
 
       return NextResponse.json({
         success: true,

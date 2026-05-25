@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 
 type ParticipantDetails = {
@@ -71,7 +71,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
 
   useEffect(() => {
     const loadDetails = async () => {
-      console.log(iddid, vid);
+      // console.log(iddid, vid);
       if (!iddid || !vid) {
         setLoading(false);
         setError("Missing IDDID or VID");
@@ -128,7 +128,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
           MUID: row.MUID
         });
       } catch (err) {
-        console.error(err);
+        // console.error(err);
         setError("Failed to load participant details");
       } finally {
         setLoading(false);
@@ -151,7 +151,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
     try {
       setSaving(true);
       setDecision("");
-      console.log(formValues)
+      // console.log(formValues)
       const res = await fetch("/api/SetData/SetTransportationDetails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -164,6 +164,22 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
         setDecision(payload.message || "Failed to save details");
         return;
       }
+
+      const res2 = await fetch("/api/SetData/VerifyVendorDetails", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ "VendorDetailsVerified": 1, "IDDID": formValues.IDDID }),
+      });
+
+      const data = await res2.json();
+
+      console.log(data)
+
+      if (!res.ok || !payload.success) {
+        setDecision(payload.message || "Failed to save details");
+        return;
+      }
+
 
       setDecision("Details updated successfully");
       router.back()
@@ -179,72 +195,71 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="w-full">
-          <h1 className="text-xl font-semibold text-teal-600 text-center">Verify Vendor Details</h1>
+          <h1 className="text-lg font-semibold text-teal-600 text-center">Verify Vendor Details</h1>
           <p className="text-xs text-slate-600 text-center">
             Review and edit the selected auction participant details.
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => router.push("/Disposal/VerifyVendorDetails")}
-          className="rounded  px-1 py-2 text-xs text-slate-700 cursor-pointer hover:bg-slate-50"
-        >
-          <img src="/goback.png" alt="" className="h-5 " />
 
-        </button>
+        <img src="/goback.png" alt="" className="h-5 me-2 cursor-pointer"
+          onClick={() => redirect("./")} />
+
+        <img src="/refresh.png" alt="" className="h-4.5 me-3 cursor-pointer"
+          onClick={() => window.location.reload()}
+        />
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading details...</p>}
       {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
       {!loading && !error && (
-        <div className="mt-6 space-y-6">
-          <div className="rounded-xl border border-slate-200  p-4">
-            <h2 className="text-sm font-semibold text-slate-900">Auction Details</h2>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Auction ID</label>
+        <div className="mt-6 space-y-3">
+          <div className="rounded-xl border border-slate-200  p-4 py-2">
+            <h2 className="text-sm font-semibold text-cyan-600">Auction Details</h2>
+            <div className="mt-0 grid  md:grid-cols-4">
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block text-xs font-semibold text-slate-600">Auction ID</label>
                 <input
                   value={String(formValues.IDDID ?? "")}
                   readOnly
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">VID</label>
+              {/* <div className="px-5 py-1 text-xs">
+                <label className="mb-1 block text-sm font-medium text-slate-600">VID</label>
                 <input
                   value={String(formValues.VID ?? "")}
                   readOnly
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
                 />
-              </div>
+              </div> */}
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Waste Category</label>
+              <div className="px-5 py-1 text-xs">
+                <label className="mb-1 block text-xs font-semibold text-slate-600">Waste Category</label>
                 <input
                   value={String(formValues.WasteCategory ?? "")}
                   readOnly
                   onChange={(e) => updateField("WasteCategory", e.target.value)}
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Waste</label>
+              <div className="px-5 py-1 text-xs">
+                <label className="mb-1 block text-xs font-semibold text-slate-600">Waste</label>
                 <input
                   value={String(formValues.Waste ?? "")}
                   onChange={(e) => updateField("Waste", e.target.value)}
                   readOnly
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Total Quantity</label>
+              <div className="px-5 py-1 text-xs">
+                <label className="mb-1 block text-xs font-semibold text-slate-600">Total Quantity</label>
                 <div
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
                 >
                   {String(formValues.TotalQty ?? "")}{" "}{formValues.MUnit}
                 </div>
@@ -252,82 +267,54 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                   value={String(formValues.TotalQty ?? "")}
                   onChange={(e) => updateField("TotalQty", e.target.value)}
                   readOnly
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
                 /> */}
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-900">Vendor Details</h2>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Name</label>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 py-2">
+            <h2 className="text-sm font-semibold text-cyan-600">Vendor Details</h2>
+            <div className="mt-0 grid  md:grid-cols-3">
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block text-xs font-semibold text-slate-600">Name</label>
                 <input
                   value={String(formValues.NAME ?? "")}
+                  readOnly
                   onChange={(e) => updateField("NAME", e.target.value)}
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Email</label>
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block text-xs font-semibold text-slate-600">Email</label>
                 <input
                   value={String(formValues.EMAIL ?? "")}
+                  readOnly
                   onChange={(e) => updateField("EMAIL", e.target.value)}
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Vendor Code</label>
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block text-xs font-semibold text-slate-600">Vendor Code</label>
                 <input
                   value={String(formValues.VendorCode ?? "")}
+                  readOnly
                   onChange={(e) => updateField("VendorCode", e.target.value)}
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-200 px-3 py-2 text-sm"
                 />
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-900">Receiver Details</h2>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Receiver Name</label>
-                <input
-                  value={String(formValues.ReceiverName ?? "")}
-                  onChange={(e) => updateField("ReceiverName", e.target.value)}
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-                />
-              </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Receiver Auth No.</label>
-                <input
-                  value={String(formValues.ReceiverAuthNo ?? "")}
-                  onChange={(e) => updateField("ReceiverAuthNo", e.target.value)}
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-                />
-              </div>
 
-              <div className="md:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-slate-900">Receiver Address</label>
-                <textarea
-                  rows={3}
-                  value={String(formValues.ReceiverAddress ?? "")}
-                  onChange={(e) => updateField("ReceiverAddress", e.target.value)}
-                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-slate-200 bg-white p-4">
-            <h2 className="text-sm font-semibold text-slate-900">Transporter Details</h2>
-            <div className="mt-3 grid gap-3 md:grid-cols-2">
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Transporter Name</label>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 py-2">
+            <h2 className="text-sm font-semibold text-cyan-600">Transporter Details</h2>
+            <div className="mt-0 grid  md:grid-cols-4">
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block font-semibold text-slate-600">Transporter Name</label>
                 <input
                   value={String(formValues.TransporterName ?? "")}
                   onChange={(e) => updateField("TransporterName", e.target.value)}
@@ -335,8 +322,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Transporter Phone</label>
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block font-semibold text-slate-600">Transporter Phone</label>
                 <input
                   value={String(formValues.TransporterPhone ?? "")}
                   onChange={(e) => updateField("TransporterPhone", e.target.value)}
@@ -344,8 +331,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Transporter Email</label>
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block font-semibold text-slate-600">Transporter Email</label>
                 <input
                   value={String(formValues.TransporterEmail ?? "")}
                   onChange={(e) => updateField("TransporterEmail", e.target.value)}
@@ -353,8 +340,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Vehicle Type</label>
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block font-semibold text-slate-600">Vehicle Type</label>
                 <input
                   value={String(formValues.VehicleType ?? formValues.VTID ?? "")}
                   onChange={(e) => updateField("VehicleType", e.target.value)}
@@ -362,8 +349,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Transporter Reg No.</label>
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block font-semibold text-slate-600">Transporter Reg No.</label>
                 <input
                   value={String(formValues.TransporterRegNo ?? "")}
                   onChange={(e) => updateField("TransporterRegNo", e.target.value)}
@@ -371,8 +358,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 />
               </div>
 
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-900">Vehicle Reg No.</label>
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block font-semibold text-slate-600">Vehicle Reg No.</label>
                 <input
                   value={String(formValues.VehicleRegNo ?? "")}
                   onChange={(e) => updateField("VehicleRegNo", e.target.value)}
@@ -380,8 +367,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 />
               </div>
 
-              <div className="md:col-span-2">
-                <label className="mb-1 block text-sm font-medium text-slate-900">Transporter Address</label>
+              <div className="md:col-span-4 px-5 py-1 text-xs ">
+                <label className="mb-1 block font-semibold text-slate-600">Transporter Address</label>
                 <textarea
                   rows={3}
                   value={String(formValues.TransporterAddress ?? "")}
@@ -392,21 +379,54 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
             </div>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <h2 className="text-sm font-semibold text-slate-900">Remarks</h2>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 py-2">
+            <h2 className="text-sm font-semibold text-cyan-600">Receiver Details</h2>
+            <div className="mt-0 grid  md:grid-cols-3">
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block  font-semibold text-slate-600">Receiver Name</label>
+                <input
+                  value={String(formValues.ReceiverName ?? "")}
+                  onChange={(e) => updateField("ReceiverName", e.target.value)}
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div className="px-5 py-1 text-xs ">
+                <label className="mb-1 block font-semibold text-slate-600">Receiver Auth No.</label>
+                <input
+                  value={String(formValues.ReceiverAuthNo ?? "")}
+                  onChange={(e) => updateField("ReceiverAuthNo", e.target.value)}
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+
+              <div className="px-5 py-1 text-xs md:col-span-3">
+                <label className="mb-1 block font-semibold text-slate-600">Receiver Address</label>
+                <textarea
+                  rows={2}
+                  value={String(formValues.ReceiverAddress ?? "")}
+                  onChange={(e) => updateField("ReceiverAddress", e.target.value)}
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full">
+            {/* <h2 className="text-sm font-semibold text-slate-700">Remarks</h2>
             <textarea
-              rows={4}
+              rows={2}
               value={String(formValues.Remarks ?? "")}
               onChange={(e) => updateField("Remarks", e.target.value)}
               className="mt-3 w-full rounded border border-slate-300 px-3 py-2 text-sm"
-            />
+            /> */}
 
-            <div className="mt-4 flex gap-3">
+            <div className="mt-4 place-self-center">
               <button
                 type="button"
                 disabled={saving}
                 onClick={() => void handleSave()}
-                className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                className="cursor-pointer text-sm text-center rounded bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
               >
                 Save Details
               </button>

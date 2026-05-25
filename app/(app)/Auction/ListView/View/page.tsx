@@ -400,8 +400,8 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
         <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div className="w-full">
-                    <h1 className="text-lg  font-semibold text-teal-600 text-center">View Participants </h1>
-                    <h1 className="text-sm  font-semibold text-teal-600 text-center">Auction ID: {IDDID} </h1>
+                    <h1 className="text-md font-semibold text-teal-600 text-center">View Participants </h1>
+                    <h1 className="text-xs font-semibold text-teal-600 text-center">Auction ID: {IDDID} </h1>
 
                 </div>
                 {/* <button
@@ -579,7 +579,7 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                     {/* <p className="mt-4 text-sm text-slate-600">
             Showing {pagedRows.length} of {filteredRows.length} records
           </p> */}
-                    <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
+                    <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 mb-3">
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-slate-50">
                                 <tr >
@@ -610,7 +610,7 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                                             const encryptedID = await encrypt(row.ID!.toString());
                                             router.push(`./View/FullView?id=${encryptedID}`);
                                         }}
-                                        className={`cursor-pointer ${row.ID == selectedVendor?.ID ? "bg-green-300" : ""}`}
+                                        className={`cursor-pointer ${row.ID == selectedVendor?.ID ? "bg-green-200" : ""}`}
                                     >
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
@@ -658,8 +658,8 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
 
                     {
                         selectedVendor &&
-                        <div className="text-sm my-2 text-cyan-700">
-                            <span className="text-xs font-semibold text-teal-600">Selected Vendor : </span> {selectedVendor?.NAME} ({selectedVendor?.VendorCode})
+                        <div className="text-sm my-2 text-emerald-600 font-semibold ">
+                            <span className="text-sm font-medium text-sky-600 px-2">Selected Vendor : </span> {selectedVendor?.NAME} ({selectedVendor?.VendorCode})
                         </div>
                     }
 

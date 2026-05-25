@@ -158,7 +158,7 @@ export default function GenerateForm({
           message?: string;
           error?: string;
         };
-        console.log(payload);
+        // console.log(payload);
         if (!res.ok || !payload.success) {
           setUnits([]);
           setUnitError(payload.message || payload.error || "Failed to load units");
@@ -218,7 +218,7 @@ export default function GenerateForm({
           return;
         }
 
-        console.log(payload, "payload off receiver")
+        // console.log(payload, "payload off receiver")
 
         if (Array.isArray(payload.data)) {
           setReceivers((prev) => mergeOptions(payload.data!, prev));
@@ -254,7 +254,7 @@ export default function GenerateForm({
         const matchedReceivers = payload.data!.filter(
           (el) => payload2.some((item: any) => item.AID == el.id)
         );
-        console.log(matchedReceivers, "matched receivers up")
+        // console.log(matchedReceivers, "matched receivers up")
 
         setReceivers(matchedReceivers);
 

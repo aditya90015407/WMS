@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 
@@ -17,6 +17,8 @@ type FieldType =
   | "checkbox"
   | "file"
   | "auto"
+  | "phone"
+  | "email"
   | "signature-date";
 
 type RowDef = {
@@ -25,6 +27,7 @@ type RowDef = {
   type: FieldType;
   options?: string[];
   hint?: string;
+  required?: boolean
 };
 
 
@@ -33,11 +36,13 @@ type RowDef = {
 
 
 const rows: RowDef[] = [
-  { key: "wasteIds", field: "Waste ID/Batch ID", type: "auto", hint: "Comma separated IDs" },
+  { key: "wasteIds", field: "Disposal ID", type: "auto", hint: "Comma separated IDs", required: true },
+  { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal", required: true },
   {
     key: "senderNameAddress",
-    field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
-    type: "select",
+    field: "Sender's Unit *",
+    // field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
+    type: "select", required: true
     //  options: [
     //     "JSL (IND-IV-HW-587/6854)",
     //     "JCL (IND-IV-HW-1225/6852)",
@@ -57,45 +62,47 @@ const rows: RowDef[] = [
   //     "JFL (Not Available)",
   //   ],
   // },
-  { key: "manifestNo", field: "Manifest document no.", type: "auto" },
-  { key: "transporterNameAddress", field: "Transporter Name and Address", type: "textarea", hint: "Enter transporter name and full address" },
-  { key: "transporterPhoneEmail", field: "Transporter Phone no. and Email", type: "phone-email", hint: "Phone, Email" },
+  { key: "manifestNo", field: "Manifest document No.", type: "auto" },
+  { key: "transporterName", field: "Transporter Name  *", type: "textarea", hint: "Enter transporter name ", required: true },
+  { key: "transporterAddress", field: "Transporter Address *", type: "textarea", hint: "Enter transporter full address", required: true },
+  { key: "transporterPhone", field: "Transporter Phone No. *", type: "phone", hint: "Transporter Phone ", required: true },
+  { key: "transporterEmail", field: "Transporter Email *", type: "email", hint: "Transporter Email", required: true },
   {
     key: "vehicleType",
-    field: "Type of Vehicle",
+    field: "Type of Vehicle *",
     type: "select",
-    options: ["1|Truck", "2|Tanker", "3|Special Vehicle"]
-
+    options: ["1|Truck", "2|Tanker", "3|Special Vehicle"],
+    required: true
   },
-  { key: "transporterRegNo", field: "Transporter Registration no.", type: "text", hint: "Enter registration number" },
-  { key: "vehicleRegNo", field: "Vehicle registration No.", type: "text", hint: "Enter vehicle number" },
-  { key: "receiverName", field: "Receiver Name", type: "text", hint: "Enter receiver name" },
-  { key: "receiverAddress", field: "Address", type: "textarea", hint: "Enter receiver address" },
-  { key: "receiverAuthNo", field: "Receiver Authorization No.", type: "text", hint: "Enter receiver authorization number" },
-  { key: "Waste", field: "Waste Description", type: "text" },
-  { key: "totalQty", field: "Total Quantity", type: "text" },
-  { key: "containers", field: "No. of Containers", type: "number", hint: "Enter total containers" },
+  { key: "transporterRegNo", field: "Transporter Registration No. *", type: "text", hint: "Transporter registration number", required: true },
+  { key: "vehicleRegNo", field: "Vehicle Registration No. *", type: "text", hint: "Enter vehicle number", required: true },
+  { key: "receiverName", field: "Receiver Name *", type: "text", hint: "Enter receiver name", required: true },
+  { key: "receiverAddress", field: "Address *", type: "textarea", hint: "Enter receiver address", required: true },
+  { key: "receiverAuthNo", field: "Receiver Authorization No. *", type: "text", hint: "Enter receiver authorization number", required: true },
+  { key: "Waste", field: "Waste Description", type: "auto", required: true },
+  { key: "totalQty", field: "Total Quantity", type: "auto", required: true },
+  { key: "containers", field: "No. of Containers *", type: "number", hint: "Enter total containers" },
   {
     key: "physicalForm",
-    field: "Physical Form",
+    field: "Physical Form *",
     type: "select",
-    options: ["1|Solid", "2|Semisolid", "3|Sludge", "4|Oily", "5|Tarry", "6|Slurry", "7|Liquid"]
-
+    options: ["1|Solid", "2|Liquid", "3|Sludge", "4|Semisolid", "5|Oily", "6|Tarry", "7|Slurry", "9|Fines"],
+    required: true
   },
   { key: "specialHandling", field: "Special handling Instruction", type: "textarea", hint: "Enter handling notes (if applicable)" },
-  { key: "senderCertificate", field: "Sender's certificate", type: "checkbox" },
-  { key: "senderSignDate", field: "Name and Stamp (Sender)", type: "signature-date" },
-  { key: "transporterAck", field: "Transporter acknowledgement of receipt of waste", type: "checkbox" },
-  { key: "transporterSignDate", field: "Name and Stamp (Transporter)", type: "signature-date" },
-  { key: "receiverCert", field: "Receiver certification for receipt of hazardous and other waste", type: "checkbox" },
-  { key: "receiverSignDate", field: "Name and Stamp (Receiver)", type: "signature-date" },
-  { key: "form8form9", field: "Hard copy of Form-8 and Form-9 submitted to transporter", type: "checkbox" },
+  // { key: "senderCertificate", field: "Sender's certificate", type: "checkbox" },
+  // { key: "senderSignDate", field: "Name and Stamp (Sender)", type: "signature-date" },
+  // { key: "transporterAck", field: "Transporter acknowledgement of receipt of waste", type: "checkbox" },
+  // { key: "transporterSignDate", field: "Name and Stamp (Transporter)", type: "signature-date" },
+  // { key: "receiverCert", field: "Receiver certification for receipt of hazardous and other waste", type: "checkbox" },
+  // { key: "receiverSignDate", field: "Name and Stamp (Receiver)", type: "signature-date" },
+  // { key: "form8form9", field: "Hard copy of Form-8 and Form-9 submitted to transporter", type: "checkbox" },
   { key: "salePoSoDoc", field: "Document for Sale PO/SO for external disposal", type: "file" },
   { key: "finalPartyDoc", field: "Final party document intact as provided prior for verification", type: "file" },
 ];
 type Option = { id: string; name: string };
 
-export default function DisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+export default function DisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string, disposalType?: string }> }) {
   const router = useRouter();
 
 
@@ -110,8 +117,13 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
   const iddid = params.id;
+  const disposalType = params.disposalType;
+
   const [MUID, setMUID] = useState<string>("");
   // const iddid = params.get("id") ?? "";
+
+  // console.log(disposalType,"dtype")
+  // console.log(iddid,"iddid")
 
   useEffect(() => {
     const loadUnits = async () => {
@@ -172,14 +184,28 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
   useEffect(() => {
     const loadDetails = async () => {
-      if (!iddid) return;
+      if (!iddid && !disposalType) return;
+
 
       try {
-        const res = await fetch("/api/GetData/GetSelectedVendorDetails", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ID: iddid }),
-        });
+        let res;
+        if (disposalType == "2") {
+          // console.log("hi i was called")
+          res = await fetch("/api/GetData/GetInternalDisposalDetails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ID: iddid }),
+          });
+        }
+        else {
+          // console.log("hi i was not called")
+          res = await fetch("/api/GetData/GetSelectedVendorDetails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ID: iddid }),
+          });
+        }
+
 
         const data = await res.json();
         // console.log("Frontend API response:", data);
@@ -191,7 +217,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           row?.ManifestDocumentNo ??
           row?.manifestDocumentNo ??
           row?.ManifestNo ??
-          row?.IDDID ??
+          // row?.IDDID ??
           "",
         );
         // console.log(row?.MUID)
@@ -206,8 +232,10 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           senderNameAddress: String(row?.UID ?? prev.senderNameAddress ?? ""),
           manifestNo,
 
-          transporterNameAddress: `${row?.TransporterName ?? ""} ${row?.TransporterAddress ?? ""}`.trim(),
-          transporterPhoneEmail: `${row?.TransporterPhone ?? ""}, ${row?.TransporterEmail ?? ""}`.trim(),
+          transporterName: `${row?.TransporterName ?? ""}`.trim(),
+          transporterAddress: `${row?.TransporterAddress ?? ""}`.trim(),
+          transporterPhone: `${row?.TransporterPhone ?? ""}`.trim(),
+          transporterEmail: `${row?.TransporterEmail ?? ""}`.trim(),
           transporterRegNo: String(row?.TransporterRegNo ?? ""),
           vehicleRegNo: String(row?.VehicleRegNo ?? ""),
           receiverName: String(row?.ReceiverName ?? ""),
@@ -219,10 +247,12 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           Waste: String(row?.Waste ?? ""),
           totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
           unit: String(row?.MUnit ?? ""),
-
+          dateOfDisposal: String(row?.AuctionDate ?? "")
         }));
+
       }
       catch (err) {
+
         console.error("Failed to load hazardous form details", err);
       }
     };
@@ -241,16 +271,27 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (values.senderNameAddress == "" || values.transporterName == "" || values.transporterAddress == "" ||
+      values.transporterEmail == "" || values.vehicleType == "" || values.transporterRegNo == "" ||
+      values.vehicleRegNo == "" || values.receiverName == "" || values.receiverAddress == "" ||
+      values.receiverAuthNo == "" || values.totalQty == "" || values.containers == "" || !values.containers ||
+      values.physicalForm == "" || values.dateOfDisposal == ""
+    ) {
+      alert("Please fill all required fields (marked with *) ")
+      return
+    }
+
     const formData = new FormData();
+
     formData.append("IDDID", iddid!);
     formData.append(
       "UID",
       String(values.senderNameAddress ?? "")
     );
-    formData.append("TransporterName", String(values.transporterNameAddress ?? "").split(",")[0] ?? "");
-    formData.append("TransporterAddress", String(values.transporterNameAddress ?? ""));
-    formData.append("TransporterPhone", String(values.transporterPhoneEmail ?? "").split(",")[0] ?? "");
-    formData.append("TransporterEmail", String(values.transporterPhoneEmail ?? "").split(",")[1] ?? "");
+    formData.append("TransporterName", String(values.transporterName ?? ""));
+    formData.append("TransporterAddress", String(values.transporterAddress ?? ""));
+    formData.append("TransporterPhone", String(values.transporterPhone ?? ""));
+    formData.append("TransporterEmail", String(values.transporterEmail ?? ""));
     formData.append("VTID", String(values.vehicleType ?? ""));
     formData.append("TransporterRegNo", String(values.transporterRegNo ?? ""));
     formData.append("VehicleRegNo", String(values.vehicleRegNo ?? ""));
@@ -263,10 +304,12 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", String(values.specialHandling ?? ""));
     // formData.append("EmpCode", "YOUR_EMP_CODE");
-    formData.append("DateOfDisposal", today);
+    formData.append("DateOfDisposal", String(values?.dateOfDisposal ?? ""));
     formData.append("MUID", MUID);
 
     // console.log(Object.fromEntries(formData.entries()));
+    // console.log(String(values.containers ?? ""));
+
 
     if (values.salePoSoDoc instanceof File) {
       formData.append("salePoSoDoc", values.salePoSoDoc);
@@ -279,6 +322,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       }
     }
 
+
     const res = await fetch("/api/SetData/SetFinalDisposalDetails", {
       method: "POST",
       body: formData,
@@ -289,7 +333,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     const statusText = String(result?.data?.[0]?.STATUS ?? "").trim();
     const fddid = statusText.split("-").pop()?.trim() ?? "";
 
-    // const fddid = result.fddid;
+    // // const fddid = result.fddid;
     // console.log(statusText);
     // console.log(fddid);
     // console.log(result);
@@ -298,20 +342,32 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       return;
     }
 
-    if (values.salePoSoDoc instanceof File && values.finalPartyDoc instanceof File) {
+    const hasFinalPartyDoc = [1, 2, 3, 4, 5].some(
+      (num) =>
+        values[`finalPartyDoc${num}`] instanceof File
+    );
+
+    // console.log("heyy")
+    if (values.salePoSoDoc instanceof File && hasFinalPartyDoc) {
       const attachmentFormData = new FormData();
       attachmentFormData.append("FDDID", fddid);
       attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+      // console.log("heyy")
 
 
-      for (let i = 1; i < 5; i++) {
+
+      for (let i = 1; i <= 5; i++) {
         const file = values[`finalPartyDoc${i}`];
 
         if (file instanceof File) {
-          attachmentFormData.append(`finalPartDoc{i}`, file);
+
+          attachmentFormData.append(`finalPartyDoc${i}`, file);
 
         }
+
       }
+      // console.log([...attachmentFormData.entries()]);
+
 
       const attachmentRes = await fetch("/api/SetData/SetFinalDisposalDetailsAttachments", {
         method: "POST",
@@ -324,8 +380,9 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
         alert(attachmentResult.message || "Attachment save failed");
         return;
       }
+      // console.log(attachmentResult);
     }
-    // router.back();
+    redirect("./")
     // router.push(`/Form/Form10?id=${iddid}`);
 
   };
@@ -337,8 +394,6 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     if (row.type === "text") {
       return (
         <input
-
-
           value={(v as string) ?? ""}
           placeholder={row.hint ?? ""}
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
@@ -376,11 +431,22 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       );
     }
 
-    if (row.type === "phone-email") {
+    if (row.type === "phone") {
       return (
         <input
           value={(v as string) ?? ""}
-          placeholder={row.hint ?? "Phone, Email"}
+          placeholder={row.hint ?? "Phone"}
+          className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+          onChange={(e) => updateValue(row.key, e.target.value)}
+        />
+      );
+    }
+
+    if (row.type === "email") {
+      return (
+        <input
+          value={(v as string) ?? ""}
+          placeholder={row.hint ?? "Email"}
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
           onChange={(e) => updateValue(row.key, e.target.value)}
         />
@@ -463,43 +529,55 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
         </label>
       );
     }
-
     if (row.type === "file") {
 
       if (row.key === "finalPartyDoc") {
+
+        const labels = [
+          "CTO Respective File", "HW Authorization OSPCB File", "HW Authorization SPCB File", "BlueBook File", "Registration Certificate File"
+        ];
         return (
           <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((num) => (
-              <div key={num} className="space-y-1">
-                <input
-                  type="file"
-                  accept=".pdf,.jpeg,.png,.jpg"
-                  className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-                  onChange={(e) =>
-                    updateValue(`finalPartyDoc${num}`, e.target.files?.[0] ?? null
 
-                    )
-                  }
-                />
+            {labels.map((label, index) => {
 
-                <p className="text-xs text-slate-500">
-                  File {num}
-                </p>
-                {values[`finalPartyDoc${num}`] instanceof File && (
-                  <p className="text-xs text-emerald-700">
-                    Selected: {
-                      (values[`finalPartyDoc${num}`] as File).name
+              const num = index + 1;
+
+              return (
+                <div key={num} className="space-y-1">
+
+                  <label className="text-sm font-medium text-slate-700">
+                    {label}
+                  </label>
+
+                  <input
+                    type="file"
+                    accept=".pdf,.jpeg,.png,.jpg"
+                    className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                    onChange={(e) =>
+                      updateValue(
+                        `finalPartyDoc${num}`,
+                        e.target.files?.[0] ?? null
+                      )
                     }
-                  </p>
-                )}
-              </div>
-            ))}
+                  />
 
+                  {/* {values[`finalPartyDoc${num}`] instanceof File && (
+                    <p className="text-xs text-emerald-700">
+                      Selected: {
+                        (values[`finalPartyDoc${num}`] as File).name
+                      }
+                    </p>
+                  )} */}
+
+                </div>
+              );
+            })}
 
           </div>
-
         );
       }
+
       return (
         <input
           type="file"
@@ -548,14 +626,14 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="relative">
-        <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Generate - Hazardous</h1>
+        <h1 className="text-lg font-semibold text-teal-600 text-center">Disposal Generate - Hazardous</h1>
         {/* <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p> */}
 
         <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0 right-15 "
           onClick={() => window.location.reload()}
         />
         <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-5" />
+          <img src="/goback.png" alt="" className="h-4.5 absolute top-0 right-6" />
         </Link>
       </div>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
@@ -570,8 +648,8 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
             <tbody>
               {rows.map((row) => (
                 <tr key={row.key}>
-                  <td className="border border-slate-200 px-3 py-2 align-top">{row.field}</td>
-                  <td className="border border-slate-200 px-3 py-2">{renderInput(row)}</td>
+                  <td className="border border-slate-200 px-3 py-1.5 align-top">{row.field}</td>
+                  <td className="border border-slate-200 px-3 py-1.5">{renderInput(row)}</td>
                 </tr>
               ))}
             </tbody>
@@ -580,7 +658,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
         <button
           type="submit"
-          className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
+          className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
         >
           Submit
         </button>

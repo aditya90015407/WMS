@@ -20,7 +20,7 @@ type RejectedRow = {
   Waste: string
   WasteCategory: string
   VID: string
-  DiposalType: string
+  DisposalType: string
   DisType: string
   TotalQty: string
   CrBy: string

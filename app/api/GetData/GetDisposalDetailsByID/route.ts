@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
             .input("ID", sql.VarChar, id)
             .execute("PRO-WMS_GET");
 
-        console.log(result.recordset);
+        // console.log(result.recordset);
         // const row = result.recordset?.[0]
 
         // if (!row) {

@@ -14,7 +14,9 @@ type FieldType =
   | "number"
   | "phone-email"
   | "file"
-  | "auto";
+  | "auto"
+  | "phone"
+  | "email"
 
 
 
@@ -25,27 +27,34 @@ type RowDef = {
   type: FieldType;
   options?: string[];
   hint?: string;
+  required?: boolean
 };
 
 const rows: RowDef[] = [
-  { key: "disposalDate", field: "Date", type: "date", hint: "Date of disposal (within 90 days of generation)" },
-  { key: "wasteIds", field: "Waste ID/Batch ID", type: "multi-select" },
+  // { key: "disposalDate", field: "Date", type: "date", hint: "Date of disposal (within 90 days of generation)" },
+  { key: "wasteIds", field: "Disposal ID", type: "multi-select" },
+  { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal" },
   {
     key: "senderNameAddress",
-    field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
+    field: "Sender's Unit *",
     type: "select",
   },
-
-  { key: "transporterNameAddress", field: "Transporter Name and address", type: "textarea", hint: "Enter transporter name and address" },
-  { key: "transporterPhoneEmail", field: "Transporter Phone no. and Email", type: "phone-email", hint: "Phone, Email" },
-  { key: "vehicleType", field: "Type of Vehicle", type: "select", options: ["1|Truck", "2|Tanker", "3|Special Vehicle"] },
-  { key: "transporterRegNo", field: "Transporter Registration no.", type: "text", hint: "Enter registration number" },
-  { key: "vehicleRegNo", field: "Vehicle registration No.", type: "text", hint: "Enter vehicle number" },
-  { key: "receiverName", field: "Receiver Name", type: "text", hint: "Enter receiver name" },
-  { key: "receiverAddress", field: "Address", type: "textarea", hint: "Enter receiver address" },
+  // { key: "manifestNo", field: "Manifest document No.", type: "auto" },
+  { key: "transporterName", field: "Transporter Name  *", type: "textarea", hint: "Enter transporter name ", required: true },
+  { key: "transporterAddress", field: "Transporter Address *", type: "textarea", hint: "Enter transporter full address", required: true },
+  { key: "transporterPhone", field: "Transporter Phone No. *", type: "phone", hint: "Transporter Phone ", required: true },
+  { key: "transporterEmail", field: "Transporter Email *", type: "email", hint: "Transporter Email", required: true },
+  { key: "vehicleType", field: "Type of Vehicle *", type: "select", options: ["1|Truck", "2|Tanker", "3|Special Vehicle"] },
+  { key: "transporterRegNo", field: "Transporter Registration No. *", type: "text", hint: "Enter registration number" },
+  { key: "vehicleRegNo", field: "Vehicle registration No. *", type: "text", hint: "Enter vehicle number" },
+  { key: "receiverName", field: "Receiver Name *", type: "text", hint: "Enter receiver name" },
+  { key: "receiverAddress", field: "Address *", type: "textarea", hint: "Enter receiver address" },
   { key: "wasteDescription", field: "Waste Description", type: "view" },
   { key: "totalQty", field: "Total Quantity", type: "view" },
-  { key: "physicalForm", field: "Physical Form", type: "select", options: ["1|Solid", "2|Semisolid", "3|Sludge", "4|Oily", "5|Tarry", "6|Slurry", "7|Liquid"] },
+  {
+    key: "physicalForm", field: "Physical Form *", type: "select",
+    options: ["1|Solid", "2|Liquid", "3|Sludge", "4|Semisolid", "5|Oily", "6|Tarry", "7|Slurry", "9|Fines"]
+  },
   { key: "salePoSoDoc", field: "Document for Sale PO/SO to be uploaded for external disposal", type: "file" },
   {
     key: "finalPartyDoc",
@@ -54,11 +63,12 @@ const rows: RowDef[] = [
   },
 ];
 
-export default function NonHazardousDisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+export default function DisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string, disposalType?: string }> }) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
   const iddid = params.id;
   const router = useRouter();
+  const disposalType = params.disposalType;
   // const iddid = params.get("id") ?? "";
   const [MUID, setMUID] = useState<string>("");
   const [values, setValues] = useState<Record<string, string | string[] | File | null>>({
@@ -129,14 +139,27 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
       if (!iddid) return;
 
       try {
-        const res = await fetch("/api/GetData/GetInternalDisposalDetails", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ID: iddid }),
-        });
+        let res;
+        if (disposalType == "2") {
+          // console.log("hi i was called")
+          res = await fetch("/api/GetData/GetInternalDisposalDetails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ID: iddid }),
+          });
+        }
+        else {
+          // console.log("hi i was not called")
+          res = await fetch("/api/GetData/GetSelectedVendorDetails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ID: iddid }),
+          });
+        }
+
 
         const data = await res.json();
-        console.log("Frontend API response:", data);
+        // console.log("Frontend API response:", data);
 
         if (!res.ok || !data.success) return;
 
@@ -148,8 +171,10 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
           senderNameAddress: String(row?.UID ?? prev.senderNameAddress ?? ""),
           disposalDate: today,
           wasteIds: [String(iddid)],
-          transporterNameAddress: `${row?.TransporterName ?? ""} ${row?.TransporterAddress ?? ""}`.trim(),
-          transporterPhoneEmail: `${row?.TransporterPhone ?? ""}, ${row?.TransporterEmail ?? ""}`.trim(),
+          transporterName: `${row?.TransporterName ?? ""}`.trim(),
+          transporterAddress: `${row?.TransporterAddress ?? ""}`.trim(),
+          transporterPhone: `${row?.TransporterPhone ?? ""}`.trim(),
+          transporterEmail: `${row?.TransporterEmail ?? ""}`.trim(),
           transporterRegNo: String(row?.TransporterRegNo ?? ""),
           vehicleRegNo: String(row?.VehicleRegNo ?? ""),
           receiverName: String(row?.ReceiverName ?? ""),
@@ -159,6 +184,7 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
           physicalForm: String(row?.PSID ?? ""),
           wasteDescription: String(row?.Waste ?? ""),
           totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
+          dateOfDisposal: String(row?.AuctionDate ?? "")
         }));
       } catch (err) {
         console.error("Failed to load non-hazardous form details", err);
@@ -172,6 +198,15 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (values.senderNameAddress == "" || values.transporterName == "" || values.transporterAddress == "" ||
+      values.transporterEmail == "" || values.vehicleType == "" || values.transporterRegNo == "" ||
+      values.vehicleRegNo == "" || values.receiverName == "" || values.receiverAddress == "" ||
+      values.totalQty == "" || values.physicalForm == "" || values.dateOfDisposal == ""
+    ) {
+      alert("Please fill all required fields (marked with *) ")
+      return
+    }
+
     const wasteIdsArr = Array.isArray(values.wasteIds) ? values.wasteIds : [];
 
     const formData = new FormData();
@@ -181,10 +216,10 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
       "UID",
       String(values.senderNameAddress ?? "")
     );
-    formData.append("TransporterName", String(values.transporterNameAddress ?? "").split(",")[0] ?? "");
-    formData.append("TransporterAddress", String(values.transporterNameAddress ?? ""));
-    formData.append("TransporterPhone", String(values.transporterPhoneEmail ?? "").split(",")[0] ?? "");
-    formData.append("TransporterEmail", String(values.transporterPhoneEmail ?? "").split(",")[1] ?? "");
+    formData.append("TransporterName", String(values.transporterName ?? ""));
+    formData.append("TransporterAddress", String(values.transporterAddress ?? ""));
+    formData.append("TransporterPhone", String(values.transporterPhone ?? ""));
+    formData.append("TransporterEmail", String(values.transporterEmail ?? ""));
     formData.append("VTID", String(values.vehicleType ?? ""));
     formData.append("TransporterRegNo", String(values.transporterRegNo ?? ""));
     formData.append("VehicleRegNo", String(values.vehicleRegNo ?? ""));
@@ -197,7 +232,7 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", "");
     // formData.append("EmpCode", "YOUR_EMP_CODE");
-    formData.append("DateOfDisposal", String(values.disposalDate ?? today));
+    formData.append("DateOfDisposal", String(values.dateOfDisposal));
     formData.append("MUID", MUID);
 
     if (values.salePoSoDoc instanceof File) {
@@ -230,22 +265,32 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
 
     alert("Saved successfully");
 
+    const hasFinalPartyDoc = [1, 2, 3, 4, 5].some(
+      (num) =>
+        values[`finalPartyDoc${num}`] instanceof File
+    );
 
-    if (values.salePoSoDoc instanceof File && values.finalPartyDoc instanceof File) {
+
+
+    if (values.salePoSoDoc instanceof File && hasFinalPartyDoc) {
       const attachmentFormData = new FormData();
       attachmentFormData.append("FDDID", fddid);
       attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+
+
+
+
       for (let i = 1; i <= 5; i++) {
         const file = values[`finalPartyDoc${i}`];
 
         if (file instanceof File) {
-          attachmentFormData.append(
-            `finalPartyDoc${i}`,
-            file
-          );
-        }
-      }
 
+          attachmentFormData.append(`finalPartyDoc${i}`, file);
+
+        }
+
+      }
+      console.log([...attachmentFormData.entries()]);
       const attachmentRes = await fetch("/api/SetData/SetFinalDisposalDetailsAttachments", {
         method: "POST",
         // headers: { "Content-Type": "application/json" },
@@ -385,35 +430,48 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
     if (row.type === "file") {
 
       if (row.key === "finalPartyDoc") {
+
+        const labels = [
+          "Cto Respective File", "HwAuthorizationOspcb File", "HwAuthorizationSpcb File", "BlueBook File", "Registration Certificate File"
+        ];
         return (
           <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((num) => (
-              <div key={num} className="space-y-1">
-                <input
-                  type="file"
-                  accept=".pdf,.jpeg,.jpg,.png"
-                  className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
-                  onChange={(e) =>
-                    updateValue(
-                      `finalPartyDoc${num}`,
-                      e.target.files?.[0] ?? null
-                    )
-                  }
-                />
 
-                <p className="text-xs text-slate-500">
-                  File {num}
-                </p>
+            {labels.map((label, index) => {
 
-                {values[`finalPartyDoc${num}`] instanceof File && (
-                  <p className="text-xs text-emerald-700">
-                    Selected: {
-                      (values[`finalPartyDoc${num}`] as File).name
+              const num = index + 1;
+
+              return (
+                <div key={num} className="space-y-1">
+
+                  <label className="text-sm font-medium text-slate-700">
+                    {label}
+                  </label>
+
+                  <input
+                    type="file"
+                    accept=".pdf,.jpeg,.png,.jpg"
+                    className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+                    onChange={(e) =>
+                      updateValue(
+                        `finalPartyDoc${num}`,
+                        e.target.files?.[0] ?? null
+                      )
                     }
-                  </p>
-                )}
-              </div>
-            ))}
+                  />
+
+                  {/* {values[`finalPartyDoc${num}`] instanceof File && (
+                    <p className="text-xs text-emerald-700">
+                      Selected: {
+                        (values[`finalPartyDoc${num}`] as File).name
+                      }
+                    </p>
+                  )} */}
+
+                </div>
+              );
+            })}
+
           </div>
         );
       }
@@ -432,12 +490,46 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
 
 
 
+    // if (row.type === "auto") {
+    //   return (
+    //     <input
+    //       readOnly
+    //       value="Auto generated"
+    //       className="w-full rounded border border-slate-200 bg-slate-100 px-2 py-1 text-sm"
+    //     />
+    //   );
+    // }
+
     if (row.type === "auto") {
       return (
         <input
           readOnly
-          value="Auto generated"
+          value={(v as string) ?? ""}
+          placeholder="Auto generated"
           className="w-full rounded border border-slate-200 bg-slate-100 px-2 py-1 text-sm"
+        />
+      );
+    }
+
+
+    if (row.type === "phone") {
+      return (
+        <input
+          value={(v as string) ?? ""}
+          placeholder={row.hint ?? "Phone"}
+          className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+          onChange={(e) => updateValue(row.key, e.target.value)}
+        />
+      );
+    }
+
+    if (row.type === "email") {
+      return (
+        <input
+          value={(v as string) ?? ""}
+          placeholder={row.hint ?? "Email"}
+          className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
+          onChange={(e) => updateValue(row.key, e.target.value)}
         />
       );
     }
@@ -448,14 +540,15 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="relative">
-        <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Generate - Non Hazardous</h1>
+        <h1 className="text-lg font-semibold text-teal-600 text-center">Disposal Generate - Non Hazardous</h1>
         {/* <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p> */}
+
 
         <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0 right-15 "
           onClick={() => window.location.reload()}
         />
         <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-5" />
+          <img src="/goback.png" alt="" className="h-4.5 absolute top-0 right-6" />
         </Link>
       </div>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
@@ -470,15 +563,18 @@ export default function NonHazardousDisposalGeneratePage({ searchParams }: { sea
             <tbody>
               {rows.map((row) => (
                 <tr key={row.key}>
-                  <td className="border border-slate-200 px-3 py-2 align-top">{row.field}</td>
-                  <td className="border border-slate-200 px-3 py-2">{renderInput(row)}</td>
+                  <td className="border border-slate-200 px-3 py-1.5 align-top">{row.field}</td>
+                  <td className="border border-slate-200 px-3 py-1.5">{renderInput(row)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        <button type="submit" className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800">
+        <button
+          type="submit"
+          className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+        >
           Submit
         </button>
       </form>

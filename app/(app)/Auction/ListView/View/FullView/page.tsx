@@ -206,7 +206,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
             {/* <div className="text-center text-sm">Act on Waste</div> */}
 
             <div>
-                <div className="text-center font-semibold text-cyan-600 mb-5">
+                <div className="text-center font-semibold text-teal-600 mb-5">
                     Participant's Details
                 </div>
                 {/* <Link href="./">

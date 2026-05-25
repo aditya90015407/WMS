@@ -22,30 +22,19 @@ export async function POST(req: Request) {
       throw new Error("DB Not Connected");
     }
 
-    const wcid = String(body.WCID ?? "").trim();
-    const wid = String(body.WID ?? "").trim();
-    const totalQty = Number(body.TotalQty ?? 0);
-    const auctionable = Number(body.Auctionable ?? 1);
     const auctionDate = String(body.AuctionDate ?? "").trim();
     const remarks = String(body.Remarks ?? "").trim();
     const physicalForm = String(body.PSID ?? "").trim();
     const disposedTo = String(body.AID ?? "").trim();
     const iddid = body.IDDID
 
-    console.log(body)
+    // console.log(body)
 
     const result = await pool
       .request()
-      .input("FLAG", sql.NVarChar(50), "UpdateDisposal")
+      .input("FLAG", sql.NVarChar(50), "UpdateAuction")
       .input("IDDID", sql.NVarChar(20), iddid)
-      .input("WCID", sql.NVarChar(50), wcid)
-      .input("WID", sql.NVarChar(50), wid)
-      .input("TotalQty", sql.Decimal(18, 3), totalQty)
-      .input("Auctionable", sql.Int, auctionable)
-      .input("AuctionDate", auctionDate)
-      .input("PSID", sql.NVarChar(30), physicalForm)
-      .input("AID", sql.NVarChar(30), disposedTo)
-      .input("Remarks", sql.NVarChar(sql.MAX), remarks)
+      .input("AuctionDate", sql.Date, auctionDate)
       .input("EmpCode", sql.Int, Number(empCode))
       .execute("PRO-WMS_SET");
     console.log(result.recordset)

@@ -449,7 +449,7 @@ export default function NonAuctionablePage() {
   };
 
   return (
-    <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
 
       <div className="relative">
         <h1 className="text-xl font-semibold text-teal-600 text-center">Non Auctionable Disposal</h1>
@@ -464,169 +464,173 @@ export default function NonAuctionablePage() {
       </div>
 
 
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Disposal ID</label>
-          <input
-            // type="date"
-            value={iddid}
-            // onChange={(e) => setDisposalDate(e.target.value)}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled
-          />
-        </div>
+      <form onSubmit={onSubmit} className="mt-6 ">
+        <div className="grid grid-cols-2 space-y-2">
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Date of Disposal</label>
-          <input
-            type="date"
-            value={disposalDate}
-            onChange={(e) => setDisposalDate(e.target.value)}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Waste Category</label>
-          <select
-            value={wasteCategory}
-            onChange={(e) => setWasteCategory(e.target.value)}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled
-          >
-            <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
-            {categoryOptions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Waste List</label>
-          <select
-            value={selectedWasteId}
-            onChange={(e) => {
-              setSelectedWasteId(e.target.value);
-              const name = wasteOptions.find((w) => w.id === e.target.value)?.name ?? "";
-              setWaste(name);
-            }}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled
-          >
-            <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
-            {wasteOptions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="relative">
-          <label className="mb-1 block text-sm font-semibold text-slate-700">
-            Undisposed Waste (Dept - Quantity - Days Left)
-          </label>
-          <button
-            type="button"
-            onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
-            disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
-            className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
-          >
-            {selectedUndisposedItems.length > 0
-              ? selectedUndisposedItems.map((x) => x.label).join(", ")
-              : loadingUndisposed
-                ? "Loading..."
-                : "Select Dept - Quantity - Days Left"}
-          </button>
-
-          {undisposedDropdownOpen && (
-            <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
-              {sortedUndisposedOptions.length === 0 ? (
-                <p className="px-2 py-1 text-sm text-slate-500">No undisposed waste</p>
-              ) : (
-                sortedUndisposedOptions.map((item) => {
-                  const checked = selectedUndisposedIds.includes(item.id);
-                  const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
-                  return (
-                    <label
-                      key={item.id}
-                      className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        disabled={alreadyChecked}
-                        onChange={(e) => {
-                          const nextIds = e.target.checked
-                            ? [...selectedUndisposedIds, item.id]
-                            : selectedUndisposedIds.filter((id) => id !== item.id);
-                          setSelectedUndisposedIds(nextIds);
-                        }}
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-sm text-slate-700">
-                          {item.dept || "Dept"} - {item.qty.toFixed(2)} {item.unit}
-                        </span>
-                        <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
-                        </span>
-                      </div>
-                    </label>
-                  );
-                })
-              )}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">
-            Total Quantity
-          </label>
-          <div
-            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
-          >
-            {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
+          <div className="px-6">
+            <label className="mb-1 block text-sm font-semibold text-slate-700">Disposal ID</label>
+            <input
+              // type="date"
+              value={iddid}
+              // onChange={(e) => setDisposalDate(e.target.value)}
+              className="w-full rounded border border-slate-300 px-3 py-2"
+              disabled
+            />
           </div>
-          {/* <input
+
+          <div className="px-6">
+            <label className="mb-1 block text-sm font-semibold text-slate-700">Date of Disposal</label>
+            <input
+              type="date"
+              value={disposalDate}
+              onChange={(e) => setDisposalDate(e.target.value)}
+              className="w-full rounded border border-slate-300 px-3 py-2"
+            />
+          </div>
+
+          <div className="px-6">
+            <label className="mb-1 block text-sm font-semibold text-slate-700">Waste Category</label>
+            <select
+              value={wasteCategory}
+              onChange={(e) => setWasteCategory(e.target.value)}
+              className="w-full rounded border border-slate-300 px-3 py-2"
+              disabled
+            >
+              <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
+              {categoryOptions.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="px-6">
+            <label className="mb-1 block text-sm font-semibold text-slate-700">Waste List</label>
+            <select
+              value={selectedWasteId}
+              onChange={(e) => {
+                setSelectedWasteId(e.target.value);
+                const name = wasteOptions.find((w) => w.id === e.target.value)?.name ?? "";
+                setWaste(name);
+              }}
+              className="w-full rounded border border-slate-300 px-3 py-2"
+              disabled
+            >
+              <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
+              {wasteOptions.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="relative px-6">
+            <label className="mb-1 block text-sm font-semibold text-slate-700">
+              Undisposed Waste (Dept - Quantity - Days Left)
+            </label>
+            <button
+              type="button"
+              onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
+              disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
+              className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
+            >
+              {selectedUndisposedItems.length > 0
+                ? selectedUndisposedItems.map((x) => x.label).join(", ")
+                : loadingUndisposed
+                  ? "Loading..."
+                  : "Select Dept - Quantity - Days Left"}
+            </button>
+
+            {undisposedDropdownOpen && (
+              <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
+                {sortedUndisposedOptions.length === 0 ? (
+                  <p className="px-2 py-1 text-sm text-slate-500">No undisposed waste</p>
+                ) : (
+                  sortedUndisposedOptions.map((item) => {
+                    const checked = selectedUndisposedIds.includes(item.id);
+                    const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
+                    return (
+                      <label
+                        key={item.id}
+                        className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          disabled={alreadyChecked}
+                          onChange={(e) => {
+                            const nextIds = e.target.checked
+                              ? [...selectedUndisposedIds, item.id]
+                              : selectedUndisposedIds.filter((id) => id !== item.id);
+                            setSelectedUndisposedIds(nextIds);
+                          }}
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-sm text-slate-700">
+                            {item.dept || "Dept"} - {item.qty.toFixed(2)} {item.unit}
+                          </span>
+                          <span className="text-sm font-semibold text-red-600">
+                            {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="px-6">
+            <label className="mb-1 block text-sm font-semibold text-slate-700">
+              Total Quantity
+            </label>
+            <div
+              className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+            >
+              {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
+            </div>
+            {/* <input
             type="text"
             readOnly
             value={totalSelectedQty.toFixed(2)}
             className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
           /> */}
-        </div>
+          </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
-          <select
-            value={physicalForm}
-            onChange={(e) => setPhysicalForm(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          >
-            <option value="">Select</option>
-            {physicalOptions.map((opt) => (
-              <option key={opt.ID} value={opt.ID}>
-                {opt.NAME}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div className="px-6">
+            <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
+            <select
+              value={physicalForm}
+              onChange={(e) => setPhysicalForm(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            >
+              <option value="">Select</option>
+              {physicalOptions.map((opt) => (
+                <option key={opt.ID} value={opt.ID}>
+                  {opt.NAME}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Remarks</label>
-          <textarea
-            value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            rows={3}
-          />
-        </div>
+          <div className="px-6">
+            <label className="mb-1 block text-sm font-semibold text-slate-700">Remarks</label>
+            <textarea
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              className="w-full rounded border border-slate-300 px-3 py-2"
+              rows={1}
+            />
+          </div>
 
+
+        </div>
         <button
           type="submit"
-          className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
+          className="mt-2 block mx-auto cursor-pointer rounded bg-emerald-700 px-4 py-1.5 text-sm text-white hover:bg-emerald-800"
         >
           Submit
         </button>
