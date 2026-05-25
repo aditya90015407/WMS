@@ -179,8 +179,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="w-full">
-          <h1 className="text-2xl font-semibold text-teal-600 text-center">Verify Vendor Details</h1>
-          <p className="mt-2 text-sm text-slate-600 text-center">
+          <h1 className="text-xl font-semibold text-teal-600 text-center">Verify Vendor Details</h1>
+          <p className="text-xs text-slate-600 text-center">
             Review and edit the selected auction participant details.
           </p>
         </div>
@@ -200,7 +200,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
 
       {!loading && !error && (
         <div className="mt-6 space-y-6">
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-xl border border-slate-200  p-4">
             <h2 className="text-sm font-semibold text-slate-900">Auction Details</h2>
             <div className="mt-3 grid gap-3 md:grid-cols-2">
               <div>
@@ -208,7 +208,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 <input
                   value={String(formValues.IDDID ?? "")}
                   readOnly
-                  className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
 
@@ -217,7 +217,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
                 <input
                   value={String(formValues.VID ?? "")}
                   readOnly
-                  className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+                  className="w-full rounded border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
 

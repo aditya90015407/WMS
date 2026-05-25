@@ -121,13 +121,14 @@ export default function AppNavbar() {
             className="rounded-full p-1 text-slate-700 transition hover:bg-slate-100"
             aria-label="Open profile"
           >
-            <UserCircle2 className="h-9 w-9" />
+            {/* <UserCircle2 className="h-9 w-9" /> */}
+            <img src="/image5.png" alt="" className="h-9 w-9 cursor-pointer " />
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white py-4 px-6 shadow-lg">
-              <p className="text-sm font-semibold tracking-wide text-emerald-600 mt-2">
-                Profile
+            <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white pb-3 px-6 shadow-lg">
+              <p className="text-sm font-semibold tracking-wide text-[#2563EB] text-center font-[cursive] mt-2">
+                My Profile
               </p>
               <div className="mt-3 space-y-2 text-sm">
                 <p className="text-slate-800">
@@ -176,7 +177,7 @@ export default function AppNavbar() {
                 ) : !assignedRole ? (
                   <p className="text-sm text-slate-600">Not assigned yet</p>
                 ) : null} */}
-                <div className="pt-3">
+                <div className="pt-0.5">
                   <button
                     type="button"
                     onClick={handleLogout}
@@ -195,9 +196,10 @@ export default function AppNavbar() {
         </div>
       </div>
       {/* <div className="border-t border-slate-200 bg-emerald-400 px-4 py-2"> */}
-      <div className="border-t border-slate-200 bg-white px-4 py-2">
+      <div className="border-t border-slate-200 px-4 py-2">
 
-        <div className="flex w-full justify-start ">
+        <div className="flex w-full justify-start  ">
+          <span className="text-xs font-medium tracking-wide text-teal-600 py-1.5 mx-2">Current Page : </span>
           <div className="bg-emerald-600 inline-flex flex-wrap items-center justify-center gap-1 rounded-full border border-slate-200  px-3 py-1.5">
             {breadcrumbParts.map((part, index) => (
               <div key={`nav-${part}-${index}`} className=" flex items-center gap-1">

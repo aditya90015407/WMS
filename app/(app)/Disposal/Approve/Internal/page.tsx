@@ -199,7 +199,7 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
         if (!row?.ID) return;
         setSaving(true);
 
-        // console.log("I am here ")
+        console.log("I am here with row ID", row.ID)
 
 
 
@@ -220,13 +220,15 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
             });
             const payload = await res.json();
 
+            console.log(payload, row.ID, stsCode)
+
             if (!res.ok || !payload.success) {
                 setDecision(payload.message || "Failed to save disposal approval")
                 return;
             }
 
             setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`)
-            if (stsCode == 3 && row?.id) {
+            if (stsCode == 3 && row?.ID) {
                 router.back();
             }
         } catch (err) {

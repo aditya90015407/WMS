@@ -587,10 +587,26 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         <h1 className="text-xl font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
 
         <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-15" />
         </Link>
+
+        <img src="/refresh.png" alt="" className="h-4.5 ms-3 cursor-pointer  absolute top-0.5 right-5"
+          onClick={() => window.location.reload()}
+        />
       </div>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
+
+        <div>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Auction ID</label>
+          <input
+            // type="date"
+            value={iddid}
+            // onChange={(e) => setDisposalDate(e.target.value)}
+            className="w-full rounded border border-slate-300 px-3 py-2"
+            disabled
+          />
+        </div>
+
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Auction Date</label>
           <input
@@ -702,12 +718,18 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
 
         <div>
           <label className="mb-1 block text-sm font-semibold text-slate-700">Total Quantity</label>
-          <input
+
+          <div
+            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+          >
+            {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
+          </div>
+          {/* <input
             type="text"
             readOnly
-            value={Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}
+            value={Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
             className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
-          />
+          /> */}
         </div>
 
         <div>
@@ -793,7 +815,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
 
         <button
           type="submit"
-          className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
+          className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
         >
           Submit
         </button>

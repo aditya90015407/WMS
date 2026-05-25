@@ -308,7 +308,7 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                                 type="button"
                                 disabled={saving}
                                 onClick={() => void saveDecision(3, "Accepted")}
-                                className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                                className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
                             >
                                 Accept
                             </button>
@@ -316,7 +316,7 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                                 type="button"
                                 disabled={saving}
                                 onClick={() => void saveDecision(5, "Rejected")}
-                                className="rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800 disabled:opacity-60"
+                                className="cursor-pointer rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800 disabled:opacity-60"
                             >
                                 Reject
                             </button>

@@ -453,15 +453,28 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
         <h1 className="text-xl font-semibold text-teal-600 text-center">Internal Disposal</h1>
 
         <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-15" />
         </Link>
+
+        <img src="/refresh.png" alt="" className="h-4.5 ms-3 cursor-pointer  absolute top-0.5 right-5"
+          onClick={() => window.location.reload()}
+        />
       </div>
 
-      <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
-
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
+
         <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Date</label>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Disposal ID</label>
+          <input
+            // type="date"
+            value={iddid}
+            // onChange={(e) => setDisposalDate(e.target.value)}
+            className="w-full rounded border border-slate-300 px-3 py-2"
+            disabled
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Date of Disposal</label>
           <input
             type="date"
             value={disposalDate}
@@ -611,7 +624,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
 
         <button
           type="submit"
-          className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
+          className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
         >
           Submit
         </button>

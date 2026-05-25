@@ -455,14 +455,29 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
         <h1 className="text-xl font-semibold text-teal-600 text-center">Non Auctionable Disposal</h1>
 
         <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-15" />
         </Link>
+
+        <img src="/refresh.png" alt="" className="h-4.5 ms-3 cursor-pointer  absolute top-0.5 right-5"
+          onClick={() => window.location.reload()}
+        />
       </div>
 
 
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Date</label>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Disposal ID</label>
+          <input
+            // type="date"
+            value={iddid}
+            // onChange={(e) => setDisposalDate(e.target.value)}
+            className="w-full rounded border border-slate-300 px-3 py-2"
+            disabled
+          />
+        </div>
+
+        <div>
+          <label className="mb-1 block text-sm font-semibold text-slate-700">Date of Disposal</label>
           <input
             type="date"
             value={disposalDate}
@@ -477,7 +492,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
             value={wasteCategory}
             onChange={(e) => setWasteCategory(e.target.value)}
             className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled={loadingBase}
+            disabled
           >
             <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
             {categoryOptions.map((item) => (
@@ -498,7 +513,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
               setWaste(name);
             }}
             className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled={!wasteCategory || loadingWaste}
+            disabled
           >
             <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
             {wasteOptions.map((item) => (
@@ -611,7 +626,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
 
         <button
           type="submit"
-          className="rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
+          className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
         >
           Submit
         </button>

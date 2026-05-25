@@ -264,6 +264,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                         <label className="font-semibold">Remarks</label>
                         <textarea
                             // type="text"
+                            required
                             rows={1}
                             placeholder=""
                             // value={complaint.date}

@@ -29,6 +29,7 @@ export type FormEntry = {
   IDDID: string
   CreatedBy: string
   CrBy: string
+  EN: string
 };
 
 const toText = (value: unknown): string => {
@@ -88,6 +89,7 @@ export const toForm3Entry = (row: ViewRow): FormEntry => ({
   genDept: toText(row.GenDept),
   IDDID: toText(row.IDDID),
   CreatedBy: toText(row.CreatedBy),
-  CrBy: toText(row.CrBy)
+  CrBy: toText(row.CrBy),
+  EN: toText(row.EN)
 });
 

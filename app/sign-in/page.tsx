@@ -105,7 +105,7 @@ export default function LoginPage() {
         const role = getSessionRole(session);
         const empCode = getSessionEmpCode(session) ?? employeeCode;
         toast.success(
-          `Login successful | Emp Code: ${empCode} | Role: ${role ?? "UNKNOWN"}`,
+          `Login successful `,
         );
         router.push("/Home");
         return;
@@ -119,10 +119,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-linear-to-br bg-white/75 flex items-center justify-center">
+      <img src="/wmsbackground.png" alt="" className="h-screen" />
       <Toaster position="top-right" />
-      <div className="w-full max-w-6xl mx-auto px-4 md:px-8">
-        <div className="grid md:grid-cols-2 gap-16 items-center">
-          <div className="space-y-8 place-self-center">
+      <div className="w-full max-w-6xl ">
+        {/* <div className="space-y-8 place-self-center">
             <div className="flex gap-4 align-center justify-center ">
               <div className="h-auto w-64 md:w-55 rounded-2xl backdrop-blur-sm flex items-center justify-center">
                 <Image
@@ -141,104 +141,123 @@ export default function LoginPage() {
                 Waste Management System
               </h1>
             </div>
-          </div>
+          </div> */}
 
-          <div className="w-full items-right place-self-end justify-self-end bg-white backdrop-blur-md rounded-3xl shadow-2xl p-10 border border-white/50">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                onSubmit();
-              }}
-              className="space-y-8"
-            >
-              <div className="space-y-2">
+        <div className="w-full items-right place-self-end justify-self-end bg-white backdrop-blur-md  p-10 ">
+
+          <div className="flex items-center justify-center">
+            <Image
+              src="/jsl-logo.png"
+              alt="Jindal Stainless"
+              className="w-[170px] h-auto my-5"
+              width={200}
+              height={200}
+              priority
+            />
+
+          </div>
+          <h1 className="font-[eco] text-center w-full text-lg md:text-2xl font-bold tracking-wide mt-3 mb-8 font-bold text-emerald-700 leading-tight">
+            Waste Management System
+          </h1>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSubmit();
+            }}
+            className="my-2"
+          >
+            {/* <div className="space-y-2">
                 <h2 className="text-xl font-semibold text-emerald-600 text-center">
                   Sign In
                 </h2>
                 <p className="text-slate-600 text-center text-xs">
                   Enter your credentials to continue
                 </p>
+              </div> */}
+
+            {globalError && (
+              <div className="p-4 text-sm text-red-600 bg-red-50/80 rounded-xl border border-red-100">
+                {globalError}
               </div>
+            )}
 
-              {globalError && (
-                <div className="p-4 text-sm text-red-600 bg-red-50/80 rounded-xl border border-red-100">
-                  {globalError}
-                </div>
+            {/* Employee Code */}
+            <div className="space-y-1 my-1 mt-2">
+              <label className="text-sm font-medium text-teal-600 block">
+                Employee Code
+              </label>
+              <Input
+                placeholder="Enter your code"
+                value={employeeCode}
+                onChange={(e) => {
+                  setEmployeeCode(e.target.value);
+                  setUsernameError(null);
+                }}
+                className={`h-12 rounded-xl border-green-100 focus:border-emerald-500 focus-visible:ring-offset-0 focus-visible:ring-0 ${usernameError ? "border-red-400" : ""
+                  }`}
+              />
+              {usernameError && (
+                <p className="text-sm text-red-600">{usernameError}</p>
               )}
+            </div>
 
-              {/* Employee Code */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-emerald-600 block">
-                  Employee Code
-                </label>
+            {/* Password */}
+            <div className="space-y-1 my-1 mt-2">
+              <label className="text-sm font-medium text-teal-600 block">
+                Password
+              </label>
+              <div className="relative">
                 <Input
-                  placeholder="Enter your code"
-                  value={employeeCode}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
                   onChange={(e) => {
-                    setEmployeeCode(e.target.value);
-                    setUsernameError(null);
+                    setPassword(e.target.value);
+                    setPasswordError(null);
                   }}
-                  className={`h-12 rounded-xl border-green-100 ${usernameError ? "border-red-400" : ""
+                  className={`h-12 rounded-xl border-green-100 focus:border-emerald-500 focus-visible:ring-offset-0 focus-visible:ring-0 ${usernameError ? "border-red-400" : ""
                     }`}
                 />
-                {usernameError && (
-                  <p className="text-sm text-red-600">{usernameError}</p>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
+                  aria-label={
+                    showPassword ? "Hide password" : "Show password"
+                  }
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
+              {passwordError && (
+                <p className="text-sm text-red-600">{passwordError}</p>
+              )}
+            </div>
 
-              {/* Password */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-emerald-600 block">
-                  Password
-                </label>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setPasswordError(null);
-                    }}
-                    className={`h-12 rounded-xl border-green-100 pr-12 ${passwordError ? "border-red-400" : ""
-                      }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
-                {passwordError && (
-                  <p className="text-sm text-red-600">{passwordError}</p>
-                )}
-              </div>
+            <Button
+              type="button"
+              className="w-full h-12 text-white rounded-xl mt-5"
+              disabled={isLoading}
+            >
+              <span
+                // className="w-fit bg-[#2F4F4F] hover:bg-[#165346] text-[#FFFFFF] rounded-lg cursor-pointer py-2 px-10"
+                className="w-fit bg-gradient-to-br from-[#1F6F5F] to-[#2E8B74] text-white px-10 py-2 
+                rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.2)] hover:brightness-110 transition-all duration-300 
+                cursor-pointer"
+                onClick={onSubmit}
+              // className="w-fit bg-[#1F6F5F] hover:bg-[#165346] text-[#FFFFFF] rounded-lg cursor-pointer py-2 px-10"
+              >{isLoading ? "Signing in..." : "Sign In"}
+              </span>
+            </Button>
 
-              <Button
-                type="submit"
-                className="w-full h-12 text-white rounded-xl cursor-pointer"
-                disabled={isLoading}
-              >
-                <span
-                  className="w-fit bg-[#ff7b00ef] text-white rounded-lg cursor-pointer py-2 px-7"
-                >{isLoading ? "Signing in..." : "Sign In"}
-                </span>
-              </Button>
-
-              {/* <p className="text-xs text-center text-slate-500 pt-2">
+            {/* <p className="text-xs text-center text-slate-500 pt-2">
                 Need help? Contact IT Application Team for support
               </p> */}
-            </form>
-          </div>
+          </form>
         </div>
       </div>
     </div>

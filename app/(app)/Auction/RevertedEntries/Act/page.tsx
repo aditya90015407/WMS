@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import decrypt from "@/components/Decrypt";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 type AuctionDetails = {
   AuctionDate?: string | null;
@@ -310,11 +311,18 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
 
   return (
     <section className="mx-auto max-w-5xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <div className="border-b border-slate-200 pb-4">
-        <h1 className="text-2xl font-semibold text-slate-900">Reapply Auction Documents</h1>
-        <p className="mt-1 text-sm text-slate-600">
+      <div className="border-b border-slate-200 pb-4 relative">
+        <h1 className="text-xl font-semibold text-teal-600 text-center">Reapply for Auction</h1>
+        {/* <p className="mt-1 text-sm text-slate-600">
           Re-upload the required documents for the same auction participant entry.
-        </p>
+        </p> */}
+
+        <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0 right-15 "
+          onClick={() => window.location.reload()}
+        />
+        <Link href="./">
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-5" />
+        </Link>
       </div>
 
       {error && (

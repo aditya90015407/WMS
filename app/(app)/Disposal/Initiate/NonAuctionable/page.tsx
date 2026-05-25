@@ -308,7 +308,7 @@ export default function NonAuctionablePage() {
       </div>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700"> Disposal Date</label>
+          <label className="mb-1 block text-sm font-semibold text-slate-700"> Date of Disposal </label>
           <input
             type="date"
             value={Date}

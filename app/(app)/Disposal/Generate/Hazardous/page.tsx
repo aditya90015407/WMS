@@ -3,6 +3,7 @@
 
 import React, { useMemo, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 
 type FieldType =
@@ -162,7 +163,9 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   }, []);
 
   useEffect(() => {
-    console.log("Hazardous manifestNo state:", values.manifestNo);
+    // console.log("Hazardous manifestNo state:", values.manifestNo);
+
+
   }, [values.manifestNo]);
 
 
@@ -172,14 +175,14 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       if (!iddid) return;
 
       try {
-        const res = await fetch("/api/GetData/GetInternalDisposalDetails", {
+        const res = await fetch("/api/GetData/GetSelectedVendorDetails", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ID: iddid }),
         });
 
         const data = await res.json();
-        console.log("Frontend API response:", data);
+        // console.log("Frontend API response:", data);
 
         if (!res.ok || !data.success) return;
 
@@ -191,7 +194,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           row?.IDDID ??
           "",
         );
-        console.log(row?.MUID)
+        // console.log(row?.MUID)
         setMUID(String(row?.MUID ?? ""));
 
         // console.log("Hazardous manifest row:", row);
@@ -214,12 +217,12 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           Waste: String(row?.Waste ?? ""),
-          totalQty: String(row?.TotalQty ?? ""),
-
-
+          totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
+          unit: String(row?.MUnit ?? ""),
 
         }));
-      } catch (err) {
+      }
+      catch (err) {
         console.error("Failed to load hazardous form details", err);
       }
     };
@@ -229,7 +232,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
   const updateValue = (key: string, value: string | string[] | boolean | File | null) => {
 
-    //  console.log(key, value);
+    // console.log(key, value);
 
     setValues((prev) => ({ ...prev, [key]: value }));
 
@@ -254,12 +257,12 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     formData.append("ReceiverName", String(values.receiverName ?? ""));
     formData.append("ReceiverAddress", String(values.receiverAddress ?? ""));
     formData.append("ReceiverAuthNo", String(values.receiverAuthNo ?? ""));
-    formData.append("TotalQty", String(Number(values.totalQty ?? 0)));
+    formData.append("TotalQty", String((values.totalQty ?? 0)).split(" ")[0]);
     formData.append("Waste", String(values.Waste ?? ""));
     formData.append("NoOfContainers", String(values.containers ?? ""));
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", String(values.specialHandling ?? ""));
-    formData.append("EmpCode", "YOUR_EMP_CODE");
+    // formData.append("EmpCode", "YOUR_EMP_CODE");
     formData.append("DateOfDisposal", today);
     formData.append("MUID", MUID);
 
@@ -300,6 +303,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       attachmentFormData.append("FDDID", fddid);
       attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
 
+
       for (let i = 1; i < 5; i++) {
         const file = values[`finalPartyDoc${i}`];
 
@@ -321,7 +325,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
         return;
       }
     }
-
+    // router.back();
     // router.push(`/Form/Form10?id=${iddid}`);
 
   };
@@ -375,8 +379,6 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     if (row.type === "phone-email") {
       return (
         <input
-
-
           value={(v as string) ?? ""}
           placeholder={row.hint ?? "Phone, Email"}
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
@@ -545,9 +547,17 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-semibold text-slate-900">Disposal Generate</h1>
-      <p className="mt-2 text-sm text-slate-600">Fill disposal manifest details below.</p>
+      <div className="relative">
+        <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Generate - Hazardous</h1>
+        {/* <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p> */}
 
+        <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0 right-15 "
+          onClick={() => window.location.reload()}
+        />
+        <Link href="./">
+          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-5" />
+        </Link>
+      </div>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full border-collapse text-sm">

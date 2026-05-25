@@ -322,7 +322,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
           <button
             type="button"
             onClick={handleSelectSubmit}
-            className="mt-4 rounded-lg bg-green-700 px-4 py-2 text-sm text-white hover:bg-green-800"
+            className="cursor-pointer mt-4 rounded-lg bg-green-700 px-4 py-2 text-sm text-white hover:bg-green-800"
           >
             Submit Selected Vendor
           </button>
