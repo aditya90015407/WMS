@@ -44,12 +44,12 @@ export async function POST(req: NextRequest) {
 
         const result = await pool
             .request()
-            .input("FLAG", sql.VarChar, "SetDisposalApproval")
-            .input("StsCode", sql.Int, StsCode)
-            .input("Remarks", sql.NVarChar(sql.MAX), Remarks)
-            .input("EmpCode", sql.VarChar, EmpCode)
-            .input("FDDID", sql.Int, FDDID)
+            .input("FLAG", "SetDisposalApproval")
+            .input("StsCode", StsCode)
+            .input("Remarks", Remarks)
+            .input("FDDID", FDDID)
             .input("IDDID", IDDID)
+            .input("EmpCode", EmpCode)
             .execute("PRO-WMS_SET");
 
         return NextResponse.json({

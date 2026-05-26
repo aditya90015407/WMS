@@ -277,7 +277,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
         <h1 className="text-xl font-semibold text-teal-600 text-center">Disposal Generate - Internal</h1>
         {/* <p className="mt-2 text-xs text-slate-600 text-right">Fill disposal manifest details below.</p> */}
 
-        <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0 right-15 "
+        <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0.5 right-15 "
           onClick={() => window.location.reload()}
         />
         <Link href="./">

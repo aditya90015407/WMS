@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 type Option = { id: string; name: string; email: string; vendorCode: string };
@@ -114,6 +114,7 @@ export default function AuctionablePage() {
         );
         const payload = (await res.json()) as { success?: boolean; data?: Option[] };
         const data = payload.success && Array.isArray(payload.data) ? payload.data : [];
+        console.log(data, "hi")
         setWasteOptions(data);
       } catch {
         setWasteOptions([]);
@@ -484,6 +485,16 @@ export default function AuctionablePage() {
     0,
   );
 
+
+  async function CancelDisposal() {
+    const res = await fetch("/api/SetData/CancelDisposal", {
+      method: "POST",
+      body: JSON.stringify({ "IDDID": iddid })
+    })
+    const data = await res.json()
+    redirect("./")
+  }
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -591,11 +602,11 @@ export default function AuctionablePage() {
           onClick={() => window.location.reload()}
         />
       </div>
-      <form onSubmit={onSubmit} className="mt-6 space-y-4 text-sm">
+      <form onSubmit={onSubmit} className="mt-6 text-sm">
         <div className=" ">
-          <div className=" grid grid-cols-3">
+          <div className=" grid grid-cols-2">
 
-            <div className="px-4">
+            <div className="px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Disposal ID</label>
               <input
                 // type="date"
@@ -606,7 +617,7 @@ export default function AuctionablePage() {
               />
             </div>
 
-            {/* <div className="px-4">
+            {/* <div className="px-4 py-1">
           <label className="mb-1 block text-xs font-semibold text-slate-700">Auction Date</label>
           <input
             type="date"
@@ -616,7 +627,7 @@ export default function AuctionablePage() {
           />
         </div> */}
 
-            <div className="px-4">
+            <div className="px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Waste Category</label>
               <select
                 value={wasteCategory}
@@ -633,7 +644,7 @@ export default function AuctionablePage() {
               </select>
             </div>
 
-            <div className="px-4">
+            <div className="px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Waste List</label>
               <select
                 value={selectedWasteId}
@@ -659,8 +670,8 @@ export default function AuctionablePage() {
 
           <hr className="col-span-2 mt-4 mb-3 border border-gray-200 w-[97%] mx-auto" />
 
-          <div className="grid grid-cols-2 space-y-2">
-            <div className="relative px-4">
+          <div className="grid grid-cols-2 ">
+            <div className="relative px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">
                 Undisposed Waste (Dept - Quantity - Days Left)
               </label>
@@ -721,7 +732,7 @@ export default function AuctionablePage() {
               )}
             </div>
 
-            <div className="px-4">
+            <div className="px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Total Quantity</label>
 
               <div
@@ -737,12 +748,12 @@ export default function AuctionablePage() {
           /> */}
             </div>
 
-            <div className="px-4">
+            <div className="px-4 py-1">
               <label className="block text-xs font-semibold text-slate-700">Physical Form</label>
               <select
                 value={physicalForm}
                 onChange={(e) => setPhysicalForm(e.target.value)}
-                className="cursor-pointer mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"
+                className="cursor-pointer mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
                 <option value="">Select</option>
                 {physicalOptions.map((opt) => (
@@ -808,7 +819,7 @@ export default function AuctionablePage() {
           )}
         </div> */}
 
-            <div className="px-4">
+            <div className="px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Remarks</label>
               <textarea
                 value={remarks}
@@ -821,13 +832,26 @@ export default function AuctionablePage() {
 
 
         </div>
+
         <button
           type="submit"
-          className="block place-self-center cursor-pointer rounded bg-emerald-700 px-3 py-1.5 text-white hover:bg-emerald-800"
+          className="block mt-3 place-self-center cursor-pointer rounded bg-emerald-700 px-4 py-1.5 text-white hover:bg-emerald-800"
         >
           Submit
         </button>
       </form>
+
+      <hr className="col-span-2 mt-4 mb-1 border border-gray-100 w-[97%] mx-auto" />
+
+      <div className="text-sm text-slate-700 mt-8">
+        Do you want to cancel this disposal and revert the status of the included waste items?
+        <span
+          className="ms-5 place-self-center cursor-pointer rounded bg-rose-700 px-3 py-2 text-md text-white hover:bg-red-800"
+          onClick={CancelDisposal}
+        >
+          Yes, Cancel Disposal
+        </span>
+      </div>
     </section >
   );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Rows } from "lucide-react";
+import { Download, Rows, View } from "lucide-react";
 import encrypt from "@/components/Encrypt";
 type Form10Row = {
   ID?: string | number | null;
@@ -328,14 +328,14 @@ export default function Form10Page() {
                               // setClickedrow(row)
                             }}
 
-                            className="cursor-pointer rounded bg-blue-700 px-3 py-1 text-white hover:bg-blue-800"
+                            className="cursor-pointer inline-flex items-center gap-1 rounded bg-pink-600 px-3 py-1 text-white hover:bg-pink-700"
                           >
-                            View
+                            <View className="h-3.5 w-3.5" />View
                           </button>
                           <button
                             type="button"
                             onClick={() => downloadForm10(row)}
-                            className="cursor-pointer inline-flex items-center gap-1 rounded bg-emerald-700 px-3 py-1 text-white hover:bg-emerald-800"
+                            className="cursor-pointer inline-flex items-center gap-1 rounded bg-cyan-600 px-3 py-1 text-white hover:bg-cyan-700"
                           >
                             <Download className="h-3.5 w-3.5" />
                             Download

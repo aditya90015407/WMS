@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import decrypt from "@/components/Decrypt";
 import Form10Table, { type Form10Data } from "@/components/Form10Table";
 
@@ -182,7 +182,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
         const row =
           (await fetchRow("/api/GetData/GetForm10Details", { ID: iddid })) ??
           (await fetchRow("/api/GetData/GetSelectedVendorDetails", { ID: iddid }));
-        console.log(row);
+        // console.log(row);
 
         if (!row) {
           setStatus("Failed to load Form 10 details.");
@@ -306,6 +306,9 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
     setStatus("");
   };
 
+
+
+
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-6 w-full">
       <style jsx global>{`
@@ -336,7 +339,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
         <Form10Table form={form} editable errors={errors} onFieldChange={updateField} />
       </div>
 
-      {status && (
+      {/* {status && (
         <p
           className={`no-print mt-4 text-sm ${status.toLowerCase().includes("fail") || status.toLowerCase().includes("fix")
             ? "text-red-600"
@@ -345,29 +348,28 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
         >
           {status}
         </p>
-      )}
+      )} */}
 
-      <div className="no-print mt-5 flex flex-wrap gap-2">
+      <div className="no-print mt-5 flex flex-wrap gap-3 justify-center">
+        <div
+          onClick={() => redirect("./")}
+          className="cursor-pointer rounded-md bg-rose-400 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-500"
+        >
+          Go Back
+        </div>
         <button
           type="button"
-          onClick={onSaveDraft}
-          className="cursor-pointer rounded-md bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+          onClick={() => window.location.reload()}
+          className="cursor-pointer rounded-md border border-slate-300 bg-cyan-700 text-white px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-cyan-600"
         >
-          Save Draft
-        </button>
-        <button
-          type="button"
-          onClick={onReset}
-          className="cursor-pointer rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
-        >
-          Reset
+          Reload
         </button>
         <button
           type="button"
           onClick={() => window.print()}
-          className="cursor-pointer rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50"
+          className="cursor-pointer bg-pink-700 text-white rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-800 hover:bg-pink-800"
         >
-          Print
+          Download
         </button>
       </div>
     </section>

@@ -16,7 +16,9 @@ type RejectedRow = {
   WasteCategory: String
   CrBy: string
   IsActive: string
-
+  CrDt: string
+  TotalQty: string
+  MUnit: string
 }
 
 
@@ -95,11 +97,15 @@ export default function RevertedDisposalList() {
 
   return (
     <section className="max-w-6xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="text-center">
+      <div className="text-center relative">
         <h1 className="text-lg font-semibold text-teal-600">Rejected Disposal Entries</h1>
         {/* <p className="mt-1 text-sm text-slate-600">
           Vendors can review remarks and submit corrected documents again.
         </p> */}
+
+        <img src="/refresh.png" alt="" className="h-5 cursor-pointer absolute top-1 right-5"
+          onClick={() => window.location.reload()}
+        />
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading rejected entries...</p>}
@@ -110,11 +116,14 @@ export default function RevertedDisposalList() {
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">IDDID</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Disposal Date</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Final Disposal ID</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Initiated Disposal ID</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Date of Disposal</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Disposal Type</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste Category</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Total Quantity</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Created On</th>
 
                 {/* <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Total Qty</th> */}
                 {/* <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Rejected On</th> */}
@@ -139,18 +148,25 @@ export default function RevertedDisposalList() {
                       const iddid = await encrypt(String(row.IDDID));
 
                       const wcid = String(row.WCID ?? "").trim();
-                      console.log(wcid)
+                      // console.log(wcid)
                       const disType = String(row.DisType ?? "").trim().toLowerCase();
-                      console.log(disType)
+                      // console.log(disType)
 
                       if (!finalId) return;
 
                       const target =
                         disType === "internal"
-                          ? `/Disposal/RevertedEntries/Internal?id=${encodeURIComponent(finalId)}&iddid=${encodeURIComponent(iddid)}`
+                          ? `/Disposal/RevertedEntries/Internal?id=${encodeURIComponent(String(row.ID))}`
                           : wcid === "1"
-                            ? `/Disposal/RevertedEntries/Hazardous?id=${encodeURIComponent(finalId)}`
-                            : `/Disposal/RevertedEntries/NonHazardous?id=${encodeURIComponent(finalId)}`;
+                            ? `/Disposal/RevertedEntries/Hazardous?id=${encodeURIComponent(String(row.ID))}`
+                            : `/Disposal/RevertedEntries/NonHazardous?id=${encodeURIComponent(String(row.ID))}`;
+
+                      // const target =
+                      //   disType === "internal"
+                      //     ? `/Disposal/RevertedEntries/Internal?id=${encodeURIComponent(finalId)}&iddid=${encodeURIComponent(iddid)}`
+                      //     : wcid === "1"
+                      //       ? `/Disposal/RevertedEntries/h2?id=${encodeURIComponent(String(row.ID))}`
+                      //       : `/Disposal/RevertedEntries/NonHazardous?id=${encodeURIComponent(finalId)}`;
 
                       router.push(target);
 
@@ -168,11 +184,14 @@ export default function RevertedDisposalList() {
 
                     }
                   >
+                    <td className="px-3 py-2 text-xs text-slate-700">{row.ID}</td>
                     <td className="px-3 py-2 text-xs text-slate-700">{row.IDDID}</td>
                     <td className="px-3 py-2 text-xs text-slate-700">{row.DateOfDisposal}</td>
                     <td className="px-3 py-2 text-xs text-slate-700">{row.DisType}</td>
                     <td className="px-3 py-2 text-xs text-slate-700">{row.WasteCategory}</td>
                     <td className="px-3 py-2 text-xs text-slate-700">{row.Waste}</td>
+                    <td className="px-3 py-2 text-xs text-slate-700">{row.TotalQty}{" "}{row.MUnit}</td>
+                    <td className="px-3 py-2 text-xs text-slate-700">{row.CrDt?.split("T")[0]}</td>
                   </tr>
                 ))
               )}

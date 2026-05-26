@@ -62,7 +62,7 @@ const rows: RowDef[] = [
   //     "JFL (Not Available)",
   //   ],
   // },
-  { key: "manifestNo", field: "Manifest document No.", type: "auto" },
+  { key: "manifestNo", field: "Manifest Document No.", type: "auto" },
   { key: "transporterName", field: "Transporter Name  *", type: "textarea", hint: "Enter transporter name ", required: true },
   { key: "transporterAddress", field: "Transporter Address *", type: "textarea", hint: "Enter transporter full address", required: true },
   { key: "transporterPhone", field: "Transporter Phone No. *", type: "phone", hint: "Transporter Phone ", required: true },
@@ -267,6 +267,10 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     setValues((prev) => ({ ...prev, [key]: value }));
 
   };
+
+
+
+
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -596,7 +600,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           readOnly
           value={(v as string) ?? ""}
           placeholder="Auto generated"
-          className="w-full rounded border border-slate-200 bg-slate-100 px-2 py-1 text-sm"
+          className="w-full rounded border border-slate-200 bg-emerald-100 px-2 py-1 text-sm"
         />
       );
     }

@@ -157,7 +157,7 @@ export default function DisposalEditPage() {
               <thead className="bg-slate-50">
                 <tr>
                   <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
-                    Ref ID
+                    Disposal ID
                   </th>
                   {/* <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
                     Original ID
