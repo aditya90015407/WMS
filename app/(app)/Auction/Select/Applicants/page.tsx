@@ -190,8 +190,8 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="w-full">
-          <h1 className="text-md text-center my-1 font-semibold text-teal-600">Select Auction Participants</h1>
-          <h1 className="text-sm text-center font-semibold text-teal-700">Approved Applicants List</h1>
+          <h1 className="text-md text-center my-1 font-semibold text-teal-600">Select / Finalise Vendor</h1>
+          <h1 className="text-xs text-center font-semibold text-teal-600">Approved Applicants List</h1>
         </div>
         {/* <button
           type="button"
@@ -254,6 +254,8 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
                             } else {
                               setSelectedRowVid("");
                               setSelectedVid("");
+                              setSelectedVendorCode("")
+                              setSelectedVendorName("")
                             }
                           }}
                         />
@@ -305,26 +307,29 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
       {
         currentRows.length > 0 &&
         <>
-          <div className="mt-4">
-            <label className="mb-1 block text-sm font-semibold text-slate-700">
-              Selected Vendor
+          <div className="mt-4 space-x-1">
+            <label className="mb-1 text-sm  text-sky-600">
+              Selected Vendor :
             </label>
-            <input
+            <span className="text-emerald-600 font-semibold w-full max-w-sm rounded-lg px-3 py-2 text-sm outline-none focus:border-slate-500">
+              {selectedVendorName ? (selectedVendorName + " ( " + selectedVendorCode + " ) ") : "No Vendor Selected"}
+            </span>
+            {/* <input
               type="text"
-              value={selectedVendorName + " ( " + selectedVendorCode + " )"}
+              value={selectedVendorName ? (selectedVendorName + " ( " + selectedVendorCode + " ) ") : "No Vendor Selected"}
               readOnly
-              // onChange={(e) => setSelectedVid(e.target.value)}
-              // placeholder="Type VID here..."
+              onChange={(e) => setSelectedVid(e.target.value)}
+              placeholder="Type VID here..."
               className="w-full max-w-sm rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-            />
+            /> */}
           </div>
 
           <button
             type="button"
             onClick={handleSelectSubmit}
-            className="cursor-pointer mt-4 rounded-lg bg-green-700 px-4 py-2 text-sm text-white hover:bg-green-800"
+            className="cursor-pointer block place-self-center mt-2 rounded-lg bg-teal-600 px-4 py-2 text-sm text-white hover:bg-teal-700"
           >
-            Submit Selected Vendor
+            Submit
           </button>
         </>
       }

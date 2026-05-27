@@ -91,7 +91,7 @@ const createForm3Html = (entry: FormEntry): string => {
   // console.log(typeWithCategory)
   const quantUnit = [entry.quantity, entry.Unit]
     .filter(Boolean)
-    .join(" / ");
+    .join(" ");
   // console.log(entry.Schedule)
 
   return `<!doctype html>

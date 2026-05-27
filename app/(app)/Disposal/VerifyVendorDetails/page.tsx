@@ -53,7 +53,7 @@ export default function DisposalApprovePage() {
                 });
 
                 const rawData = await res.json();
-                console.log("GetAllFinalDisposalList rawData:", rawData);
+                // console.log("GetAllFinalDisposalList rawData:", rawData);
 
                 const data = Array.isArray(rawData)
                     ? rawData
@@ -62,7 +62,7 @@ export default function DisposalApprovePage() {
                         : [];
 
                 const normalized = data.map(normalizeData) as FinalDisposalRow[];
-                console.log("Normalized final disposal rows:", normalized);
+                // console.log("Normalized final disposal rows:", normalized);
 
                 setRows(normalized);
             } catch (err) {
@@ -81,13 +81,17 @@ export default function DisposalApprovePage() {
     return (
         <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="w-full">
+                <div className="w-full relative">
                     <h1 className="text-lg text-center font-semibold text-teal-600">
                         Verify Vendor Details
                     </h1>
-                    <h2 className="text-sm text-center font-semibold text-cyan-700">
+                    <h2 className="text-xs text-center  text-cyan-700">
                         Click to check and review Vendor details before proceeding for Approval
                     </h2>
+
+                    <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0.5 right-5"
+                        onClick={() => window.location.reload()}
+                    />
                 </div>
             </div>
 
@@ -139,8 +143,8 @@ export default function DisposalApprovePage() {
                                             const iddid = String(row.IDDID ?? "").trim();
                                             const vid = String(row.VID ?? "").trim();
 
-                                            console.log("Clicked row:", row);
-                                            console.log("Routing with IDDID:", iddid, "VID:", vid);
+                                            // console.log("Clicked row:", row);
+                                            // console.log("Routing with IDDID:", iddid, "VID:", vid);
 
                                             if (!iddid || !vid) return;
 

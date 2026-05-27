@@ -489,11 +489,8 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
     e.preventDefault();
 
     if (
-      !auctionDate ||
       !wasteCategory ||
-      !selectedWasteId ||
-      selectedUndisposedIds.length === 0 ||
-      selectedVendorIds.length === 0
+      !selectedWasteId
     ) {
       alert("Please fill all required fields and select at least one waste item and vendor.");
       return;
@@ -523,57 +520,58 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         return;
       }
 
-      const newSelectedIds = undisposedOptions
-        .map((item) => String(item.id))
-        .filter((id) => selectedUndisposedIds.map(String).includes(id))
-        .filter((id) => !alreadySelectedUndisposedIds.map(String).includes(id));
+      // const newSelectedIds = undisposedOptions
+      //   .map((item) => String(item.id))
+      //   .filter((id) => selectedUndisposedIds.map(String).includes(id))
+      //   .filter((id) => !alreadySelectedUndisposedIds.map(String).includes(id));
 
-      if (newSelectedIds.length > 0) {
-        const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            IDDID: iddid,
-            WRID: newSelectedIds,
-          }),
-        });
+      // if (newSelectedIds.length > 0) {
+      //   const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify({
+      //       IDDID: iddid,
+      //       WRID: newSelectedIds,
+      //     }),
+      //   });
 
-        const data2 = await res2.json();
+      //   const data2 = await res2.json();
 
-        if (!res2.ok || !data2.success) {
-          alert(data2.message || "InsertAuctionWasteDetails failed");
-          return;
-        }
-      }
-      const newVendorIds = selectedVendorIds.filter(
-        (id) => !alreadySelectedVendorIds.includes(id)
-      );
+      //   if (!res2.ok || !data2.success) {
+      //     alert(data2.message || "InsertAuctionWasteDetails failed");
+      //     return;
+      //   }
+      // }
+      // const newVendorIds = selectedVendorIds.filter(
+      //   (id) => !alreadySelectedVendorIds.includes(id)
+      // );
 
-      if (newVendorIds.length > 0) {
-        await Promise.all(
-          newVendorIds.map(async (vendorId) => {
-            const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                IDDID: iddid,
-                VID: vendorId,
-              }),
-            });
+      // if (newVendorIds.length > 0) {
+      //   await Promise.all(
+      //     newVendorIds.map(async (vendorId) => {
+      //       const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
+      //         method: "POST",
+      //         headers: { "Content-Type": "application/json" },
+      //         body: JSON.stringify({
+      //           IDDID: iddid,
+      //           VID: vendorId,
+      //         }),
+      //       });
 
-            const vendorData = await vendorRes.json();
+      //       const vendorData = await vendorRes.json();
 
-            if (!vendorRes.ok || !vendorData.success) {
-              throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
-            }
+      //       if (!vendorRes.ok || !vendorData.success) {
+      //         throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
+      //       }
 
-            return vendorData;
-          }),
-        );
-      }
+      //       return vendorData;
+      //     }),
+      //   );
+      // }
 
 
       alert(data.message || "Saved Successfully");
+
       router.back();
     } catch (error) {
       console.error("Submit Failed", error);
@@ -582,9 +580,9 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
   };
 
   return (
-    <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="relative">
-        <h1 className="text-xl font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
+        <h1 className="text-lg font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
 
         <Link href="./">
           <img src="/goback.png" alt="" className="h-5 absolute top-0 right-15" />
@@ -594,162 +592,170 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           onClick={() => window.location.reload()}
         />
       </div>
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
+      <form onSubmit={onSubmit} className="mt-6 space-y-4 text-sm">
+        <div className=" ">
+          <div className=" grid grid-cols-3">
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Auction ID</label>
-          <input
-            // type="date"
-            value={iddid}
-            // onChange={(e) => setDisposalDate(e.target.value)}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled
-          />
-        </div>
+            <div className="px-4">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Disposal ID</label>
+              <input
+                // type="date"
+                value={iddid}
+                // onChange={(e) => setDisposalDate(e.target.value)}
+                className="w-full rounded border border-slate-300 px-3 py-2"
+                disabled
+              />
+            </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Auction Date</label>
+            {/* <div className="px-4">
+          <label className="mb-1 block text-xs font-semibold text-slate-700">Auction Date</label>
           <input
             type="date"
             value={auctionDate}
             onChange={(e) => setAuctionDate(e.target.value)}
             className="w-full rounded border border-slate-300 px-3 py-2"
           />
-        </div>
+        </div> */}
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Waste Category</label>
-          <select
-            value={wasteCategory}
-            onChange={(e) => setWasteCategory(e.target.value)}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled
-          >
-            <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
-            {categoryOptions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="px-4">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Waste Category</label>
+              <select
+                value={wasteCategory}
+                onChange={(e) => setWasteCategory(e.target.value)}
+                className="w-full rounded border border-slate-300 px-3 py-2"
+                disabled
+              >
+                <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
+                {categoryOptions.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Waste List</label>
-          <select
-            value={selectedWasteId}
-            onChange={(e) => {
-              setSelectedWasteId(e.target.value);
-              const name = wasteOptions.find((w) => w.id === e.target.value)?.name ?? "";
-              setWaste(name);
-            }}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled
-          >
-            <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
-            {wasteOptions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="relative">
-          <label className="mb-1 block text-sm font-semibold text-slate-700">
-            Undisposed Waste (Dept - Quantity - Days Left)
-          </label>
-          <button
-            type="button"
-            onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
-            disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
-            className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
-          >
-            {selectedUndisposedItems.length > 0
-              ? selectedUndisposedItems.map((x) => x.label).join(", ")
-              : loadingUndisposed
-                ? "Loading..."
-                : "Select Dept - Quantity - Days left"}
-          </button>
-
-          {undisposedDropdownOpen && (
-            <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
-              {sortedUndisposedOptions.length === 0 ? (
-                <p className="px-2 py-1 text-sm text-slate-500">No undisposed waste</p>
-              ) : (
-                sortedUndisposedOptions.map((item) => {
-                  const checked = selectedUndisposedIds.includes(item.id);
-                  const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
+            <div className="px-4">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Waste List</label>
+              <select
+                value={selectedWasteId}
+                onChange={(e) => {
+                  setSelectedWasteId(e.target.value);
+                  const name = wasteOptions.find((w) => w.id === e.target.value)?.name ?? "";
+                  setWaste(name);
+                }}
+                className="w-full rounded border border-slate-300 px-3 py-2"
+                disabled
+              >
+                <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
+                {wasteOptions.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
 
+          </div>
 
-                  return (
-                    <label
-                      key={item.id}
-                      className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        disabled={alreadyChecked}
-                        onChange={(e) => {
-                          const nextIds = e.target.checked
-                            ? [...selectedUndisposedIds, item.id]
-                            : selectedUndisposedIds.filter((id) => id !== item.id);
-                          setSelectedUndisposedIds(nextIds);
-                        }}
-                      />
+          <hr className="col-span-2 mt-4 mb-3 border border-gray-200 w-[97%] mx-auto" />
 
-                      <div className="flex flex-col">
-                        <span className="text-sm text-slate-700">
-                          {item.dept || "Dept"} - {item.qty.toFixed(2)} {item.unit}
-                        </span>
-                        <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
-                        </span>
-                      </div>
-                    </label>
-                  );
-                })
+          <div className="grid grid-cols-2 space-y-2">
+            <div className="relative px-4">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">
+                Undisposed Waste (Dept - Quantity - Days Left)
+              </label>
+              <button
+                type="button"
+                onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
+                disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
+                className="text-sm cursor-pointer w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
+              >
+                {selectedUndisposedItems.length > 0
+                  ? selectedUndisposedItems.map((x) => x.label).join(", ")
+                  : loadingUndisposed
+                    ? "Loading..."
+                    : "Select Dept - Quantity - Days left"}
+              </button>
+
+              {undisposedDropdownOpen && (
+                <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
+                  {sortedUndisposedOptions.length === 0 ? (
+                    <p className="px-2 py-1 text-xs text-slate-500">No undisposed waste</p>
+                  ) : (
+                    sortedUndisposedOptions.map((item) => {
+                      const checked = selectedUndisposedIds.includes(item.id);
+                      const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
+
+
+
+                      return (
+                        <label
+                          key={item.id}
+                          className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={alreadyChecked}
+                            onChange={(e) => {
+                              const nextIds = e.target.checked
+                                ? [...selectedUndisposedIds, item.id]
+                                : selectedUndisposedIds.filter((id) => id !== item.id);
+                              setSelectedUndisposedIds(nextIds);
+                            }}
+                          />
+
+                          <div className="flex flex-col">
+                            <span className="text-xs text-slate-700">
+                              {item.dept || "Dept"} - {item.qty.toFixed(2)} {item.unit}
+                            </span>
+                            <span className="text-xs font-semibold text-red-600">
+                              {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Total Quantity</label>
+            <div className="px-4">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Total Quantity</label>
 
-          <div
-            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
-          >
-            {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
-          </div>
-          {/* <input
+              <div
+                className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-xs"
+              >
+                {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
+              </div>
+              {/* <input
             type="text"
             readOnly
             value={Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
-            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-xs"
           /> */}
-        </div>
+            </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
-          <select
-            value={physicalForm}
-            onChange={(e) => setPhysicalForm(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          >
-            <option value="">Select</option>
-            {physicalOptions.map((opt) => (
-              <option key={opt.ID} value={opt.ID}>
-                {opt.NAME}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="px-4">
+              <label className="block text-xs font-semibold text-slate-700">Physical Form</label>
+              <select
+                value={physicalForm}
+                onChange={(e) => setPhysicalForm(e.target.value)}
+                className="cursor-pointer mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"
+              >
+                <option value="">Select</option>
+                {physicalOptions.map((opt) => (
+                  <option key={opt.ID} value={opt.ID}>
+                    {opt.NAME}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <div className="relative">
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Vendor List</label>
+            {/* <div className="relative">
+          <label className="mb-1 block text-xs font-semibold text-slate-700">Vendor List</label>
           <button
             type="button"
             onClick={() => setVendorDropdownOpen((prev) => !prev)}
@@ -801,25 +807,28 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
               )}
             </div>
           )}
-        </div>
+        </div> */}
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Remarks</label>
-          <textarea
-            value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            rows={3}
-          />
-        </div>
+            <div className="px-4">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Remarks</label>
+              <textarea
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                className="w-full text-sm rounded border border-slate-300 px-3 py-2"
+                rows={1}
+              />
+            </div>
+          </div>
 
+
+        </div>
         <button
           type="submit"
-          className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
+          className="block place-self-center cursor-pointer rounded bg-emerald-700 px-3 py-1.5 text-white hover:bg-emerald-800"
         >
           Submit
         </button>
       </form>
-    </section>
+    </section >
   );
 }

@@ -9,7 +9,7 @@ import { Toaster, toast } from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { encryptForLogin } from "@/lib/login-crypto-client";
 import encrypt from "@/components/Encrypt";
-import decrypt from "@/components/Decrypt";
+import { decrypt } from "@/lib/decryptVendorCode";
 
 
 
@@ -57,15 +57,55 @@ export default function LoginPage() {
   //   console.log(await encrypt("AppDbUser"))
   //   console.log(await encrypt("MAKV2SPBNI99212"))
   //   console.log(await encrypt("1433"))
-  //   console.log(await decrypt("ESQgJHjlA6vEgITOupoKwh2P35WJ7Y7oDu4aSJdYwQQ"))
   // }
 
   // useEffect(() => {
   //   encryptpwd()
   // }, [])
 
+
+  // const currenturl = new URL(window.location.href)
+  // const params = currenturl.search
+  // const QueryString = params.split("?QS=")[1]
+
+  // console.log(currenturl, "currenturl")
+  // console.log(params, "params")
+  // console.log(QueryString, "QueryString");
+
+  // const qs = new URL(window.location.href).searchParams.get("QS")
+
+
+
+  // async function ProcessQueryString() {
+  //   // console.log("hi i am entering processQueryString")
+
+  //   const decryptedQueryString = await decrypt(QueryString!)
+  //   // console.log(decryptedQueryString, "decrypytedquerystring")
+
+  //   const userEmailQS = decryptedQueryString.split(",")[0]
+  //   const userIDQS = decryptedQueryString.split(",")[1]
+  //   const userEmail = userEmailQS.split("=")[1]
+  //   const userID = userIDQS.split("=")[1]
+  //   // console.log(userEmail, "UserEmail")
+  //   // console.log(userID, "UserID")
+
+
+
+  //   // console.log("hi i am exiting processQueryString")
+  // }
+
+  // useEffect(() => {
+  //   ProcessQueryString()
+  // }, [])
+
+
+
+
+
   const onSubmit = async () => {
     clearErrors();
+
+    console.log(employeeCode, password)
 
     if (!employeeCode.trim()) {
       setUsernameError("Employee Code is required");

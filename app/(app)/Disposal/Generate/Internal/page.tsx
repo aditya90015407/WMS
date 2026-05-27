@@ -61,7 +61,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     const loadDropdowns = async () => {
       try {
         const [receiverRes, physicalRes] = await Promise.all([
-          fetch("/api/GetData/GetInternalReciever", {
+          fetch("/api/GetData/GetInternalReceiver", {
             method: "GET",
             cache: "no-store",
           }),
@@ -115,6 +115,8 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
         });
 
         const payload = await res.json();
+
+        console.log(payload)
         if (!res.ok || !payload.success) return;
 
         const row = Array.isArray(payload.data) ? payload.data[0] : payload.data;
@@ -212,10 +214,11 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     // formData.append("ReceiverAuthNo", String(form.disposedTo ?? ""));
     formData.append("TotalQty", String(Number(form.totalQuantity ?? 0)));
     formData.append("MUID", String(form.muid));
-    formData.append("NoOfContainers", "0");
+    // formData.append("NoOfContainers", "0");
     formData.append("PSID", String(form.physicalForm ?? ""));
-    formData.append("SpecialHandlingInstructions", "");
+    // formData.append("SpecialHandlingInstructions", "");
     formData.append("DateOfDisposal", String(form.disposalDate ?? today));
+    formData.append("AID", String(form.disposedTo));
 
 
 
@@ -262,9 +265,10 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
       alert(result.message || "Save failed");
       return;
     }
+
+    alert("Saved successfully");
     redirect("./")
 
-    // alert("Saved successfully");
   };
 
   return (
@@ -296,7 +300,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
             <tbody>
               <tr>
                 <td className="border border-slate-200 px-4 py-3 font-medium text-slate-900">
-                  Date
+                  Disposal Date
                 </td>
                 <td className="border border-slate-200 px-4 py-3">
                   <input

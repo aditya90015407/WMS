@@ -43,14 +43,16 @@ export default function HomePage() {
       className="relative min-h-screen bg-cover bg-center bg-no-repeat "
     // style={{ backgroundImage: 'url("/homepage.png")' }}
     >
-      <img src="/homepage.png" alt="" className="h-[400px] w-full" />
-      <h1 className="font-medium text-md text-center text-gray-950 place-self-center mt-1.5">
+      <h1 className="font-medium text-md text-center text-gray-950 place-self-center ">
         Hello! <span className="text-lg px-1 py-0.5  text-teal-700  rounded  font-semibold opacity-75">{session?.user.username}</span>.
         {/* <br /> */}
         You are logged in as <span className="ps-1 py-0.5 text-[#b5056c] text-lg rounded font-semibold opacity-75">{session?.user.roleName}</span>.
         <br />
         <span className="text-xs">Use the navigation menu on the left to get started</span>
       </h1>
+
+      <img src="/homepage.png" alt="" className="h-[400px] w-full mt-1.5" />
+
 
       {/* <div className="absolute bg-white/75" />
       <div className="relative mx-auto max-w-6xl space-y-8">

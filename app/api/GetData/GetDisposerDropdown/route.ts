@@ -9,7 +9,18 @@ export async function POST(req: NextRequest) {
         throw new Error("Couldn't connect to Database");
     }
 
-    const result = await pool.request().input("FLAG", "DROP-DISPO").execute("PRO-WMS_GET");
+    const body = await req.json()
+
+    const WID = body.WID
+    const WCID = body.WCID
+    const UID = body.UID
+
+    const result = await pool.request()
+        .input("FLAG", "DROP-DISPO")
+        .input("WCID", WCID)
+        .input("WID", WID)
+        .input("UID", UID)
+        .execute("PRO-WMS_GET");
 
     // console.log(result)
     return NextResponse.json(result.recordset)

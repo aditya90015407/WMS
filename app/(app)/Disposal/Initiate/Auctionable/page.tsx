@@ -42,6 +42,27 @@ export default function AuctionablePage() {
   const [physicalForm, setPhysicalForm] = useState("");
   const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
 
+  type PlantUnit = {
+    ID: string
+    NAME: string
+  }
+
+  const [plantUnit, setPlantUnit] = useState<PlantUnit[]>([])
+  const [selectedPlantUnit, setSelectedPlantUnit] = useState("")
+
+  async function GetPlantUnits() {
+
+    const res = await fetch("/api/GetData/GetUnit")
+    const data = await res.json()
+    // console.log(data)
+
+    setPlantUnit(data)
+  }
+
+  useEffect(() => {
+    GetPlantUnits()
+  }, [])
+
   // kept to avoid removing old element references
   const [waste, setWaste] = useState("");
   const [vendor, setVendor] = useState("");
@@ -154,7 +175,7 @@ export default function AuctionablePage() {
       setLoadingWaste(true);
       try {
         const res = await fetch(
-          `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(wasteCategory)}`,
+          `/api/auth/Waste/generate?type=drop-waste-for-plantunit&wcid=${encodeURIComponent(wasteCategory)}&plantunitid=${encodeURIComponent(selectedPlantUnit)}`,
           { cache: "no-store" },
         );
         const payload = (await res.json()) as { success?: boolean; data?: Option[] };
@@ -184,18 +205,19 @@ export default function AuctionablePage() {
 
       setLoadingUndisposed(true);
       try {
-        const res = await fetch("/api/GetData/GetAllUndisposedWaste", {
+        const res = await fetch("/api/GetData/GetAllUndisposedWasteByUnit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             flag: "GetAllUndisposedWaste",
             WCID: wasteCategory,
             WID: selectedWasteId,
+            UID: selectedPlantUnit
           }),
         });
 
         const payload = await res.json();
-        // console.log(payload);
+        console.log(payload);
         const raw =
           (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
           (Array.isArray(payload?.data) && payload.data) ||
@@ -276,11 +298,9 @@ export default function AuctionablePage() {
     e.preventDefault();
 
     if (
-      !auctionDate ||
       !wasteCategory ||
       !selectedWasteId ||
-      selectedUndisposedIds.length === 0 ||
-      selectedVendorIds.length === 0
+      selectedUndisposedIds.length === 0
     ) {
       alert("Please fill all required fields and select at least one waste item and vendor.");
       return;
@@ -332,30 +352,30 @@ export default function AuctionablePage() {
         return;
       }
 
-      const vendorInsertResults = await Promise.all(
-        selectedVendorIds.map(async (vendorId) => {
-          const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              IDDID: iddid,
-              VID: vendorId,
-            }),
-          });
+      // const vendorInsertResults = await Promise.all(
+      //   selectedVendorIds.map(async (vendorId) => {
+      //     const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
+      //       method: "POST",
+      //       headers: { "Content-Type": "application/json" },
+      //       body: JSON.stringify({
+      //         IDDID: iddid,
+      //         VID: vendorId,
+      //       }),
+      //     });
 
-          const vendorData = await vendorRes.json();
-          // console.log("InsertAuctionVendorDetails response:", vendorData);
+      //     const vendorData = await vendorRes.json();
+      //     // console.log("InsertAuctionVendorDetails response:", vendorData);
 
-          if (!vendorRes.ok || !vendorData.success) {
-            throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
-          }
+      //     if (!vendorRes.ok || !vendorData.success) {
+      //       throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
+      //     }
 
-          return vendorData;
-        }),
-      );
+      //     return vendorData;
+      //   }),
+      // );
 
-      console.log("Vendor insert results:", vendorInsertResults);
-      alert(data.message || "Saved Successfully");
+      // console.log("Vendor insert results:", vendorInsertResults);
+      // alert(data.message || "Saved Successfully");
 
       router.back()
     } catch (error) {
@@ -366,18 +386,23 @@ export default function AuctionablePage() {
 
 
   return (
-    <section className="max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       {/* <h1 className="text-2xl font-semibold text-teal-600 text-center">Auctionable Disposal</h1> */}
       <div className="relative">
-        <h1 className="text-xl font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
+        <h1 className="text-lg font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
 
-        <Link href="./">
-          <img src="/goback.png" alt="" className="h-5 absolute top-0 right-10" />
-        </Link>
+        <img src="/goback.png" alt="" className="h-5 absolute top-0 right-5" />
+
+        <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0.5 right-15"
+          onClick={() => window.location.reload()} />
+
       </div>
-      <form onSubmit={onSubmit} className="mt-6 space-y-4">
-        {/* <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">
+      <form onSubmit={onSubmit} className="mt-6 ">
+
+        <div className="space-y-4 grid grid-cols-2 space-x-10 mx-3">
+
+          {/* <div>
+          <label className="mb-1 block text-xs font-semibold text-slate-700">
             Auction Details (Batch Id)
           </label>
           <input
@@ -387,152 +412,175 @@ export default function AuctionablePage() {
           />
         </div> */}
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Auction Date</label>
+          {/* <div>
+          <label className="mb-1 block text-xs font-semibold text-slate-700">Auction Date</label>
           <input
             type="date"
             value={auctionDate}
             onChange={(e) => setAuctionDate(e.target.value)}
             className="w-full rounded border border-slate-300 px-3 py-2"
           />
-        </div>
+        </div> */}
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Waste Category</label>
-          <select
-            value={wasteCategory}
-            onChange={(e) => {
-              setWasteCategory(e.target.value);
-            }}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled={loadingBase}
-          >
-            <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
-            {categoryOptions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Waste List</label>
-          <select
-            value={selectedWasteId}
-            onChange={(e) => {
-              setSelectedWasteId(e.target.value);
-              const name =
-                wasteOptions.find((w) => w.id === e.target.value)?.name ?? "";
-              setWaste(name);
-            }}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            disabled={!wasteCategory || loadingWaste}
-          >
-            <option value="">
-              {loadingWaste ? "Loading..." : "Select Waste Item"}
-            </option>
-            {wasteOptions.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="relative">
-          <label className="mb-1 block text-sm font-semibold text-slate-700">
-            Undisposed Waste (Dept - Quantity - Days Left)
-          </label>
-          <button
-            type="button"
-            onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
-            disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
-            className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
-          >
-            {selectedUndisposedItems.length > 0
-              ? selectedUndisposedItems.map((x) => x.label).join(", ")
-              : loadingUndisposed
-                ? "Loading..."
-                : "Select Dept - Quantity - Days left"}
-          </button>
-
-          {undisposedDropdownOpen && (
-            <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
-              {undisposedOptions.length === 0 ? (
-                <p className="px-2 py-1 text-sm text-slate-500">No undisposed waste</p>
-              ) : (
-                undisposedOptions.map((item) => {
-                  const checked = selectedUndisposedIds.includes(item.id);
-                  return (
-                    <label
-                      key={item.id}
-                      className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={checked}
-                        onChange={(e) => {
-                          const nextIds = e.target.checked
-                            ? [...selectedUndisposedIds, item.id]
-                            : selectedUndisposedIds.filter((id) => id !== item.id);
-                          setSelectedUndisposedIds(nextIds);
-                        }}
-                      />
-                      <div className="flex flex-col">
-                        <span className="text-sm text-slate-700">
-                          {item.dept || "Dept"} - {item.qty.toFixed(2)}{" "}{item.unit || "N/A"}
-                        </span>
-                        <span className="text-sm font-semibold text-red-600">
-                          {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}{" "}
-
-                        </span>
-                      </div>
-                    </label>
-                  );
-                })
-              )}
-            </div>
-          )}
-        </div>
-
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">
-            Total Quantity
-          </label>
-          <div
-            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
-          >
-            {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{undisposedOptions[0]?.unit}
+          <div className="text-sm">
+            <label className="mb-1 block text-xs font-semibold text-slate-700">Waste Disposal Unit </label>
+            <select
+              value={selectedPlantUnit}
+              onChange={(e) => {
+                setSelectedPlantUnit(e.target.value);
+              }}
+              className="w-full rounded border border-slate-300 px-3 py-2"
+              disabled={loadingBase}
+            >
+              <option value="">{loadingBase ? "Loading..." : "Select Plant Unit"}</option>
+              {plantUnit.map((item) => (
+                <option key={item.ID} value={item.ID}>
+                  {item.NAME}
+                </option>
+              ))}
+            </select>
           </div>
-          {/* <input
+
+
+          <div className="text-sm">
+            <label className="mb-1 block text-xs font-semibold text-slate-700">Waste Category</label>
+            <select
+              value={wasteCategory}
+              onChange={(e) => {
+                setWasteCategory(e.target.value);
+              }}
+              className="w-full rounded border border-slate-300 px-3 py-2"
+              disabled={loadingBase || !selectedPlantUnit}
+            >
+              <option value="">{loadingBase ? "Loading..." : !selectedPlantUnit ? "Select Unit First" : "Select Waste Category"}</option>
+              {categoryOptions.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="text-sm">
+            <label className="mb-1 block text-xs font-semibold text-slate-700">Waste List</label>
+            <select
+              value={selectedWasteId}
+              onChange={(e) => {
+                setSelectedWasteId(e.target.value);
+                const name =
+                  wasteOptions.find((w) => w.id === e.target.value)?.name ?? "";
+                setWaste(name);
+              }}
+              className="w-full rounded border border-slate-300 px-3 py-2"
+              disabled={!wasteCategory || loadingWaste}
+            >
+              <option value="">
+                {loadingWaste ? "Loading..." : "Select Waste Item"}
+              </option>
+              {wasteOptions.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="relative text-sm">
+            <label className="mb-1 block text-xs font-semibold text-slate-700">
+              Undisposed Waste (Dept - Quantity - Days Left)
+            </label>
+            <button
+              type="button"
+              onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
+              disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
+              className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
+            >
+              {selectedUndisposedItems.length > 0
+                ? selectedUndisposedItems.map((x) => x.label).join(", ")
+                : loadingUndisposed
+                  ? "Loading..."
+                  : "Select Dept - Quantity - Days left"}
+            </button>
+
+            {undisposedDropdownOpen && (
+              <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
+                {undisposedOptions.length === 0 ? (
+                  <p className="px-2 py-1 text-xs text-slate-500">No undisposed waste</p>
+                ) : (
+                  undisposedOptions.map((item) => {
+                    const checked = selectedUndisposedIds.includes(item.id);
+                    return (
+                      <label
+                        key={item.id}
+                        className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={(e) => {
+                            const nextIds = e.target.checked
+                              ? [...selectedUndisposedIds, item.id]
+                              : selectedUndisposedIds.filter((id) => id !== item.id);
+                            setSelectedUndisposedIds(nextIds);
+                          }}
+                        />
+                        <div className="flex flex-col">
+                          <span className="text-sm text-slate-700">
+                            {item.dept || "Dept"} - {item.qty.toFixed(2)}{" "}{item.unit || "N/A"}
+                          </span>
+                          <span className="text-sm font-semibold text-red-600">
+                            {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}{" "}
+
+                          </span>
+                        </div>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </div>
+
+
+          <div className="text-sm">
+            <label className="mb-1 block text-xs font-semibold text-slate-700">
+              Total Quantity
+            </label>
+            <div
+              className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-xs"
+            >
+              {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{undisposedOptions[0]?.unit}
+            </div>
+            {/* <input
             type="text"
             readOnly
             value={Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}
-            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-xs"
           /> */}
-        </div>
+          </div>
 
-        <div>
-          <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
-          <select
-            value={physicalForm}
-            onChange={(e) => setPhysicalForm(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-          >
-            <option value="">Select</option>
-            {physicalOptions.map((opt) => (
-              <option key={opt.ID} value={opt.ID}>
-                {opt.NAME}
-              </option>
-            ))}
-          </select>
-        </div>
 
+          <div className="text-sm">
+            <label className="block text-xs font-semibold text-slate-700">Physical Form</label>
+            <select
+              value={physicalForm}
+              onChange={(e) => setPhysicalForm(e.target.value)}
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"
+            >
+              <option value="">Select</option>
+              {physicalOptions.map((opt) => (
+                <option key={opt.ID} value={opt.ID}>
+                  {opt.NAME}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/*
         <div className="relative">
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Vendor List</label>
+          <label className="mb-1 block text-xs font-semibold text-slate-700">Vendor List</label>
 
-          <button
+         <button
             type="button"
             onClick={() => setVendorDropdownOpen((prev) => !prev)}
             disabled={loadingBase}
@@ -548,7 +596,7 @@ export default function AuctionablePage() {
           {vendorDropdownOpen && (
             <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
               {displayVendorOptions.length === 0 ? (
-                <p className="px-2 py-1 text-sm text-slate-500">No vendor options</p>
+                <p className="px-2 py-1 text-xs text-slate-500">No vendor options</p>
               ) : (
                 <>
                   <label className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50">
@@ -623,25 +671,26 @@ export default function AuctionablePage() {
               Vendor names are empty from API response. Please fix vendor name mapping in backend.
             </p>
           )}
-        </div>
+      </div>
+      */}
 
-        <div>
-          <label className="mb-1 block text-sm font-semibold text-slate-700">Remarks</label>
-          <textarea
-            value={remarks}
-            onChange={(e) => setRemarks(e.target.value)}
-            className="w-full rounded border border-slate-300 px-3 py-2"
-            rows={3}
-          />
+          <div className="w-[95%]  col-span-2">
+            <label className="mb-1 block text-xs font-semibold text-slate-700">Remarks</label>
+            <textarea
+              value={remarks}
+              onChange={(e) => setRemarks(e.target.value)}
+              className="w-full text-sm rounded border border-slate-300 px-3 py-2"
+              rows={1}
+            />
+          </div>
         </div>
-
         <button
           type="submit"
-          className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800"
+          className="text-sm place-self-center block cursor-pointer rounded bg-emerald-700 mt-2 px-3 py-2 text-white hover:bg-emerald-800"
         >
           Submit
         </button>
       </form>
-    </section>
+    </section >
   );
 }

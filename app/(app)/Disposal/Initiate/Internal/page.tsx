@@ -122,7 +122,7 @@ export default function DisposalRecycleForm() {
     const loadDropdowns = async () => {
       try {
         const [disposedRes, physicalRes] = await Promise.all([
-          fetch("/api/GetData/GetInternalReciever", { cache: "no-store" }),
+          fetch("/api/GetData/GetInternalReceiver", { cache: "no-store" }),
           fetch("/api/GetData/GetPhysicalForm", { cache: "no-store" }),
         ]);
 

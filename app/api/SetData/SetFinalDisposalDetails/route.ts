@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
     //  console.log("UIDI :", UID);
     //  console.log("VTID :", VTID);
-    //  console.log(form.get("MUID"));
+    console.log(form);
 
     const result = await pool
       .request()
@@ -56,6 +56,7 @@ export async function POST(req: Request) {
       // .input("WasteType", sql.NVarChar(100), String(form.get("WasteType") ?? ""))
       .input("MUID", sql.NVarChar(50), String(form.get("MUID") ?? ""))
       .input("PSID", sql.NVarChar(50), String(form.get("PSID") ?? ""))
+      .input("AID", sql.NVarChar(50), String(form.get("AID") ?? ""))
       .input("SpecialHandlingInstructions", sql.NVarChar(300), String(form.get("SpecialHandlingInstructions") ?? ""))
       .input("EmpCode", sql.NVarChar(50), empCode)
       .input("DateOfDisposal", sql.Date, String(form.get("DateOfDisposal") ?? ""))

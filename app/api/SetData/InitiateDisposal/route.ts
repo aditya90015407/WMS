@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     const physicalForm = String(body.PSID ?? "").trim();
     const disposedTo = String(body.AID ?? "").trim();
 
-    console.log(body)
+    // console.log(body)
 
     const result = await pool
       .request()
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       .input("TotalQty", sql.Decimal(18, 3), totalQty)
       .input("MUID", sql.Int, MUID)
       .input("Auctionable", sql.Int, auctionable)
-      .input("AuctionDate", sql.Date, auctionDate)
+      .input("AuctionDate", auctionDate)
       .input("PSID", sql.NVarChar(30), physicalForm)
       .input("AID", sql.NVarChar(30), disposedTo)
       .input("Remarks", sql.NVarChar(sql.MAX), remarks)

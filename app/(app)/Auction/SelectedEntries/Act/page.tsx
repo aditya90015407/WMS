@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { redirect, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import decrypt from "@/components/Decrypt";
 import { useRouter } from "next/navigation";
 
 type AuctionDetails = {
+  ID: string
   AuctionDate?: string;
   WasteCategory?: string;
   Waste?: string;
@@ -203,7 +204,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
   if (loading) {
     return (
       <section className="bg-white h-fit px-8 py-4 relative">
-        <p className="text-sm text-slate-600">Loading transporter form...</p>
+        <p className="text-sm text-slate-600">Loading Page...</p>
       </section>
     );
   }
@@ -211,7 +212,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
   return (
     <div className="bg-white h-fit px-8 py-0.5 relative">
       <Toaster />
-      <div className="overflow-hidden w-fit flex place-self-center py-1 bg-emerald-700 rounded-lg ">
+      <div className="overflow-hidden w-fit flex place-self-center py-1 bg-teal-700 rounded-lg ">
         <p
           className="whitespace-nowrap text-white animate-slide text-sm"
           style={{
@@ -232,55 +233,65 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
         }
       `}</style>
       </div>
-      <div>
 
-        <div className="text-center text-teal-600 mt-2 mb-5 text-xl font-bold">
-          Selected Auction - Transporter Form
+      <div className="relative">
+        <div className="text-center text-teal-600 mt-2 mb-2 text-sm font-bold">
+          Fill Transporter and Receiver Details
         </div>
-        <Link href="/Auction/SelectedEntries">
-          <img src="/goback.png" alt="" className="h-6 absolute top-4 right-10" />
-        </Link>
+
+        <img src="/goback.png" alt="" className="h-5 cursor-pointer absolute top-0 right-12"
+          onClick={() => redirect("./")} />
+        <img src="/refresh.png" alt="" className="h-4 cursor-pointer absolute top-0.5 right-5"
+          onClick={() => window.location.reload()}
+        />
       </div>
 
-      <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-        <h2 className="text-sm font-semibold text-cyan-600 mb-3">Auction Details</h2>
+      <div className="mb-6 rounded-xl border border-slate-200 p-4">
+        <h2 className="text-sm font-semibold text-cyan-600 text-center mb-3">Auction Details</h2>
 
-        <div className="grid grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
-            <p className="text-xs text-slate-500">Auction Date</p>
-            <p className="font-medium text-slate-800">{auctionDetails?.AuctionDate ?? "N/A"}</p>
+            <p className="text-xs text-slate-500 font-semibold p-2 py-1">Auction ID</p>
+            <p className="font-medium text-slate-800 py-0 p-2">{auctionDetails?.ID ?? "N/A"}</p>
           </div>
 
           <div>
-            <p className="text-xs text-slate-500">Posted On</p>
-            <p className="font-medium text-slate-800">
+            <p className="text-xs text-slate-500 font-semibold p-2 py-1">Auction Date</p>
+            <p className="font-medium text-slate-800 py-0 p-2">{auctionDetails?.AuctionDate ?? "N/A"}</p>
+          </div>
+
+          <div>
+            <p className="text-xs text-slate-500 font-semibold p-2 py-1">Posted On</p>
+            <p className="font-medium text-slate-800 py-0 p-2">
               {auctionDetails?.CrDt ? String(auctionDetails.CrDt).split("T")[0] : "N/A"}
             </p>
           </div>
 
           <div>
-            <p className="text-xs text-slate-500">Waste Category</p>
-            <p className="font-medium text-slate-800">
+            <p className="text-xs text-slate-500 font-semibold p-2 py-1">Waste Category</p>
+            <p className="font-medium text-slate-800 py-0 p-2">
               {auctionDetails?.WasteCategory ?? "N/A"}
             </p>
           </div>
 
           <div>
-            <p className="text-xs text-slate-500">Remarks</p>
-            <p className="font-medium text-slate-800">{auctionDetails?.Remarks ?? "N/A"}</p>
+            <p className="text-xs text-slate-500 font-semibold p-2 py-1">Waste</p>
+            <p className="font-medium text-slate-800 py-0 p-2">{auctionDetails?.Waste ?? "N/A"}</p>
           </div>
 
           <div>
-            <p className="text-xs text-slate-500">Waste</p>
-            <p className="font-medium text-slate-800">{auctionDetails?.Waste ?? "N/A"}</p>
-          </div>
-
-          <div>
-            <p className="text-xs text-slate-500">Waste Qty</p>
-            <p className="font-medium text-slate-800">
+            <p className="text-xs text-slate-500 font-semibold p-2 py-1">Waste Qty</p>
+            <p className="font-medium text-slate-800 py-0 p-2">
               {auctionDetails?.TotalQty ?? "N/A"}{" "}{auctionDetails?.MUnit}
             </p>
           </div>
+
+
+          <div className="col-span-3">
+            <p className="text-xs text-slate-500 font-semibold p-2 py-1">Remarks</p>
+            <p className="font-medium text-slate-800 py-0 p-2">{auctionDetails?.Remarks ?? "N/A"}</p>
+          </div>
+
         </div>
 
         {/* <div className="mt-4">
@@ -348,7 +359,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
 
           <div>
 
-            <label className="inline-flex items-center cursor-pointer font-semibold text-sm">
+            <label className="inline-flex items-center cursor-pointer font-semibold text-slate-500 text-sm">
               Do you have Transport Facilities ?
               <div className="relative mx-4">
                 <input
@@ -394,7 +405,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
           </div> */}
 
                 <div>
-                  <label className="font-semibold">Transporter Name</label>
+                  <label className="font-semibold text-slate-600 text-xs">Transporter Name</label>
                   <input
                     type="text"
                     value={transportForm.TransporterName}
@@ -406,7 +417,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
                 </div>
 
                 <div>
-                  <label className="font-semibold">Transporter Address</label>
+                  <label className="font-semibold text-slate-600 text-xs">Transporter Address</label>
                   <input
                     type="text"
                     value={transportForm.TransporterAddress}
@@ -418,7 +429,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
                 </div>
 
                 <div>
-                  <label className="font-semibold">Transporter Phone</label>
+                  <label className="font-semibold text-slate-600 text-xs">Transporter Phone</label>
                   <input
                     type="text"
                     value={transportForm.TransporterPhone}
@@ -430,7 +441,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
                 </div>
 
                 <div>
-                  <label className="font-semibold">Transporter Email</label>
+                  <label className="font-semibold text-slate-600 text-xs">Transporter Email</label>
                   <input
                     type="email"
                     value={transportForm.TransporterEmail}
@@ -442,7 +453,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
                 </div>
 
                 <div>
-                  <label className="font-semibold">Vehicle Type</label>
+                  <label className="font-semibold text-slate-600 text-xs">Vehicle Type</label>
                   <select
                     value={transportForm.VTID}
                     onChange={(e) =>
@@ -460,7 +471,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
                 </div>
 
                 <div>
-                  <label className="font-semibold">Transporter Reg No</label>
+                  <label className="font-semibold text-slate-600 text-xs">Transporter Reg No</label>
                   <input
                     type="text"
                     value={transportForm.TransporterRegNo}
@@ -472,7 +483,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
                 </div>
 
                 <div>
-                  <label className="font-semibold">Vehicle Reg No</label>
+                  <label className="font-semibold text-slate-600 text-xs">Vehicle Reg No</label>
                   <input
                     type="text"
                     value={transportForm.VehicleRegNo}
@@ -484,7 +495,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
                 </div>
 
                 <div>
-                  <label className="font-semibold">Receiver Name</label>
+                  <label className="font-semibold text-slate-600 text-xs">Receiver Name</label>
                   <input
                     type="text"
                     value={transportForm.ReceiverName}
@@ -496,7 +507,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
                 </div>
 
                 <div>
-                  <label className="font-semibold">Receiver Address</label>
+                  <label className="font-semibold text-slate-600 text-xs">Receiver Address</label>
                   <input
                     type="text"
                     value={transportForm.ReceiverAddress}
@@ -508,7 +519,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
                 </div>
 
                 <div>
-                  <label className="font-semibold">Receiver Auth No</label>
+                  <label className="font-semibold text-slate-600 text-xs">Receiver Auth No</label>
                   <input
                     type="text"
                     value={transportForm.ReceiverAuthNo}
@@ -521,14 +532,15 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
               </div>
             </>
           }
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="cursor-pointer justify-center w-full mt-4 text-white "
-          >
-            <span className="bg-blue-500 w-fit px-4 py-2 rounded-md text-sm disabled:opacity-60">{saving ? "Submitting..." : "Submit"}</span>
-          </button>
+          <div className=" place-self-center">
+            <button
+              type="submit"
+              disabled={saving}
+              className="cursor-pointer w-full mt-4 text-white "
+            >
+              <span className="bg-cyan-700 w-fit px-4 py-2 rounded-md text-sm disabled:opacity-60">{saving ? "Submitting..." : "Submit"}</span>
+            </button>
+          </div>
         </form>
       }
     </div>

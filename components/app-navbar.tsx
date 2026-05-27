@@ -122,7 +122,7 @@ export default function AppNavbar() {
             aria-label="Open profile"
           >
             {/* <UserCircle2 className="h-9 w-9" /> */}
-            <img src="/image5.png" alt="" className="h-9 w-9 cursor-pointer " />
+            <img src="/profileicon.png" alt="" className="h-9 w-9 cursor-pointer " />
           </button>
 
           {isOpen && (

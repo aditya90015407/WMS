@@ -64,7 +64,7 @@ const decryptCredential = async (value: string): Promise<string> => {
 };
 
 const encryptPasswordForSp = (plainPassword: string): string => {
-  const encryptionKey = process.env.WMS_AES_KEY || "MYKEY";
+  const encryptionKey = process.env.NEXT_PUBLIC_WMS_AES_KEY || "MYKEY";
   if (!encryptionKey || encryptionKey.trim().length === 0) {
     throw new Error("Missing WMS_AES_KEY environment variable");
   }

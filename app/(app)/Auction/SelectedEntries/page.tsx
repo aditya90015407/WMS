@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import encrypt from "@/components/Encrypt";
 
 type SelectedAuctionRow = {
@@ -16,7 +16,7 @@ type SelectedAuctionRow = {
   Waste: string
   WasteCategory: string
   VID: string
-  DiposalType: string
+  DisposalType: string
   DisType: string
   TotalQty: string
   CrBy: string
@@ -105,9 +105,14 @@ export default function SelectedEntriesPage() {
 
   return (
     <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="text-center">
-        <h1 className="text-lg font-semibold text-teal-600">Selected Auction Entries</h1>
-        <p className="mt-1 text-sm text-slate-600">Auctions selected for the logged-in vendor</p>
+      <div className="text-center relative">
+        <h1 className="text-lg font-semibold text-teal-600">Awarded Auctions</h1>
+        <p className="mt-1 text-xs text-slate-600">Auctions you have been selected for</p>
+
+
+        <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-2 right-6"
+          onClick={() => window.location.reload()}
+        />
       </div>
 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading selected entries...</p>}

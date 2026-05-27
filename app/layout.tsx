@@ -14,12 +14,10 @@ import Providers from "./providers";
 // });
 
 export const metadata: Metadata = {
-  title: "Waste Management Portal",
-  description: "Waste Management Application For JSL",
+  title: "Waste Management System",
+  description: "Waste Management System",
   icons: {
-    icon: "/favicon.png?v=2",
-    shortcut: "/favicon.png?v=2",
-    apple: "/favicon.png?v=2",
+    icon: "/favicon.png",
   },
 };
 

@@ -14,13 +14,17 @@ export async function POST(req: Request) {
     if (!id) {
       return NextResponse.json({ success: false, message: "ID missing" }, { status: 400 });
     }
+    console.log(id)
 
-    const id1 = await decrypt(id);
+
+    // const id1 = await decrypt(id);
+
+    // console.log(id1)
 
     const result = await pool
       .request()
       .input("FLAG", sql.VarChar, "GetWasteDetailsByAuctionId")
-      .input("ID", sql.VarChar, id1)
+      .input("ID", sql.VarChar, id)
       .execute("PRO-WMS_GET");
 
     const rows = result.recordset ?? [];

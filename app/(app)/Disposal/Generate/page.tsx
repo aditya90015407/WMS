@@ -124,17 +124,18 @@ export default function DisposalListPage() {
                         const wcid = String(row.WCID ?? "").trim();
 
 
-                        const disposalType = String(row.DisType ?? "").trim();
-                        console.log("Row clicked:", { iddid, wcid, disposalType });
+                        const disposalType = String(row.DisposalType ?? "").trim();
+                        // const disposalType = String(row.DisType ?? "").trim();
+                        // console.log("Row clicked:", { iddid, wcid, disposalType });
                         if (!iddid || !disposalType) return;
 
                         const target =
-                          disposalType?.toLowerCase() === "internal"
-                            ? `/Disposal/Generate/Internal?id=${encodeURIComponent(iddid)}`
+                          disposalType == '3'
+                            ? `/Disposal/Generate/Internal?id=${encodeURIComponent(iddid)}&disposalType=${encodeURIComponent(disposalType)}`
                             : wcid === "1"
-                              ? `/Disposal/Generate/Hazardous?id=${encodeURIComponent(iddid)}`
+                              ? `/Disposal/Generate/Hazardous?id=${encodeURIComponent(iddid)}&disposalType=${encodeURIComponent(disposalType)}`
                               :
-                              `/Disposal/Generate/NonHazardous?id=${encodeURIComponent(iddid)}`
+                              `/Disposal/Generate/NonHazardous?id=${encodeURIComponent(iddid)}&disposalType=${encodeURIComponent(disposalType)}`
                           ;
 
                         if (!target) {

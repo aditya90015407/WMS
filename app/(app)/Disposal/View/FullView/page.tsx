@@ -173,7 +173,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
 
             <div className="mt-4 grid gap-4 md:grid-cols-2 text-sm mt-7">
                 <div className=""> <span className="text-xs mr-1 font-semibold ">ID  : </span> {disposalDetails?.ID}</div>
-                <div className=""><span className="text-xs mr-1 font-semibold ">Diposal Type : </span> {disposalDetails?.DisType}</div>
+                <div className=""><span className="text-xs mr-1 font-semibold ">Disposal Type : </span> {disposalDetails?.DisType}</div>
                 {disposalDetails?.DisposalType == '1' && <div className=""><span className="text-xs mr-1 font-semibold ">Auction Date : </span> {disposalDetails?.AuctionDate}</div>}
                 {disposalDetails?.DisposalType == '1' && <div className=""><span className="text-xs mr-1 font-semibold ">Selected Vendor: </span> {disposalDetails?.VendorName} ({disposalDetails.VendorCode})</div >}
                 <div className=""><span className="text-xs mr-1 font-semibold ">Physical State : </span> {disposalDetails?.PhysicalState}</div >

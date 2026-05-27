@@ -190,7 +190,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                     <div className="px-2 py-2 font-semibold text-xs">Waste Disposer : <span className="font-normal text-sm"> {wasteData?.Dept}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Waste Receiver : <span className="font-normal text-sm"> {wasteData?.Receiver}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Generation Date : <span className="font-normal text-sm"> {wasteData?.GenerationDate}</span></div>
-                    <div className="px-2 py-2 font-semibold text-xs">Target Date : <span className="font-normal text-sm"> {wasteData?.TargetDate}</span></div>
+                    <div className="px-2 py-2 font-semibold text-xs">Targetted Disposal Date : <span className="font-normal text-sm"> {wasteData?.TargetDate}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Status : <span className="font-normal text-sm"> {wasteData?.Status}</span></div>
                     {/* <div className="px-2 py-2 font-semibold text-xs">Approver : <span className="font-normal text-sm"> {wasteData?.Approver}</span></div> */}
                 </div>

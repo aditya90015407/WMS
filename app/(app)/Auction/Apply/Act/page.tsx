@@ -321,7 +321,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
         />
       </div>
 
-      <div className="mb-6 rounded-xl border border-slate-200 bg-emerald-50 p-4">
+      <div className="mb-6 rounded-xl border border-slate-200  p-4">
         <h2 className="text-sm font-semibold text-teal-500 mb-3">
           Auction Details
         </h2>
@@ -548,7 +548,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
         <button
           type="submit"
           disabled={!canSubmit}
-          className={`mt-6 text-sm px-4 py-1.5 rounded-md text-white ${canSubmit
+          className={`block place-self-center mt-4 mb-8 text-sm px-4 py-1.5 rounded-md text-white ${canSubmit
             ? "bg-green-700 hover:bg-green-800 cursor-pointer"
             : "bg-gray-400 cursor-not-allowed"
             }`}
