@@ -237,7 +237,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
                 <div className="block w-full max-w-4xl">
                     <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 w-full block">
-                        <div className="py-1 text-center text-sm">Documents Upload History</div>
+                        <div className="py-1 text-center text-sm text-pink-500 font-semibold">Documents Upload History</div>
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-slate-50">
                                 <tr >
