@@ -251,7 +251,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >HW authorization from respective SPCB</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Copy of blue book</th>
+                                    >Copy of BlueBook</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >EPR registration certificate for Plastic/oil/tyre</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
