@@ -15,11 +15,11 @@ export async function POST(req: NextRequest) {
         const ID = body.ID
         // console.log(body)
 
-        const result = await pool.request().input("FLAG", "GetAllAuctionParticipantsByID")
+        const result = await pool.request().input("FLAG", "GetTwiceRejectedAuctionParticipantsByID")
             .input("ID", ID)
             .execute("PRO-WMS_GET");
 
-        // console.log(result.recordset)
+        // console.log(result.recordset, "GetTwiceRejectedAuctionParticipantsByID")
         return NextResponse.json(result.recordset)
     } catch (err: any) {
         return NextResponse.json({ success: false, message: err?.message || "Server error" },

@@ -223,7 +223,10 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
               )
               : getFirstValue(row, ["TotalQuantity", "TotalQty"]),
 
-          quantityUnit: getFirstValue(row, ["MUnit"]),
+          quantityUnit: getFirstValue(row, ["MUnit"]) === "KG"
+            ? "MT"
+            : getFirstValue(row, ["MUnit"]),
+          // quantityUnit: getFirstValue(row, ["MUnit"]),
           noOfContainers: getFirstValue(row, ["NoOfContainers"]),
           physicalForm: mapPhysicalForm(getFirstValue(row, ["PhysicalForm", "PSID"])),
           specialHandlingInfo: getFirstValue(row, ["SpecialHandlingInfo", "SpecialHandlingInstructions"]),
@@ -242,7 +245,10 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
           receiverMonth: getFirstValue(row, ["ReceiverMonth"]),
           receiverDay: getFirstValue(row, ["ReceiverDay"]),
           receiverYear: getFirstValue(row, ["ReceiverYear"]),
-          MUnit: getFirstValue(row, ["MUnit"])
+          // MUnit: getFirstValue(row, ["MUnit"])
+          MUnit: getFirstValue(row, ["MUnit"]) === "KG"
+            ? "MT"
+            : getFirstValue(row, ["MUnit"]),
         });
 
         setStatus("Form 10 details loaded successfully.");

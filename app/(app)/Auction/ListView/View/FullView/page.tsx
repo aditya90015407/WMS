@@ -157,7 +157,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         const a = document.createElement("a")
 
         a.href = url
-        a.download = `${auctionParticipant?.VendorCode}_${attachName}.${ext}`
+        a.download = `${auctionParticipant?.VendorCode}_${auctionParticipant?.NAME}_${attachName}.${ext}`
         document.body.appendChild(a)
         a.click()
 
@@ -276,7 +276,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                         >
-                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                            <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                                                 onClick={() => downloadAttachment(row.CTO_AttachPath, "CTO Attachment")}
                                             />
                                         </td>
@@ -284,28 +284,28 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                         >
-                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                            <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                                                 onClick={() => downloadAttachment(row.OSPCB_HW_Auth_AttachPath, "OSPCB_HW_Auth_AttachPath")}
                                             />
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                         >
-                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                            <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                                                 onClick={() => downloadAttachment(row.SPCB_HW_Auth_AttachPath, "SPCB_HW_Auth_AttachPath")}
                                             />
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                         >
-                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                            <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                                                 onClick={() => downloadAttachment(row.BlueBook_AttachPath, "BlueBook_AttachPath")}
                                             />
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                         >
-                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                            <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                                                 onClick={() => downloadAttachment(row.EPR_Cert_AttachPath, "EPR_Cert_AttachPath")}
                                             />
                                         </td>

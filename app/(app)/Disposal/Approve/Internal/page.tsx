@@ -222,7 +222,7 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
         const a = document.createElement("a")
 
         a.href = url
-        a.download = `${attachName}.${ext}`
+        a.download = `${id}_${attachName}.${ext}`
         document.body.appendChild(a)
         a.click()
 

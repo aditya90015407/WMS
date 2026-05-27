@@ -507,7 +507,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
 
           <div>
             <label className="font-semibold">
-              Copy of blue book (quantity bought till date to be shown)
+              Copy of BlueBook (quantity bought till date to be shown)
             </label>
             <input
               type="file"

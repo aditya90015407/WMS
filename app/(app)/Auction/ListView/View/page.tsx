@@ -145,6 +145,7 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
     }
 
     const [selectedVendor, setSelectedVendor] = useState<Vendor>()
+    const [rejectedVendor, setRejectedVendor] = useState<Vendor[]>([])
 
     const router = useRouter()
 
@@ -396,6 +397,26 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
     }, [params])
 
 
+    async function GetTwiceRejectedAuctionParticipants() {
+        if (!IDDID) return
+        const res = await fetch("/api/GetData/GetTwiceRejectedAuctionParticipantsByID", {
+            method: "POST",
+            body: JSON.stringify({ "ID": IDDID })
+        })
+        // console.log(res, "res")
+        // console.log(IDDID, "IDDID")
+        const data = await res.json()
+        // console.log(data, "rejected auction listview view")
+        setRejectedVendor(data)
+    }
+
+    useEffect(() => {
+        GetTwiceRejectedAuctionParticipants()
+    }, [IDDID])
+
+
+
+
     return (
         <section className="max-w-4xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -604,36 +625,41 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 bg-white">
-                                {currentRows?.map((row, index) => (
-                                    <tr key={index}
-                                        onClick={async () => {
-                                            const encryptedID = await encrypt(row.ID!.toString());
-                                            router.push(`./View/FullView?id=${encryptedID}`);
-                                        }}
-                                        className={`cursor-pointer ${row.ID == selectedVendor?.ID ? "bg-green-200" : ""}`}
-                                    >
-                                        <td
-                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.ID}
-                                        </td>
-                                        <td
-                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.NAME}
-                                        </td>
-                                        <td
-                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.EMAIL}
-                                        </td>
-                                        <td
-                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.CrBy}
-                                        </td>
-                                        <td
-                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row?.CrDt?.split('T')[0]} {row?.CrDt?.split('T')[1]?.split('.')[0]}
-                                        </td>
-                                    </tr>
-                                ))}
+                                {currentRows?.map((row, index) => {
+                                    const isRejected = rejectedVendor?.some((el) => el.ID == row.ID)
+                                    // console.log(isRejected, row.ID)
+                                    return (
+                                        <tr key={index}
+                                            onClick={async () => {
+                                                const encryptedID = await encrypt(row.ID!.toString());
+                                                router.push(`./View/FullView?id=${encryptedID}`);
+                                            }}
+                                            className={`cursor-pointer ${row.ID == selectedVendor?.ID ? "bg-green-200" : ""} 
+                                            ${isRejected ? "bg-rose-200" : ""}`}
+                                        >
+                                            <td
+                                                className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                            >{row.ID}
+                                            </td>
+                                            <td
+                                                className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                            >{row.NAME}
+                                            </td>
+                                            <td
+                                                className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                            >{row.EMAIL}
+                                            </td>
+                                            <td
+                                                className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                            >{row.CrBy}
+                                            </td>
+                                            <td
+                                                className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                            >{row?.CrDt?.split('T')[0]} {row?.CrDt?.split('T')[1]?.split('.')[0]}
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                                 {/* {pagedRows.map((row, index) => (
                                     <tr key={`row-${(currentPage - 1) * pageSize + index}`}
                                         onClick={async () => {
@@ -666,7 +692,7 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
                     {
                         !selectedVendor &&
                         <div className="text-sm my-2 text-cyan-700">
-                            <span className="text-xs font-semibold text-rose-600">No vendor has been finalised yet</span>
+                            <span className="text-xs font-semibold tracking-wide text-cyan-600">No vendor has been finalised yet</span>
                         </div>
                     }
 

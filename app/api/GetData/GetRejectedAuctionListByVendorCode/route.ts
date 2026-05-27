@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
     const body = await req.json();
     const EmpCode = String(body?.EmpCode ?? body?.empCode ?? "").trim();
-    console.log(EmpCode)
+    // console.log(EmpCode)
 
     if (!EmpCode) {
         return NextResponse.json(

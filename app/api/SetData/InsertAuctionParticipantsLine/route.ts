@@ -4,6 +4,8 @@ import sql from "mssql";
 import { generateUniqueFileName } from "@/lib/filename";
 import fs from "fs";
 import path from "path";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function POST(req: Request) {
   try {
@@ -12,11 +14,15 @@ export async function POST(req: Request) {
       throw new Error("Could not connect to Database");
     }
 
+    const session = await getServerSession(authOptions)
+    const EmpCode = session?.user.id
+
     const form = await req.formData();
 
     const apid = String(form.get("APID") || "");
-    const empCode = String(form.get("EmpCode") || "");
     const remarks = String(form.get("Remarks") || "");
+
+
 
     if (!apid) {
       return NextResponse.json(
@@ -57,7 +63,7 @@ export async function POST(req: Request) {
 
     const result = await pool
       .request()
-      .input("FLAG", sql.VarChar, "Insert-Auction-Participants-Line")
+      .input("FLAG", sql.VarChar, "InsertAuctionParticipantsLine")
       .input("APID", sql.VarChar, apid)
       .input("CtoRespectiveFile", sql.VarChar, ctoFileName)
       .input("HwAuthorizationOspcbFile", sql.VarChar, hwOspcbFileName)
@@ -65,7 +71,7 @@ export async function POST(req: Request) {
       .input("BlueBookFile", sql.VarChar, blueBookFileName)
       .input("RegistrationCertificateFile", sql.VarChar, regCertFileName)
       .input("Remarks", sql.VarChar, remarks)
-      .input("EmpCode", sql.VarChar, empCode)
+      .input("EmpCode", sql.VarChar, EmpCode)
       .execute("PRO-WMS_SET");
 
     // console.log("rowsAffected:", result.rowsAffected);

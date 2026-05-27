@@ -324,7 +324,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
         const a = document.createElement("a")
 
         a.href = url
-        a.download = `${attachName}.${ext}`
+        a.download = `${fddid}_${attachName}.${ext}`
         document.body.appendChild(a)
         a.click()
 
