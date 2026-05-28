@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -21,10 +21,11 @@ type UndisposedOption = {
   muid: string
 };
 
-export default function InternalPage() {
+export default function InternalPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const router = useRouter();
-  const params = useSearchParams();
-  const iddid = params.get("iddid") ?? params.get("id") ?? "";
+
+  const params = React.use(searchParams);
+  const iddid = params.id;
 
   const [disposalDate, setDisposalDate] = useState("");
   const [wasteCategory, setWasteCategory] = useState("");

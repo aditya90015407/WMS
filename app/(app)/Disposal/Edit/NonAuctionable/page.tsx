@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { Newspaper } from "lucide-react";
 import Link from "next/link";
@@ -22,10 +22,16 @@ type UndisposedOption = {
   muid: string
 };
 
-export default function NonAuctionablePage() {
+export default function NonAuctionablePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  // const router = useRouter();
+  // const params = useSearchParams();
+
+
+  const params = React.use(searchParams);
+  const iddid = params.id;
   const router = useRouter();
-  const params = useSearchParams();
-  const iddid = params.get("iddid") ?? params.get("id") ?? "";
+  // const params = useSearchParams();
+  // const iddid = params.get("iddid") ?? params.get("id") ?? "";
 
   const [disposalDate, setDisposalDate] = useState("");
   const [wasteCategory, setWasteCategory] = useState("");

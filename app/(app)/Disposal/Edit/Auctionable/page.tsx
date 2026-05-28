@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
@@ -24,10 +24,13 @@ type UndisposedOption = {
   muid: string
 };
 
-export default function AuctionablePage() {
+export default function AuctionablePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const router = useRouter();
-  const params = useSearchParams();
-  const iddid = params.get("iddid") ?? params.get("id") ?? "";
+  // const params = useSearchParams();
+
+
+  const params = React.use(searchParams);
+  const iddid = params.id;
 
   const [auctionDate, setAuctionDate] = useState("");
   const [physicalOptions, setPhysicalOptions] = useState<Option1[]>([]);
