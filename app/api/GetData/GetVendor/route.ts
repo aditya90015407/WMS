@@ -11,7 +11,7 @@ export async function POST() {
     const result = await pool
       .request()
       .input("FLAG", "GetVendor")
-      .execute("PRO-WMS_GET"); // use underscore exactly if your DB proc is PRO_WMS_GET
+      .execute("PRO-WMS_GET");
 
     const rows =
       (Array.isArray(result.recordset) && result.recordset) ||

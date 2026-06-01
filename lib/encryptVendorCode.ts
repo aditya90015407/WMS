@@ -22,7 +22,7 @@ function deriveKeyAndIV(encryptionKey: string) {
 }
 
 export function encrypt(clearText: string): string {
-    const encryptionKey = process.env.WMS_AES_KEY;
+    const encryptionKey = process.env.NEXT_PUBLIC_WMS_AES_KEY;
     if (!encryptionKey) {
         throw new Error("AES_ENCRYPTION_KEY is not set in environment variables");
     }
