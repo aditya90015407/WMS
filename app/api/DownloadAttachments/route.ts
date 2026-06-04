@@ -10,7 +10,8 @@ export async function POST(req: NextRequest) {
         const body = await req.json()
         const filePath = body.AttachPath
 
-        // console.log(body)
+        // console.log(body, "nbo")
+        if (filePath == "") return NextResponse.json({ error: "Invalid file path " }, { status: 400 })
 
         const fullPath = path.join(process.cwd(), "Attachments", filePath)
 

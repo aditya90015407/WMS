@@ -1,95 +1,72 @@
-import {getConnection} from "@/lib/dbConnect";
-import {getServerSession} from "next-auth";
-import {NextRequest, NextResponse} from "next/server";
-import sql from "mssql";
+import { NextResponse } from "next/server";
+import * as sql from "mssql";
+import { getConnection } from "@/lib/dbConnect";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { request } from "https";
 
-export async function POST(req: NextRequest) {
-     try{
+export async function POST(req: Request) {
+  try {
+    const form = await req.formData();
+    const session = await getServerSession(authOptions);
+    const empCode = String(session?.user?.id ?? "").trim();
 
-          const pool =await getConnection();
+    if (!empCode) {
+      return NextResponse.json(
+        { success: false, message: "Session not found" },
+        { status: 401 }
+      );
+    }
 
-            if (!pool || !pool.connected) {
-            throw new Error("Could Not Connect to DataBase")
-            }
-
-
-    const body =await req.json();
-     console.log(body,"BBBB")
-    // console.log(body.payload)
-    const {ID,
-        TransporterName,
-        TransporterAddress,
-        TransporterPhone,
-        TransporterEmail,
-        VTID,
-        TransporterRegNo,
-        VehicleRegNo,
-        ReceiverName,
-        ReceiverAddress,
-        ReceiverAuthNo,
-        TotalQty,
-        AID,
-        PhysicalState,
-
-       
-    }=body;
-      
-    // const FDDID=body;
-    
-
-     console.log(ID,"ID")
-     console.log(TransporterName,"TN")
-
-    if(!ID) return NextResponse.json("FDDID is required");
-
-    //  console.log(ID,"ID2")
-    
-  
-     const result = await pool
-           .request()
-           .input("FLAG", sql.VarChar, "UpdateFinalDisposalDetails")
-           
-           .input("FDDID", sql.Int, ID)
-           .input("TransporterName", sql.VarChar, TransporterName ?? "")
-           .input("TransporterAddress", sql.VarChar, TransporterAddress ?? "")
-           .input("TransporterPhone", sql.VarChar, TransporterPhone ?? "")
-           .input("TransporterEmail", sql.VarChar, TransporterEmail ?? "")
-           .input("VTID", sql.Int, Number(VTID) || 0)
-           .input("TransporterRegNo", sql.VarChar, TransporterRegNo ?? "")
-           .input("VehicleRegNo", sql.VarChar, VehicleRegNo ?? "")
-           .input("ReceiverName", sql.VarChar, ReceiverName ?? "")
-           .input("ReceiverAddress", sql.VarChar, ReceiverAddress ?? "")
-           .input("ReceiverAuthNo", sql.VarChar, ReceiverAuthNo ?? "")
-           .input("TotalQty",sql.Int,TotalQty??"")
-           .input("AID",sql.Int,AID??"")
-        //    .input("PhysicalState",sql.VarChar,"")
-        //    .input("MUnit",sql.NVarChar,MUnit?? "")
-           .execute("PRO-WMS_SET");
+    const pool = await getConnection();
+    if (!pool || !pool.connected) {
+      throw new Error("SQL pool is not connected after getConnection()");
+    }
 
 
-           console.log(result,"RRRRR");
-            return NextResponse.json(
-             {
-                    success: true,
-                    data: result.recordset,
-                    message:
-                    result.recordset?.[0]?.STATUS ||
-                    "Updated Successfully",
-                },
-                { status: 200 }
-                );
+    console.log(form);
 
+    const result = await pool
+      .request()
+      .input("FLAG", sql.NVarChar(50), "UpdateFinalDisposalDetails")
+      .input("FDDID", sql.NVarChar(50), String(form.get("FDDID") ?? ""))
+      .input("DateOfDisposal", sql.Date, String(form.get("DateOfDisposal") ?? ""))
+      .input("UID", sql.Int, Number(form.get("UID") ?? ""))
+      .input("TransporterName", sql.NVarChar(200), String(form.get("TransporterName") ?? ""))
+      .input("TransporterAddress", sql.NVarChar(300), String(form.get("TransporterAddress") ?? ""))
+      .input("TransporterPhone", sql.NVarChar(50), String(form.get("TransporterPhone") ?? ""))
+      .input("TransporterEmail", sql.NVarChar(100), String(form.get("TransporterEmail") ?? ""))
+      .input("VTID", sql.Int(), String(form.get("VTID") ?? ""))
+      .input("TransporterRegNo", sql.NVarChar(100), String(form.get("TransporterRegNo") ?? ""))
+      .input("VehicleRegNo", sql.NVarChar(100), String(form.get("VehicleRegNo") ?? ""))
+      .input("ReceiverName", sql.NVarChar(200), String(form.get("ReceiverName") ?? ""))
+      .input("ReceiverAddress", sql.NVarChar(300), String(form.get("ReceiverAddress") ?? ""))
+      .input("ReceiverAuthNo", sql.NVarChar(100), String(form.get("ReceiverAuthNo") ?? ""))
+      .input("TotalQty", sql.Decimal(18, 3), Number(form.get("TotalQty") ?? 0))
+      .input("MUID", sql.NVarChar(50), String(form.get("MUID") ?? ""))
+      .input("NoOfContainers", sql.Int, Number(form.get("NoOfContainers") ?? 0))
+      // .input("WasteType", sql.NVarChar(100), String(form.get("WasteType") ?? ""))
+      .input("PSID", sql.NVarChar(50), String(form.get("PSID") ?? ""))
+      .input("SpecialHandlingInstructions", sql.NVarChar(300), String(form.get("SpecialHandlingInstructions") ?? ""))
+      .input("AID", sql.NVarChar(50), String(form.get("AID") ?? ""))
+      .input("EmpCode", sql.NVarChar(50), empCode)
+      .execute("PRO-WMS_SET");
 
-        } catch (error: any) {
+    // const rows = result.recordset[0];
+    // const fddid = rows?.FDDID;
+    // console.log(fddid);
+    return NextResponse.json({
+      success: true,
+      // fddid,
+      data: result.recordset ?? [],
 
-    console.error(error);
+    });
+  } catch (error: any) {
 
-    // VERY IMPORTANT
+    console.error("SetFinalDisposalDetails error:", error);
+
     return NextResponse.json(
-      {
-        success: false,
-        message: error.message || "Internal Server Error",
-      },
+      { success: false, message: error, error: error.message },
       { status: 500 }
     );
   }

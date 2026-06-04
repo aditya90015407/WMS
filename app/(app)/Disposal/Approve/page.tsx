@@ -16,6 +16,7 @@ type FinalDisposalRow = {
     Status?: string;
     CrDt?: string;
     MUnit: string
+    AuctionDate: string
 };
 
 function normalizeData<T extends Record<string, unknown>>(row: T) {
@@ -71,7 +72,7 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                 });
 
                 const rawData = await res.json();
-                console.log("GetAllFinalDisposalList rawData:", rawData);
+                // console.log("GetAllFinalDisposalList rawData:", rawData);
 
                 const data = Array.isArray(rawData)
                     ? rawData
@@ -98,10 +99,15 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
     return (
         <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                <div className="w-full">
+                <div className="w-full relative">
                     <h1 className="text-lg text-center font-semibold text-teal-600">
                         Approve Final Disposal
                     </h1>
+
+
+                    <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer absolute top-0.5 right-5"
+                        onClick={() => window.location.reload()}
+                    />
                     {/* <h2 className="text-sm text-center font-semibold text-slate-900">
                         Submitted Final Disposal List
                     </h2> */}
@@ -127,10 +133,10 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                             <thead className="bg-slate-50">
                                 <tr>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
-                                        Final Ref ID
+                                        Final Disposal ID
                                     </th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
-                                        Original ID
+                                        Disposal ID
                                     </th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Waste Category
@@ -143,6 +149,12 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                     </th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Disposal Type
+                                    </th>
+                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                                        Final Disposal Date
+                                    </th>
+                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                                        Created On
                                     </th>
                                     {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Status
@@ -194,6 +206,12 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                         </td>
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.DisType ?? "")}
+                                        </td>
+                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                            {String(row.AuctionDate ?? "")}
+                                        </td>
+                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                            {String(row.CrDt?.split("T")[0] ?? "")}
                                         </td>
                                         {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.Status ?? "")}

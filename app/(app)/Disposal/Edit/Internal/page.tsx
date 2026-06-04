@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 
@@ -366,6 +366,17 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
     0,
   );
 
+
+
+  async function CancelDisposal() {
+    const res = await fetch("/api/SetData/CancelDisposal", {
+      method: "POST",
+      body: JSON.stringify({ "IDDID": iddid })
+    })
+    const data = await res.json()
+    redirect("./")
+  }
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -450,7 +461,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
   return (
     <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="relative">
-        <h1 className="text-xl font-semibold text-teal-600 text-center">Internal Disposal</h1>
+        <h1 className="text-lg font-semibold text-teal-600 text-center">Internal Disposal</h1>
 
         <Link href="./">
           <img src="/goback.png" alt="" className="h-5 absolute top-0 right-15" />
@@ -461,179 +472,206 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
         />
       </div>
 
-      <form onSubmit={onSubmit} className="mt-6">
+      <form onSubmit={onSubmit} className="mt-6  text-sm">
 
-        <div className="grid grid-cols-2 space-y-4">
+        <div className="">
 
+          <div className="grid grid-cols-2">
 
-          <div className="px-6">
-            <label className="mb-1 block text-sm font-semibold text-slate-700">Disposal ID</label>
-            <input
-              // type="date"
-              value={iddid}
-              // onChange={(e) => setDisposalDate(e.target.value)}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-              disabled
-            />
-          </div>
-          <div className="px-6">
-            <label className="mb-1 block text-sm font-semibold text-slate-700">Date of Disposal</label>
-            <input
-              type="date"
-              value={disposalDate}
-              onChange={(e) => setDisposalDate(e.target.value)}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-            />
-          </div>
-
-          <div className="px-6">
-            <label className="mb-1 block text-sm font-semibold text-slate-700">Waste Category</label>
-            <select
-              value={wasteCategory}
-              onChange={(e) => setWasteCategory(e.target.value)}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-              disabled  //={loadingBase}
-            >
-              <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
-              {categoryOptions.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="px-6">
-            <label className="mb-1 block text-sm font-semibold text-slate-700">Waste List</label>
-            <select
-              value={selectedWasteId}
-              onChange={(e) => {
-                setSelectedWasteId(e.target.value);
-                const name = wasteOptions.find((w) => w.id === e.target.value)?.name ?? "";
-                setWaste(name);
-              }}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-              disabled  //={!wasteCategory || loadingWaste}
-            >
-              <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
-              {wasteOptions.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="relative px-6">
-            <label className="mb-1 block text-sm font-semibold text-slate-700">
-              Undisposed Waste (Dept - Quantity - Days Left)
-            </label>
-            <button
-              type="button"
-              onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
-              disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
-              className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
-            >
-              {selectedUndisposedItems.length > 0
-                ? selectedUndisposedItems.map((x) => x.label).join(", ")
-                : loadingUndisposed
-                  ? "Loading..."
-                  : "Select Dept - Quantity - Days Left"}
-            </button>
-
-            {undisposedDropdownOpen && (
-              <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
-                {sortedUndisposedOptions.length === 0 ? (
-                  <p className="px-2 py-1 text-sm text-slate-500">No undisposed waste</p>
-                ) : (
-                  sortedUndisposedOptions.map((item) => {
-                    const checked = selectedUndisposedIds.includes(item.id);
-                    const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
-                    return (
-                      <label
-                        key={item.id}
-                        className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          disabled={alreadyChecked}
-                          onChange={(e) => {
-                            const nextIds = e.target.checked
-                              ? [...selectedUndisposedIds, item.id]
-                              : selectedUndisposedIds.filter((id) => id !== item.id);
-                            setSelectedUndisposedIds(nextIds);
-                          }}
-                        />
-                        <div className="flex flex-col">
-                          <span className="text-sm text-slate-700">
-                            {item.dept || "Dept"} - {item.qty.toFixed(2)}{item.unit || "N/A"}
-                          </span>
-                          <span className="text-sm font-semibold text-red-600">
-                            {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
-
-                          </span>
-                        </div>
-                      </label>
-                    );
-                  })
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="px-6">
-            <label className="mb-1 block text-sm font-semibold text-slate-700">
-              Total Quantity
-            </label>
-            <div
-              className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
-            >
-              {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
+            <div className="px-4 py-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Disposal ID</label>
+              <input
+                // type="date"
+                value={iddid}
+                // onChange={(e) => setDisposalDate(e.target.value)}
+                className="w-full rounded border border-slate-300 px-3 py-2"
+                disabled
+              />
             </div>
-            {/* <input
+
+            <div className="px-4 py-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Waste Category</label>
+              <select
+                value={wasteCategory}
+                onChange={(e) => setWasteCategory(e.target.value)}
+                className="w-full rounded border border-slate-300 px-3 py-2"
+                disabled  //={loadingBase}
+              >
+                <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
+                {categoryOptions.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="px-4 py-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Waste List</label>
+              <select
+                value={selectedWasteId}
+                onChange={(e) => {
+                  setSelectedWasteId(e.target.value);
+                  const name = wasteOptions.find((w) => w.id === e.target.value)?.name ?? "";
+                  setWaste(name);
+                }}
+                className="w-full rounded border border-slate-300 px-3 py-2"
+                disabled  //={!wasteCategory || loadingWaste}
+              >
+                <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
+                {wasteOptions.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+
+          <hr className="col-span-2 mt-4 mb-3 border border-gray-200 w-[97%] mx-auto" />
+
+          <div className="grid grid-cols-2">
+
+
+
+            <div className="px-4 py-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Date of Disposal</label>
+              <input
+                type="date"
+                value={disposalDate}
+                onChange={(e) => setDisposalDate(e.target.value)}
+                className="w-full rounded border border-slate-300 px-3 py-2"
+              />
+            </div>
+
+            <div className="relative px-4 py-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">
+                Undisposed Waste (Dept - Quantity - Days Left)
+              </label>
+              <button
+                type="button"
+                onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
+                disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
+                className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
+              >
+                {selectedUndisposedItems.length > 0
+                  ? selectedUndisposedItems.map((x) => x.label).join(", ")
+                  : loadingUndisposed
+                    ? "Loading..."
+                    : "Select Dept - Quantity - Days Left"}
+              </button>
+
+              {undisposedDropdownOpen && (
+                <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
+                  {sortedUndisposedOptions.length === 0 ? (
+                    <p className="px-2 py-1 text-sm text-slate-500">No undisposed waste</p>
+                  ) : (
+                    sortedUndisposedOptions.map((item) => {
+                      const checked = selectedUndisposedIds.includes(item.id);
+                      const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
+                      return (
+                        <label
+                          key={item.id}
+                          className="flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={alreadyChecked}
+                            onChange={(e) => {
+                              const nextIds = e.target.checked
+                                ? [...selectedUndisposedIds, item.id]
+                                : selectedUndisposedIds.filter((id) => id !== item.id);
+                              setSelectedUndisposedIds(nextIds);
+                            }}
+                          />
+                          <div className="flex flex-col">
+                            <span className="text-sm text-slate-700">
+                              {item.dept || "Dept"} - {item.qty.toFixed(2)}{item.unit || "N/A"}
+                            </span>
+                            <span className="text-sm font-semibold text-red-600">
+                              {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
+
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div className="px-4 py-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">
+                Total Quantity
+              </label>
+              <div
+                className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+              >
+                {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
+              </div>
+              {/* <input
             type="text"
             readOnly
             value={totalSelectedQty.toFixed(2)}
             className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
           /> */}
-          </div>
+            </div>
 
-          <div className="px-6">
-            <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
-            <select
-              value={physicalForm}
-              onChange={(e) => setPhysicalForm(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            >
-              <option value="">Select</option>
-              {physicalOptions.map((opt) => (
-                <option key={opt.ID} value={opt.ID}>
-                  {opt.NAME}
-                </option>
-              ))}
-            </select>
-          </div>
+            <div className="px-4 py-1">
+              <label className="block text-xs font-semibold text-slate-700">Physical Form</label>
+              <select
+                value={physicalForm}
+                onChange={(e) => setPhysicalForm(e.target.value)}
+                className="mt-1 text-sm w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+              >
+                <option value="">Select</option>
+                {physicalOptions.map((opt) => (
+                  <option key={opt.ID} value={opt.ID}>
+                    {opt.NAME}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div className="px-6">
-            <label className="mb-1 block text-sm font-semibold text-slate-700">Remarks</label>
-            <textarea
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-              className="w-full rounded border border-slate-300 px-3 py-2"
-              rows={1}
-            />
+            <div className="px-4 py-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Remarks</label>
+              <textarea
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                className="w-full rounded border border-slate-300 px-3 py-2"
+                rows={1}
+              />
+            </div>
+
+
           </div>
 
         </div>
 
         <button
           type="submit"
-          className="block mx-auto cursor-pointer rounded bg-emerald-700 px-4 py-2 text-sm mt-2 text-white hover:bg-emerald-800"
+          className="block mt-2 mx-auto cursor-pointer rounded bg-emerald-700 px-4 py-1.5 text-sm text-white hover:bg-emerald-800"
         >
           Submit
         </button>
       </form>
+
+
+      <hr className="col-span-2 mt-4 mb-1 border border-gray-100 w-[97%] mx-auto" />
+
+      <div className="text-sm text-slate-700 mt-8">
+        Do you want to cancel this disposal and revert the status of the included waste items?
+        <span
+          className="ms-5 place-self-center cursor-pointer rounded bg-rose-700 px-3 py-2 text-md text-white hover:bg-red-800"
+          onClick={CancelDisposal}
+        >
+          Yes, Cancel Disposal
+        </span>
+      </div>
+
     </section>
   );
 }

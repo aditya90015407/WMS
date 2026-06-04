@@ -158,7 +158,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         const a = document.createElement("a")
 
         a.href = url
-        a.download = `${auctionParticipant?.VendorCode}_${attachName}.${ext}`
+        a.download = `${auctionParticipant?.VendorCode}_${auctionParticipant?.NAME}_${attachName}.${ext}`
         document.body.appendChild(a)
         a.click()
 
@@ -222,10 +222,10 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
             <form onSubmit={handleSubmit} action="">
                 <div className="grid grid-cols-2 text-sm">
-                    <div className="px-2 py-2 font-semibold text-xs">Vendor Code : <span className="font-normal text-sm"> {auctionParticipant?.VendorCode}</span></div>
-                    <div className="px-2 py-2 font-semibold text-xs">Name : <span className="font-normal text-sm"> {auctionParticipant?.NAME}</span></div>
-                    <div className="px-2 py-2 font-semibold text-xs">Email : <span className="font-normal text-sm"> {auctionParticipant?.EMAIL}</span></div>
-                    <div className="px-2 py-2 font-semibold text-xs">Applied On : <span className="font-normal text-sm"> {auctionParticipant?.CrDt?.split('T')[0]} {auctionParticipant?.CrDt?.split('T')[1]?.split('.')[0]} </span></div>
+                    <div className="px-2 py-2 font-semibold text-xs text-slate-600">Vendor Code : <span className="font-normal text-sm"> {auctionParticipant?.VendorCode}</span></div>
+                    <div className="px-2 py-2 font-semibold text-xs text-slate-600">Name : <span className="font-normal text-sm"> {auctionParticipant?.NAME}</span></div>
+                    <div className="px-2 py-2 font-semibold text-xs text-slate-600">Email : <span className="font-normal text-sm"> {auctionParticipant?.EMAIL}</span></div>
+                    <div className="px-2 py-2 font-semibold text-xs text-slate-600">Applied On : <span className="font-normal text-sm"> {auctionParticipant?.CrDt?.split('T')[0]} {auctionParticipant?.CrDt?.split('T')[1]?.split('.')[0]} </span></div>
                     {/* <div className="px-2 py-2 font-semibold text-xs">CTO for respective SPCB : <span className="font-normal text-sm"> {auctionParticipant?.CTO_AttachPath}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">HW authorization from OSPCB : <span className="font-normal text-sm"> {auctionParticipant?.OSPCB_HW_Auth_AttachPath}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">HW authorization from respective SPCB : <span className="font-normal text-sm"> {auctionParticipant?.SPCB_HW_Auth_AttachPath}</span></div>
@@ -237,7 +237,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
                 <div className="block w-full max-w-4xl">
                     <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 w-full block">
-                        <div className="py-1 text-center text-sm">Documents Upload History</div>
+                        <div className="py-1 text-center text-sm text-pink-500 font-semibold">Documents Upload History</div>
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-slate-50">
                                 <tr >
@@ -252,7 +252,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >HW authorization from respective SPCB</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Copy of blue book</th>
+                                    >Copy of BlueBook</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >EPR registration certificate for Plastic/oil/tyre</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
@@ -277,7 +277,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                         >
-                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                            <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                                                 onClick={() => downloadAttachment(row.CTO_AttachPath, "CTO Attachment")}
                                             />
                                         </td>
@@ -285,28 +285,28 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                         >
-                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                            <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                                                 onClick={() => downloadAttachment(row.OSPCB_HW_Auth_AttachPath, "OSPCB_HW_Auth_AttachPath")}
                                             />
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                         >
-                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                            <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                                                 onClick={() => downloadAttachment(row.SPCB_HW_Auth_AttachPath, "SPCB_HW_Auth_AttachPath")}
                                             />
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                         >
-                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                            <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                                                 onClick={() => downloadAttachment(row.BlueBook_AttachPath, "BlueBook_AttachPath")}
                                             />
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                                         >
-                                            <img src="/downloadicon.png" alt="" className="h-5"
+                                            <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                                                 onClick={() => downloadAttachment(row.EPR_Cert_AttachPath, "EPR_Cert_AttachPath")}
                                             />
                                         </td>
@@ -350,7 +350,8 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                 <div className="grid grid-cols-2 text-sm">
 
                     <div>
-                        <label className="font-semibold">Action <span className="text-red-600 font-semibold text-sm pr-2">* </span></label>
+                        <label className="font-semibold me-3 text-slate-700">Action</label>
+                        {/* <label className="font-semibold">Action <span className="text-red-600 font-semibold text-sm pr-2">* </span></label> */}
                         <select
                             required
                             onChange={(e) => setAcceptance(e.target.value)}
@@ -364,7 +365,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                     </div>
 
                     <div>
-                        <label className="font-semibold">Remarks</label>
+                        <label className="font-semibold me-3 text-slate-700">Remarks</label>
                         <textarea
                             // type="text"
                             rows={1}

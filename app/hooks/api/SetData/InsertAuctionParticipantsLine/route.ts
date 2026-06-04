@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
     const result = await pool
       .request()
-      .input("FLAG", sql.VarChar, "Insert-Auction-Participants-Line")
+      .input("FLAG", sql.VarChar, "InsertAuctionParticipantsLine")
       .input("APID", sql.VarChar, apid)
       .input("CtoRespectiveFile", sql.VarChar, ctoFileName)
       .input("HwAuthorizationOspcbFile", sql.VarChar, hwOspcbFileName)

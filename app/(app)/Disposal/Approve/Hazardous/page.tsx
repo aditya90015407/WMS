@@ -4,7 +4,41 @@ import { POST } from "@/app/api/GetData/DownloadFinalDisposalAttachments/route";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import decrypt from "@/components/Decrypt";
-type FinalDisposalRow = Record<string, unknown>;
+// type FinalDisposalRow = Record<string, unknown>;
+type FinalDisposalRow = Record<string, string | number | boolean | null>;
+
+
+const fields = [
+    ["ID", "Final Disposal ID"],
+    ["IDDID", "Initiated Disposal ID"],
+    ["DateOfDisposal", "Date of Disposal"],
+    ["SenderInfo", "Senders's Name and Mailing Address"],
+    ["SenderAuthNo", "Sender Authorization No."],
+    ["ManifestDocumentNo", "Manifest Document No."],
+    ["TransporterName", "Transporter Name"],
+    ["TransporterAddress", "Transporter Address"],
+    ["TransporterPhone", "Transporter Phone"],
+    ["TransporterEmail", "Transporter Email"],
+    ["VehicleType", "Type of Vehicle "],
+    ["TransporterRegNo", "Transporter Registration No."],
+    ["VehicleRegNo", "Vehicle Registration No."],
+    ["ReceiverName", "Receiver Name"],
+    ["ReceiverAddress", "Address"],
+    // ["DisposalType", "Disposal Type"],
+    ["WasteCategory", "Waste Category"],
+    ["Waste", "Waste Description"],
+    ["TotalQty", "Total Quantity"],
+    ["MUnit", "Measurement Unit"],
+    ["NoOfContainers", "No. Of Containers"],
+    ["PhysicalState", "Physical Form"],
+    ["SpecialHandlingInstructions", "Special Handling Instructions"],
+    // ["VendorName", "Vendor Name"],
+    // ["VendorMail", "Vendor Email"],
+    // ["ReceiverAuthNo", "Receiver Auth No."],
+    ["Status", "Approval Status"],
+    // ["CrDt", "Created On"],
+    // ["UpDt", "Updated On"],
+] as const;
 
 const toDisplayValue = (value: unknown) => {
     if (value === null || value === undefined || value === "") return "-";
@@ -57,8 +91,95 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
     // const [wasteList, setWasteList] = useState<WasteList[]>([])
 
 
-    const [attachPaths, setAttachPaths] = useState<string[]>([])
+    // const [attachPaths, setAttachPaths] = useState<string[]>([])
 
+
+
+    // async function GetFinalDisposalAttachments() {
+    //     const res = await fetch("/api/GetData/GetFinalDisposalAttachments", {
+    //         method: "POST",
+    //         body: JSON.stringify({ ID: id })
+    //     })
+    //     const data = await res.json()
+    //     setAttachPaths(data)
+    //     // console.log(data)
+    // }
+
+    // useEffect(() => {
+    //     // console.log("i am here")
+    //     if (!id || id == "") return
+    //     GetFinalDisposalAttachments()
+    // }, [ready])
+
+    // async function downloadAttachments() {
+    //     // setDownloading(true)
+    //     const payload = {
+    //         Attachments: attachPaths,
+    //     }
+    //     // console.log(payload)
+
+    //     const res = await fetch(`/api/GetData/DownloadFinalDisposalAttachments`, {
+    //         method: "POST",
+    //         headers: { "Content-Type": "application/json" },
+    //         body: JSON.stringify(payload),
+    //     })
+    //     if (!res.ok) {
+    //         throw new Error("Download failed")
+    //     }
+
+    //     const data = await res.json()
+
+    //     // console.log(data, "dat")
+
+    //     data.files.forEach((file: any) => {
+    //         const a = document.createElement("a")
+    //         a.href = `/api/DownloadFiles?id=${encodeURIComponent(file.id)}`
+    //         a.download = file.name
+    //         document.body.appendChild(a)
+    //         a.click()
+    //         a.remove()
+    //     })
+    //     // data.files.forEach((file: any) => {
+    //     //     console.log(file)
+    //     //     const a = document.createElement("a")
+    //     //     a.href = file.url
+    //     //     a.download = file.name
+    //     //     a.click()
+    //     // })
+
+    //     // const blob = await res.blob()
+
+    //     // const url = window.URL.createObjectURL(blob)
+    //     // const a = document.createElement("a")
+
+    //     // a.href = url
+    //     // a.download = `FinalDisposalAttachments.zip`
+    //     // document.body.appendChild(a)
+    //     // a.click()
+
+    //     // a.remove()
+    //     // window.URL.revokeObjectURL(url)
+    //     // setDownloading(false)
+    // }
+
+
+
+
+    const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+
+
+    type AttachPaths = {
+        CTO_AttachPath: string
+        OSPCB_HW_Auth_AttachPath: string
+        SPCB_HW_Auth_AttachPath: string
+        BlueBook_AttachPath: string
+        EPR_Cert_AttachPath: string
+        PO_SO_AttachPath: string
+    }
+
+    const [attachPaths, setAttachPaths] = useState<AttachPaths>()
+
+    // const [attachPaths, setAttachPaths] = useState<string[]>([])
 
 
     async function GetFinalDisposalAttachments() {
@@ -67,7 +188,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
             body: JSON.stringify({ ID: id })
         })
         const data = await res.json()
-        setAttachPaths(data)
+        setAttachPaths(data[0])
         // console.log(data)
     }
 
@@ -77,61 +198,41 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
         GetFinalDisposalAttachments()
     }, [ready])
 
-    async function downloadAttachments() {
-        // setDownloading(true)
+    async function downloadAttachment(attachPath: any, attachName: any) {
+        // console.log(attachPath, "ap", attachName)
+        const ext = attachPath.split(".").pop();
         const payload = {
-            Attachments: attachPaths,
+            AttachPath: attachPath
         }
-        // console.log(payload)
 
-        const res = await fetch(`/api/GetData/DownloadFinalDisposalAttachments`, {
+        const res = await fetch(`/api/DownloadAttachments`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
         })
+
         if (!res.ok) {
-            throw new Error("Download failed")
+            alert("File Not Found")
+            return
         }
 
-        const data = await res.json()
+        const blob = await res.blob()
 
-        // console.log(data, "dat")
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
 
-        data.files.forEach((file: any) => {
-            const a = document.createElement("a")
-            a.href = `/api/DownloadFiles?id=${encodeURIComponent(file.id)}`
-            a.download = file.name
-            document.body.appendChild(a)
-            a.click()
-            a.remove()
-        })
-        // data.files.forEach((file: any) => {
-        //     console.log(file)
-        //     const a = document.createElement("a")
-        //     a.href = file.url
-        //     a.download = file.name
-        //     a.click()
-        // })
+        a.href = url
+        a.download = `${id}_${attachName}.${ext}`
+        document.body.appendChild(a)
+        a.click()
 
-        // const blob = await res.blob()
+        a.remove()
+        window.URL.revokeObjectURL(url)
 
-        // const url = window.URL.createObjectURL(blob)
-        // const a = document.createElement("a")
-
-        // a.href = url
-        // a.download = `FinalDisposalAttachments.zip`
-        // document.body.appendChild(a)
-        // a.click()
-
-        // a.remove()
-        // window.URL.revokeObjectURL(url)
         // setDownloading(false)
     }
 
 
-
-
-    const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
 
     async function UpdateDisposedWaste() {
         const res = await fetch("/api/GetData/GetWasteListByIDDID", {
@@ -195,9 +296,12 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
 
             setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`);
 
+
             if (stsCode == 3 && row?.ID) {
                 router.push(`/Form/Form10?fddid=${row.ID}&iddid=${row.IDDID}`)
-
+            }
+            else {
+                router.back()
             }
         } catch (err) {
             console.error("Failed to save disposal approval", err);
@@ -218,29 +322,43 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
             }
 
             try {
-                const res = await fetch("/api/GetData/GetAllFinalDisposalList", {
-                    method: "GET",
+
+                const res = await fetch("/api/GetData/GetFinalDisposalDetails", {
+                    method: "POST",
+                    body: JSON.stringify({ ID: id }),
                     cache: "no-store",
                 });
-
                 const rawData = await res.json();
-                const rows = Array.isArray(rawData)
-                    ? rawData
-                    : Array.isArray(rawData?.data)
-                        ? rawData.data
-                        : [];
 
-                const match =
-                    rows.find((item: Record<string, unknown>) => String(item?.ID ?? "") === id) ?? null;
-                // console.log("Page id:", id);
-                // console.log("Rows:", rows);
-                // console.log("Matched row:", match);
+                // console.log(rawData)
+                const rows = rawData.data
+                // console.log(rows)
+                // const match = rows.find((item: Record<string, unknown>) => String(item?.ID ?? "") === id) ?? null;
+                setRow(rows);
 
-                setRow(match);
+                // const res = await fetch("/api/GetData/GetAllFinalDisposalList", {
+                //     method: "GET",
+                //     cache: "no-store",
+                // });
 
-                if (!match) {
-                    setError("Submitted disposal form not found");
-                }
+                // const rawData = await res.json();
+                // const rows = Array.isArray(rawData)
+                //     ? rawData
+                //     : Array.isArray(rawData?.data)
+                //         ? rawData.data
+                //         : [];
+
+                // const match =
+                //     rows.find((item: Record<string, unknown>) => String(item?.ID ?? "") === id) ?? null;
+                // // console.log("Page id:", id);
+                // // console.log("Rows:", rows);
+                // // console.log("Matched row:", match);
+
+                // setRow(match);
+
+                // if (!match) {
+                //     setError("Submitted disposal form not found");
+                // }
             } catch {
                 setError("Failed to load submitted disposal form");
             } finally {
@@ -316,12 +434,12 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="w-full ">
-                    <h1 className="text-xl font-semibold text-teal-600 text-center">
-                        Disposal Approval - Hazardous
+                    <h1 className="text-lg font-semibold text-teal-600 text-center">
+                        Approve Disposal - Hazardous Waste
                     </h1>
-                    <p className="mt-2 text-sm text-slate-600 text-center">
+                    {/* <p className="mt-2 text-sm text-slate-600 text-center">
                         Verify the submitted hazardous disposal form before taking action.
-                    </p>
+                    </p> */}
                 </div>
 
                 {/* <button
@@ -329,8 +447,12 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                     onClick={() => router.push("/Disposal/Approve")}
                     className="rounded border border-slate-300 px-1 py-2 text-xs text-slate-700 hover:bg-slate-50"
                 > */}
-                <img src="/goback.png" alt="" className="h-6 cursor-pointer"
+                <img src="/goback.png" alt="" className="h-5 cursor-pointer me-2"
                     onClick={() => router.back()}
+                />
+
+                <img src="/refresh.png" alt="" className="h-4.5 cursor-pointer me-3"
+                    onClick={() => window.location.reload()}
                 />
                 {/* </button> */}
             </div>
@@ -341,34 +463,35 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
             {
                 !loading && !error && row && (
                     <>
-                        <div className="mt-4 grid gap-4 md:grid-cols-2">
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        {/*<div className="mt-4 grid gap-4 md:grid-cols-2">
+                             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                                 <h2 className="text-sm font-semibold text-slate-900">Approval Summary</h2>
                                 <div className="mt-3 space-y-2 text-sm text-slate-700">
                                     <p><span className="font-medium">Final Disposal Ref No.:</span> {toDisplayValue(row.ID)}</p>
                                     <p><span className="font-medium">Original Disposal ID:</span> {toDisplayValue(row.IDDID)}</p>
-                                    {/* <p><span className="font-medium">Current Status:</span> {toDisplayValue(row.Status)}</p>
+                                    <p><span className="font-medium">Current Status:</span> {toDisplayValue(row.Status)}</p>
                                     <p><span className="font-medium">Created By:</span> {toDisplayValue(row.CrBy)}</p>
                                     <p><span className="font-medium">Created On:</span> {toDisplayValue(row.CrDt)}</p>
                                     <p><span className="font-medium">Updated By:</span> {toDisplayValue(row.UpBy)}</p>
-                                    <p><span className="font-medium">Updated On:</span> {toDisplayValue(row.UpDt)}</p> */}
+                                    <p><span className="font-medium">Updated On:</span> {toDisplayValue(row.UpDt)}</p>
                                 </div>
-                            </div>
+                            </div> 
 
-                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                                 <h2 className="text-sm font-semibold text-slate-900">Waste Details</h2>
                                 <div className="mt-3 space-y-2 text-sm text-slate-700">
                                     <p><span className="font-medium">Waste Category:</span> {toDisplayValue(row.WasteCategory)}</p>
                                     <p><span className="font-medium">Waste:</span> {toDisplayValue(row.Waste)}</p>
                                     <p><span className="font-medium">Total Quantity:</span> {toDisplayValue(row.TotalQty)}</p>
                                     <p><span className="font-medium">Physical Form:</span> {toDisplayValue(row.PSID)}</p>
-                                    {/* <p><span className="font-medium">Waste Category ID:</span> {toDisplayValue(row.WCID)}</p>
-                                    <p><span className="font-medium">Waste ID:</span> {toDisplayValue(row.WID)}</p> */}
+                                    <p><span className="font-medium">Waste Category ID:</span> {toDisplayValue(row.WCID)}</p>
+                                    <p><span className="font-medium">Waste ID:</span> {toDisplayValue(row.WID)}</p>
                                 </div>
-                            </div>
+                            </div> 
                         </div>
+                        */}
 
-                        <div className="mt-4 grid gap-4 md:grid-cols-2">
+                        {/* <div className="mt-4 grid gap-4 md:grid-cols-2">
                             <div className="rounded-xl border border-slate-200 bg-white p-4">
                                 <h2 className="text-sm font-semibold text-slate-900">Vendor / Recycler Details</h2>
                                 <div className="mt-3 space-y-2 text-sm text-slate-700">
@@ -387,9 +510,9 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                                 </div>
                             </div>
 
-                        </div>
+                        </div> */}
 
-                        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                        {/* <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
                             <h2 className="text-sm font-semibold text-slate-900">Transport Details</h2>
                             <div className="mt-3 grid gap-3 md:grid-cols-2 text-sm text-slate-700">
                                 <p><span className="font-medium">Transporter Name:</span> {String(form10Row?.TransporterName ?? row?.TransporterName ?? "-")}</p>
@@ -401,22 +524,14 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                                 <p><span className="font-medium">Vehicle Reg No.:</span> {String(form10Row?.VehicleRegNo ?? row?.VehicleRegNo ?? "-")}</p>
                                 <p><span className="font-medium">Manifest Document No.:</span> {String(form10Row?.ManifestDocumentNo ?? "-")}</p>
                             </div>
-                        </div>
-                        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
-                            <h2 className="text-sm font-semibold text-slate-900 flex">Disposal Attachments :
-                                <span><img src="/downloadicon.png" alt="" className="cursor-pointer h-6 mx-2"
-                                    onClick={downloadAttachments}
-                                /></span>
-                            </h2>
-                            {/* <div className="mt-3 grid gap-3 md:grid-cols-2 text-sm text-slate-700">
-                                <p><span className="font-medium">Download :</span> {String(form10Row?.TransporterName ?? row?.TransporterName ?? "-")}</p>
-                            </div> */}
-                        </div>
+                        </div> */}
 
 
-                        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
-                            <h2 className="text-sm font-semibold text-slate-900">Full Submitted Record</h2>
-                            <div className="mt-3 overflow-x-auto rounded-lg border border-slate-200">
+
+
+                        <div className="mt-4 rounded-xl border border-slate-200 bg-white">
+                            {/* <h2 className="text-sm font-semibold text-slate-900">Full Submitted Record</h2> */}
+                            <div className="overflow-x-auto rounded-lg border border-slate-200">
                                 <table className="min-w-full border-collapse text-sm">
                                     <thead>
                                         <tr className="bg-slate-100">
@@ -425,7 +540,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {Object.entries(row).map(([key, value]) => (
+                                        {/* {Object.entries(row).map(([key, value]) => (
                                             <tr key={key}>
                                                 <td className="border border-slate-200 px-3 py-2 font-medium text-slate-900">
                                                     {key}
@@ -434,52 +549,118 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                                                     {toDisplayValue(value)}
                                                 </td>
                                             </tr>
+                                        ))} */}
+
+                                        {fields.map(([key, label]) => (
+                                            <tr key={key}>
+                                                <td className="border border-slate-200 px-3 py-2 align-top">{label}</td>
+                                                <td className="border border-slate-200 px-3 py-2 whitespace-pre-wrap">{String(row[key] ?? "-")}</td>
+                                            </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
 
-                        <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                            <h2 className="text-sm font-semibold text-slate-900">Accept / Reject</h2>
-                            <p className="mt-1 text-xs text-slate-600">
-                                Add remarks and choose the action for this submitted form.
-                            </p>
-                            <p className="mt-1 text-xs text-slate-500">Review Date: {today}</p>
 
+
+                        <div className="mt-4 rounded-xl border border-slate-200 bg-white p-4">
+                            <div className="font-semibold text-center text-teal-600">
+                                Download Disposal Documents
+
+                                <div className="flex mt-3">
+
+                                    <h2 className="text-xs font-semibold text-slate-900 mx-4">Sale PO/SO Document
+                                        {(attachPaths && attachPaths?.PO_SO_AttachPath != "") &&
+                                            <span>
+                                                <img src="/downloadcloudblue.png" alt="" className="cursor-pointer h-10 my-2 place-self-center"
+                                                    onClick={async () => await downloadAttachment(attachPaths?.PO_SO_AttachPath, "PO/SO Document")}
+                                                />
+                                            </span>}
+                                        {(!attachPaths || attachPaths?.PO_SO_AttachPath == "") && <div className=" text-sm h-10 mt-5 text-gray-600 place-self-center">N/A</div>}
+                                    </h2>
+                                    <h2 className="text-xs font-semibold text-slate-900 mx-4">CTO Document
+                                        {(attachPaths && attachPaths?.CTO_AttachPath != "") &&
+                                            <span>
+                                                <img src="/downloadcloudblue.png" alt="" className="cursor-pointer h-10 my-2 place-self-center"
+                                                    onClick={async () => await downloadAttachment(attachPaths?.CTO_AttachPath, "CTO Document")}
+                                                />
+                                            </span>
+                                        }
+                                        {(!attachPaths || attachPaths?.CTO_AttachPath == "") && <div className=" text-sm h-10 mt-5 text-gray-600 place-self-center">N/A</div>}
+                                    </h2>
+                                    <h2 className="text-xs font-semibold text-slate-900 mx-4">OSPCB HW Document
+                                        {(attachPaths && attachPaths?.OSPCB_HW_Auth_AttachPath != "") &&
+                                            <span>
+                                                <img src="/downloadcloudblue.png" alt="" className="cursor-pointer h-10 my-2 place-self-center"
+                                                    onClick={async () => await downloadAttachment(attachPaths?.OSPCB_HW_Auth_AttachPath, "OSPCB HW Document")}
+                                                />
+                                            </span>
+                                        }
+                                        {(!attachPaths || attachPaths?.OSPCB_HW_Auth_AttachPath == "") && <div className=" text-sm h-10 mt-5 text-gray-600 place-self-center">N/A</div>}
+                                    </h2>
+                                    <h2 className="text-xs font-semibold text-slate-900 mx-4">SPCB HW Document
+                                        {(attachPaths && attachPaths?.SPCB_HW_Auth_AttachPath != "") && <span>
+                                            <img src="/downloadcloudblue.png" alt="" className="cursor-pointer h-10 my-2 place-self-center"
+                                                onClick={async () => await downloadAttachment(attachPaths?.SPCB_HW_Auth_AttachPath, "SPCB HW Document ")}
+                                            />
+                                        </span>
+                                        }
+                                        {(!attachPaths || attachPaths?.SPCB_HW_Auth_AttachPath == "") && <div className=" text-sm h-10 mt-5 text-gray-600 place-self-center">N/A</div>}
+                                    </h2>
+                                    <h2 className="text-xs font-semibold text-slate-900 mx-4">Bluebook Document
+                                        {(attachPaths && attachPaths?.BlueBook_AttachPath != "") &&
+                                            <span>
+                                                <img src="/downloadcloudblue.png" alt="" className="cursor-pointer h-10 my-2 place-self-center"
+                                                    onClick={async () => await downloadAttachment(attachPaths?.BlueBook_AttachPath, "Bluebook Document")}
+                                                />
+                                            </span>
+                                        }
+                                        {(!attachPaths || attachPaths?.BlueBook_AttachPath == "") && <div className=" text-sm h-10 mt-5 text-gray-600 place-self-center">N/A</div>}
+                                    </h2>
+                                    <h2 className="text-xs font-semibold text-slate-900 mx-4">EPR Certificate
+                                        {(attachPaths && attachPaths?.EPR_Cert_AttachPath != "") && <span>
+                                            <img src="/downloadcloudblue.png" alt="" className="cursor-pointer h-10 my-2 place-self-center"
+                                                onClick={async () => await downloadAttachment(attachPaths?.EPR_Cert_AttachPath, "EPR Certificate")}
+                                            />
+                                        </span>
+                                        }
+                                        {(!attachPaths || attachPaths?.EPR_Cert_AttachPath == "") && <div className=" text-sm h-10 mt-5 text-gray-600 place-self-center">N/A</div>}
+                                    </h2>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                            {/* <h2 className="text-sm font-semibold text-slate-900">Accept / Reject</h2> */}
+                            <p className="mt-1 text-xs text-slate-600">Add remarks and choose the action for this submitted form.</p>
+                            <div className="mt-2 text-xs text-slate-500">Review date: {today}</div>
                             <textarea
-                                rows={4}
+                                rows={2}
                                 value={remarks}
                                 onChange={(e) => setRemarks(e.target.value)}
                                 placeholder="Enter approval or rejection remarks"
                                 className="mt-3 w-full rounded border border-slate-300 px-3 py-2 text-sm"
                             />
-
-                            <div className="mt-4 flex flex-wrap gap-3">
+                            <div className="mt-4 flex flex-wrap gap-3 space-x-4 justify-center">
                                 <button
                                     type="button"
                                     disabled={saving}
                                     onClick={() => void saveDecision(3, "Accepted")}
-                                    className="cursor-pointer rounded bg-emerald-700 px-4 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                                    className="cursor-pointer text-sm rounded bg-emerald-700 px-2 py-1.5 text-white hover:bg-emerald-800 disabled:opacity-60"
                                 >
                                     Accept
                                 </button>
-
                                 <button
                                     type="button"
                                     disabled={saving}
                                     onClick={() => void saveDecision(5, "Rejected")}
-                                    className="cursor-pointer rounded bg-rose-700 px-4 py-2 text-white hover:bg-rose-800 disabled:opacity-60"
+                                    className="cursor-pointer text-sm rounded bg-rose-700 px-2 py-1.5 text-white hover:bg-rose-800 disabled:opacity-60"
                                 >
                                     Reject
                                 </button>
                             </div>
 
-                            {decision ? (
-                                <div className="mt-4 rounded border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700">
-                                    {decision}
-                                </div>
-                            ) : null}
                         </div>
                     </>
                 )

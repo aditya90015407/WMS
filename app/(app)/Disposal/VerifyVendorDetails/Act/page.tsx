@@ -173,7 +173,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
 
       const data = await res2.json();
 
-      console.log(data)
+      // console.log(data)
 
       if (!res.ok || !payload.success) {
         setDecision(payload.message || "Failed to save details");

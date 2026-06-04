@@ -105,7 +105,7 @@ export default function LoginPage() {
   const onSubmit = async () => {
     clearErrors();
 
-    console.log(employeeCode, password)
+    // console.log(employeeCode, password)
 
     if (!employeeCode.trim()) {
       setUsernameError("Employee Code is required");

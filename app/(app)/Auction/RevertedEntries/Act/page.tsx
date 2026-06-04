@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 
 type AuctionDetails = {
+  ID: string
   AuctionDate?: string | null;
   CrDt?: string | null;
   WasteCategory?: string | null;
@@ -160,7 +161,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
     const a = document.createElement("a")
 
     a.href = url
-    a.download = `${auctionParticipant?.VendorCode}_${attachName}.${ext}`
+    a.download = `${auctionParticipant?.VendorCode}_${auctionParticipant?.NAME}_${attachName}.${ext}`
     document.body.appendChild(a)
     a.click()
 
@@ -310,9 +311,9 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
   }
 
   return (
-    <section className="mx-auto max-w-5xl rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section className="mx-auto max-w-[62rem] rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="border-b border-slate-200 pb-4 relative">
-        <h1 className="text-xl font-semibold text-teal-600 text-center">Reapply for Auction</h1>
+        <h1 className="text-lg font-semibold text-teal-600 text-center">Reapply for Auction</h1>
         {/* <p className="mt-1 text-sm text-slate-600">
           Re-upload the required documents for the same auction participant entry.
         </p> */}
@@ -331,39 +332,45 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
         </div>
       )}
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Auction Date</p>
+      <div className="mt-6 grid gap-y-2 md:grid-cols-3">
+        <div className="rounded-xl p-4 py-2">
+          <p className="text-xs font-semibold  text-slate-500">Auction ID</p>
+          <p className="mt-1 text-sm text-slate-900">{auction?.ID ?? "N/A"}</p>
+        </div>
+
+        <div className="rounded-xl p-4 py-2">
+          <p className="text-xs font-semibold  text-slate-500">Auction Date</p>
           <p className="mt-1 text-sm text-slate-900">{auction?.AuctionDate ?? "N/A"}</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Posted On</p>
+        <div className="rounded-xl   p-4 py-2">
+          <p className="text-xs font-semibold text-slate-500">Posted On</p>
           <p className="mt-1 text-sm text-slate-900">
             {auction?.CrDt ? String(auction.CrDt).split("T")[0] : "N/A"}
           </p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Waste Category</p>
+        <div className="rounded-xl   p-4 py-2">
+          <p className="text-xs font-semibold text-slate-500">Waste Category</p>
           <p className="mt-1 text-sm text-slate-900">{auction?.WasteCategory ?? "N/A"}</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Remarks</p>
-          <p className="mt-1 text-sm text-slate-900">{auction?.Remarks ?? "N/A"}</p>
-        </div>
-
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Waste</p>
+        <div className="rounded-xl   p-4 py-2">
+          <p className="text-xs font-semibold text-slate-500">Waste</p>
           <p className="mt-1 text-sm text-slate-900">{auction?.Waste ?? "N/A"}</p>
         </div>
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Waste Qty</p>
+        <div className="rounded-xl   p-4 py-2">
+          <p className="text-xs font-semibold text-slate-500">Waste Qty</p>
           <p className="mt-1 text-sm text-slate-900">
             {auction?.WasteQty ?? auction?.TotalQty ?? "N/A"}{auction?.MUnit}
           </p>
+        </div>
+
+
+        <div className="rounded-xl   p-4 py-2 col-span-3">
+          <p className="text-xs font-semibold text-slate-500">Applicant's Remarks</p>
+          <p className="mt-1 text-sm text-slate-900">{auction?.Remarks ?? "N/A"}</p>
         </div>
       </div>
 
@@ -371,7 +378,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
 
       <div className="block w-full">
         <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 w-full block">
-          <div className="py-1 text-center text-sm">Documents Upload History</div>
+          <div className="py-1 text-center text-sm text-pink-500 font-semibold">Documents Upload History</div>
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr >
@@ -386,7 +393,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                 >HW authorization from respective SPCB</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                >Copy of blue book</th>
+                >Copy of BlueBook</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                 >EPR registration certificate for Plastic/oil/tyre</th>
                 <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
@@ -411,7 +418,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
                   <td
                     className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                   >
-                    <img src="/downloadicon.png" alt="" className="h-5"
+                    <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                       onClick={() => downloadAttachment(row.CTO_AttachPath, "CTO Attachment")}
                     />
                   </td>
@@ -419,28 +426,28 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
                   <td
                     className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                   >
-                    <img src="/downloadicon.png" alt="" className="h-5"
+                    <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                       onClick={() => downloadAttachment(row.OSPCB_HW_Auth_AttachPath, "OSPCB_HW_Auth_AttachPath")}
                     />
                   </td>
                   <td
                     className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                   >
-                    <img src="/downloadicon.png" alt="" className="h-5"
+                    <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                       onClick={() => downloadAttachment(row.SPCB_HW_Auth_AttachPath, "SPCB_HW_Auth_AttachPath")}
                     />
                   </td>
                   <td
                     className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                   >
-                    <img src="/downloadicon.png" alt="" className="h-5"
+                    <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                       onClick={() => downloadAttachment(row.BlueBook_AttachPath, "BlueBook_AttachPath")}
                     />
                   </td>
                   <td
                     className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                   >
-                    <img src="/downloadicon.png" alt="" className="h-5"
+                    <img src="/downloadpink.png" alt="" className="cursor-pointer h-9"
                       onClick={() => downloadAttachment(row.EPR_Cert_AttachPath, "EPR_Cert_AttachPath")}
                     />
                   </td>
@@ -476,12 +483,13 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
 
       </div>
 
-      <form onSubmit={handleSubmit} className="mt-8 grid gap-4 md:grid-cols-2">
+      <form onSubmit={handleSubmit} className="mt-8 grid gap-4 gap-y-2 md:grid-cols-3">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
             CTO Respective File
           </label>
           <input
+            required
             type="file"
             accept=".pdf,.jpg,.jpeg,.png"
             onChange={(e) => setCtoFile(e.target.files?.[0] ?? null)}
@@ -494,6 +502,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
             HW Authorization OSPCB File
           </label>
           <input
+            required
             type="file"
             accept=".pdf,.jpg,.jpeg,.png"
             onChange={(e) => setHwAuthFile(e.target.files?.[0] ?? null)}
@@ -506,6 +515,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
             HW Authorization SPCB File
           </label>
           <input
+            required
             type="file"
             accept=".pdf,.jpg,.jpeg,.png"
             onChange={(e) => setHwAuthSpcbFile(e.target.files?.[0] ?? null)}
@@ -518,6 +528,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
             Blue Book File
           </label>
           <input
+            required
             type="file"
             accept=".pdf,.jpg,.jpeg,.png"
             onChange={(e) => setBlueBookFile(e.target.files?.[0] ?? null)}
@@ -530,6 +541,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
             Registration Certificate File
           </label>
           <input
+            required
             type="file"
             accept=".pdf,.jpg,.jpeg,.png"
             onChange={(e) => setEprFile(e.target.files?.[0] ?? null)}
@@ -577,20 +589,20 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
         </div> */}
 
 
-        <div className="md:col-span-2 flex justify-end gap-3">
+        <div className="col-span-3 place-self-center mt-2 flex  gap-3">
           <button
             type="button"
             onClick={() => router.push("/Auction/RevertedEntries")}
-            className="cursor-pointer rounded-lg border border-slate-300 px-5 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={saving}
-            className="cursor-pointer rounded-lg bg-emerald-700 px-5 py-2 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-60"
+            className="cursor-pointer rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-emerald-800 disabled:opacity-60"
           >
-            {saving ? "Saving..." : "Reapply"}
+            {saving ? "Saving..." : "Submit"}
           </button>
         </div>
       </form>
