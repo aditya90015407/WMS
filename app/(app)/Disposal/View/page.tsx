@@ -143,21 +143,6 @@ export default function DisposalEditPage() {
         setPage(1);
     }, [query]);
 
-    const handleRowClick = (row: DisposalRow) => {
-        const iddid = String(row.ID ?? "").trim();
-        const disType = String(row.DisType ?? "").trim().toLowerCase();
-        //  console.log(disType,iddid)
-        if (!iddid) return;
-
-        const target =
-            disType === "internal"
-                ? `/Disposal/Edit/Internal?id=${encodeURIComponent(iddid)}`
-                : disType === "auctionable"
-                    ? `/Disposal/Edit/Auctionable?id=${encodeURIComponent(iddid)}`
-                    : `/Disposal/Edit/NonAuctionable?id=${encodeURIComponent(iddid)}`;
-
-        router.push(target);
-    };
 
     return (
         <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">

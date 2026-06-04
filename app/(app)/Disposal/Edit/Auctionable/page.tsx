@@ -3,6 +3,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import decrypt from "@/components/Decrypt";
+import encrypt from "@/components/Encrypt";
 
 type Option = { id: string; name: string; email: string; vendorCode: string };
 type Option1 = { ID: string; NAME: string };
@@ -30,7 +32,24 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
 
 
   const params = React.use(searchParams);
-  const iddid = params.id;
+  // const iddid = params.id;
+
+
+  const encryptedIddid = params.id;
+
+  const [iddid, setIddid] = useState("")
+
+
+  async function decryptId() {
+    const decryptedId = await decrypt(encryptedIddid!)
+
+    setIddid(decryptedId)
+  }
+
+  useEffect(() => {
+    if (!encryptedIddid) return
+    decryptId()
+  }, [encryptedIddid])
 
   const [auctionDate, setAuctionDate] = useState("");
   const [physicalOptions, setPhysicalOptions] = useState<Option1[]>([]);
@@ -117,7 +136,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         );
         const payload = (await res.json()) as { success?: boolean; data?: Option[] };
         const data = payload.success && Array.isArray(payload.data) ? payload.data : [];
-        console.log(data, "hi")
+        // console.log(data, "hi")
         setWasteOptions(data);
       } catch {
         setWasteOptions([]);
@@ -371,7 +390,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         });
         const unselectedData = await unselectedRes.json();
         const unselectedRows = Array.isArray(unselectedData?.data) ? unselectedData.data : [];
-        console.log(unselectedRows)
+        // console.log(unselectedRows)
 
         const unselectedVendorRowsMapped: VendorOption[] = unselectedRows.map((row: any, index: number) => ({
           id: String(row.VID ?? row.ID ?? row.id ?? index).trim(),
@@ -387,7 +406,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           ),
         ].filter((item) => item.id && item.name && item.email && item.vendorCode);
 
-        console.log(mergedVendorOptions)
+        // console.log(mergedVendorOptions)
 
         setVendorOptions(mergedVendorOptions);
       } catch (err) {
@@ -530,6 +549,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
 
       if (!res.ok || !data.success) {
         alert(data.message || "Save Failed");
+        redirect("./")
         return;
       }
 

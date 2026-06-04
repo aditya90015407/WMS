@@ -20,7 +20,7 @@ export async function POST(req : Request) {
                     .input("FLAG",sql.VarChar,"GetAllInitiateDisposalDetailbyIDNI")
                     .input("IDDID", sql.VarChar, id)
                     .execute("PRO-WMS_GET");
-                    console.log(result.recordset)
+                    // console.log(result.recordset)
 
     return NextResponse.json({
         success: true,

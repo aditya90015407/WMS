@@ -3,6 +3,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { redirect, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import decrypt from "@/components/Decrypt";
+import encrypt from "@/components/Encrypt";
 
 type InternalDisposalFormState = {
   disposalDate: string;
@@ -33,8 +36,27 @@ type PhysicalFormOption = {
 export default function InternalDisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
-  const iddid = params.id;
+  // const iddid = params.id;
   // const iddid = params.get("id") ?? "";
+
+
+  const encryptedIddid = params.id;
+
+  const [iddid, setIddid] = useState("")
+
+
+  async function decryptId() {
+    const decryptedId = await decrypt(encryptedIddid!)
+
+    setIddid(decryptedId)
+  }
+
+  useEffect(() => {
+    if (!encryptedIddid) return
+    decryptId()
+  }, [encryptedIddid])
+
+
   const [form, setForm] = useState<InternalDisposalFormState>({
     disposalDate: today,
     wasteIds: [],
@@ -190,8 +212,16 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     }));
   };
 
+
+
+
+  const { data: session } = useSession()
+
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const roleid = session?.user.roleId
 
     const wasteIdsArr = Array.isArray(form.wasteIds) ? form.wasteIds : [];
     const selectedReceiver = disposedToOptions.find(
@@ -263,6 +293,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
     if (!res.ok || !result.success) {
       alert(result.message || "Save failed");
+      redirect("./")
       return;
     }
 

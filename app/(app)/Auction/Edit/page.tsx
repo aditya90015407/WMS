@@ -44,7 +44,7 @@ export default function DisposalEditPage() {
       setError(null);
 
       try {
-        const res = await fetch("/api/GetData/GetAllInitiatedDisposalListEdit", {
+        const res = await fetch("/api/GetData/GetAllInitiatedAuctionListEdit", {
           method: "GET",
           cache: "no-store",
         });
@@ -111,15 +111,9 @@ export default function DisposalEditPage() {
     const disType = String(row.DisType ?? "").trim().toLowerCase();
     //  console.log(disType,iddid)
     if (!iddid) return;
+    const encryptedID = await encrypt(iddid)
 
-    const encryptedIddid = await encrypt(iddid!)
-
-    const target =
-      disType === "internal"
-        ? `/Disposal/Edit/Internal?id=${encodeURIComponent(encryptedIddid)}`
-        : disType === "auctionable"
-          ? `/Disposal/Edit/Auctionable?id=${encodeURIComponent(encryptedIddid)}`
-          : `/Disposal/Edit/NonAuctionable?id=${encodeURIComponent(encryptedIddid)}`;
+    const target = `/Auction/Edit/Auctionable?id=${encodeURIComponent(encryptedID)}`;
 
     router.push(target);
   };

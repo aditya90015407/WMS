@@ -280,6 +280,9 @@ export default function Form3Page() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const { data: session, status } = useSession();
+
+  const department = session?.user?.department ?? "";
+  const roleId = session?.user.roleId
   // console.log(session?.user?.username);
 
   useEffect(() => {
@@ -287,14 +290,20 @@ export default function Form3Page() {
       setLoading(true);
       setError(null);
       try {
+        if (!roleId) return
         const params = new URLSearchParams();
-        params.set("flag", "GWT-ALL");
+        if (roleId == '2' || roleId == '8') {
+          params.set("flag", "GWT-ALL-BY-DEPT");
+        }
+        else {
+          params.set("flag", "GWT-ALL");
+        }
         const res = await fetch(`/api/auth/waste/view?${params.toString()}`, {
           method: "GET",
           cache: "no-store",
         });
         const payload = (await res.json()) as ApiResponse;
-        // console.log(payload)
+        // console.log(payload, "payload")
         if (!res.ok || !payload.success || !Array.isArray(payload.data)) {
           setRows([]);
           setError(payload.message || payload.error || "Failed to load Form 3 data");
@@ -310,7 +319,7 @@ export default function Form3Page() {
     };
 
     void loadRows();
-  }, []);
+  }, [roleId]);
 
   const tableRows = useMemo<FormEntry[]>(() => {
     const sortedRows = [...rows].sort((a, b) => {
@@ -484,22 +493,23 @@ export default function Form3Page() {
           </div>
 
           <div className="overflow-x-auto rounded-xl border border-slate-300">
-            <table className="w-[80%] border-collapse text-xs">
+            <table className="w-full border-collapse text-xs">
               <thead>
                 <tr className="bg-slate-100">
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">ID</th>
+                  <th className="border border-slate-300 whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">ID</th>
                   <th className="min-w-[110px] whitespace-nowrap border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Date</th>
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste Category</th>
-                  {/* <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste Type</th> */}
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste</th>
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Quantity</th>
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Storage</th>
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Physical State</th>
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Disposer</th>
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Receiver</th>
-                  <th className="border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">ApprovalStatus</th>
-                  <th className="min-w-[110px] whitespace-nowrap border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Target Date</th>
-                  <th className="min-w-[120px] border border-slate-300 px-2 py-0.5 text-left font-semibold text-slate-900">Waste Form</th>
+                  <th className="border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Waste Category</th>
+                  {/* <th className="border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Waste Type</th> */}
+                  <th className="border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Waste</th>
+                  <th className="border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Quantity</th>
+                  <th className="border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Generating Department</th>
+                  <th className="border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Storage Method</th>
+                  <th className="border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Physical State</th>
+                  <th className="border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Disposer</th>
+                  <th className="border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Receiver</th>
+                  <th className="border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Approval Status</th>
+                  <th className="min-w-[110px] border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Target Date</th>
+                  <th className="min-w-[120px] border border-slate-300  whitespace-nowrap px-2 py-0.5 text-left font-semibold text-slate-900">Waste Form</th>
                 </tr>
               </thead>
               <tbody>
@@ -518,6 +528,7 @@ export default function Form3Page() {
                     {/* <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.wasteType}</td> */}
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.waste}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.quantity} {item.Unit}</td>
+                    <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.genDept}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.storageMethod}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.physicalState}</td>
                     <td className="border border-slate-300 px-2 py-0.5 text-slate-800">{item.disposer}</td>

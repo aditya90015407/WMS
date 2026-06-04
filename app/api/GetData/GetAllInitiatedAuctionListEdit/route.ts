@@ -15,8 +15,7 @@ export async function GET() {
         }
 
         const result = await pool.request()
-            .input("FLAG", sql.VarChar, "GetAllInitiatedDisposalListEdit")
-            .input("EmpCode", EmpCode)
+            .input("FLAG", sql.VarChar, "GetAllInitiatedAuctionListEdit")
             .execute("PRO-WMS_GET");
         // console.log(result)
 

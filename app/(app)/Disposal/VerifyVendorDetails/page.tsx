@@ -1,5 +1,6 @@
 "use client";
 
+import encrypt from "@/components/Encrypt";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -139,9 +140,12 @@ export default function DisposalApprovePage() {
                                     <tr
                                         key={index}
                                         className="cursor-pointer hover:bg-slate-50"
-                                        onClick={() => {
+                                        onClick={async () => {
                                             const iddid = String(row.IDDID ?? "").trim();
                                             const vid = String(row.VID ?? "").trim();
+
+                                            const encrptedIddid = await encrypt(iddid)
+                                            const encryptedVid = await encrypt(vid)
 
                                             // console.log("Clicked row:", row);
                                             // console.log("Routing with IDDID:", iddid, "VID:", vid);
@@ -149,7 +153,7 @@ export default function DisposalApprovePage() {
                                             if (!iddid || !vid) return;
 
                                             router.push(
-                                                `/Disposal/VerifyVendorDetails/Act?iddid=${encodeURIComponent(iddid)}&vid=${encodeURIComponent(vid)}`
+                                                `/Disposal/VerifyVendorDetails/Act?iddid=${encodeURIComponent(encrptedIddid)}&vid=${encodeURIComponent(encryptedVid)}`
                                             );
                                         }}
 
