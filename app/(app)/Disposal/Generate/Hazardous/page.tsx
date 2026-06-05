@@ -406,10 +406,13 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     if (values.salePoSoDoc instanceof File && hasFinalPartyDoc) {
       const attachmentFormData = new FormData();
       attachmentFormData.append("FDDID", fddid);
-      attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+      // attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
       // console.log("heyy")
 
 
+      if (values.salePoSoDoc instanceof File) {
+        attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+      }
 
       for (let i = 1; i <= 5; i++) {
         const file = values[`finalPartyDoc${i}`];

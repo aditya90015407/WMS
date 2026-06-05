@@ -427,7 +427,12 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     if (values.salePoSoDoc instanceof File) {
       const attachmentFormData = new FormData();
       attachmentFormData.append("FDDID", fddid!);
-      attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+
+
+      if (values.salePoSoDoc instanceof File) {
+        attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+      }
+
       // console.log("heyy")
 
 
