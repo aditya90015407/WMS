@@ -401,21 +401,28 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
     redirect("./")
   }
 
+  const [submitClicked, setSubmitClicked] = useState(false)
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setSubmitClicked(true)
+
     if (!disposalDate) {
       alert("Please select the Date");
+      setSubmitClicked(false)
       return;
     }
 
     if (!wasteCategory || !selectedWasteId) {
       alert("Please select waste category and waste item.");
+      setSubmitClicked(false)
       return;
     }
 
     if (selectedUndisposedIds.length === 0) {
       alert("Please select at least one undisposed waste item.");
+      setSubmitClicked(false)
       return;
     }
 
@@ -470,6 +477,8 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
 
         const data2 = await res2.json();
         if (!res2.ok || !data2.success) {
+          setSubmitClicked(false)
+          router.back()
           return alert(data2.message || "InsertAuctionWasteDetails failed");
         }
 
@@ -477,6 +486,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
 
       alert("Saved Successfully");
       router.back();
+      setSubmitClicked(false)
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
@@ -676,12 +686,23 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
 
         </div>
 
-        <button
-          type="submit"
-          className="block mt-2 mx-auto cursor-pointer rounded bg-emerald-700 px-4 py-1.5 text-sm text-white hover:bg-emerald-800"
-        >
-          Submit
-        </button>
+        {
+          !submitClicked &&
+          <button
+            type="submit"
+            className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+          >
+            Submit
+          </button>
+        }
+        {
+          submitClicked &&
+          <div
+            className="cursor-pointer rounded w-fit block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+          >
+            Submitting ...
+          </div>
+        }
       </form>
 
 

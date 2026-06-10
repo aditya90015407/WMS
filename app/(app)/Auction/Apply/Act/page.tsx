@@ -61,7 +61,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
       });
 
       const data = await res.json();
-      console.log("Auction details response:", data);
+      // console.log("Auction details response:", data);
     };
 
     void loadAuctionDetails();
@@ -153,10 +153,10 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
       });
 
       const payload = await res.json();
-      console.log(payload)
+      // console.log(payload)
       if (payload.success) {
         setAuctionDetails(payload.data);
-        console.log(auctionDetails)
+        // console.log(auctionDetails)
       }
     };
 
@@ -222,13 +222,21 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
     vendorId.trim().length > 0 &&
     allFilesReady;
 
+
+  const [submitClicked, setSubmitClicked] = useState(false)
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
+    setSubmitClicked(true)
+
     if (!canSubmit) {
       toast.error("Please fill Name, Email, Vendor ID and upload all required documents.");
+      setSubmitClicked(false)
       return;
     }
+
+    // console.log(auctionId)
 
     const headerRes = await fetch("/api/SetData/InsertAuctionParticipantsHeader", {
       method: "POST",
@@ -246,6 +254,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
 
     if (!headerRes.ok || !headerPayload.success) {
       toast.error(headerPayload.message || "Failed to save header");
+      setSubmitClicked(false)
       return;
     }
     // console.log(headerPayload)
@@ -276,15 +285,15 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
     // }
 
     if (headerRes.ok && lineRes.ok) {
-
       toast.success("Saved successfully!");
+      setSubmitClicked(false)
       redirect("./")
     }
     else {
       toast.error("Some Error Occured")
+      setSubmitClicked(false)
     }
-
-
+    setSubmitClicked(false)
   }
 
   async function handleTransportSubmit(e: React.FormEvent) {
@@ -537,6 +546,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
         <div className="mt-4">
           <label className="font-semibold">Remarks</label>
           <textarea
+            required
             rows={1}
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
@@ -545,16 +555,23 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={!canSubmit}
-          className={`block place-self-center mt-4 mb-8 text-sm px-4 py-1.5 rounded-md text-white ${canSubmit
-            ? "bg-green-700 hover:bg-green-800 cursor-pointer"
-            : "bg-gray-400 cursor-not-allowed"
-            }`}
-        >
-          Submit
-        </button>
+        {
+          !submitClicked &&
+          <button
+            type="submit"
+            className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+          >
+            Submit
+          </button>
+        }
+        {
+          submitClicked &&
+          <div
+            className="cursor-pointer rounded w-fit block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+          >
+            Submitting ...
+          </div>
+        }
       </form>
 
       {showTransportForm && (

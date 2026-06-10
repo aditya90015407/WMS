@@ -294,8 +294,17 @@ export default function AuctionablePage() {
     0,
   );
   // console.log(totalSelectedQty)
+
+
+
+  const [submitClicked, setSubmitClicked] = useState(false)
+
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    setSubmitClicked(true)
+
 
     if (
       !wasteCategory ||
@@ -378,6 +387,8 @@ export default function AuctionablePage() {
       alert(data.message || "Saved Successfully");
 
       router.back()
+      setSubmitClicked(false)
+
     } catch (error) {
       console.error("Submit Failed", error);
       alert("Something went wrong while saving");
@@ -677,6 +688,7 @@ export default function AuctionablePage() {
           <div className="w-[95%]  col-span-2">
             <label className="mb-1 block text-xs font-semibold text-slate-700">Remarks</label>
             <textarea
+              required
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
               className="w-full text-sm rounded border border-slate-300 px-3 py-2"
@@ -684,12 +696,25 @@ export default function AuctionablePage() {
             />
           </div>
         </div>
-        <button
-          type="submit"
-          className="text-sm place-self-center block cursor-pointer rounded bg-emerald-700 mt-2 px-3 py-2 text-white hover:bg-emerald-800"
-        >
-          Submit
-        </button>
+
+        {
+          !submitClicked &&
+          <button
+            type="submit"
+            className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+          >
+            Submit
+          </button>
+        }
+        {
+          submitClicked &&
+          <div
+            className="cursor-pointer rounded w-fit block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+          >
+            Submitting ...
+          </div>
+        }
+
       </form>
     </section >
   );

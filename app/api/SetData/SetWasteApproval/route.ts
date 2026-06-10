@@ -34,6 +34,6 @@ export async function POST(req: NextRequest) {
         .input("CrBy", CrBy)
         .execute("PRO-WMS_SET");
 
-    console.log(result.recordset[0])
+    // console.log(result.recordset[0])
     return NextResponse.json(result.recordset[0])
 }

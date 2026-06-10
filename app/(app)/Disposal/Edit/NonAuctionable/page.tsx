@@ -412,21 +412,28 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
   }
 
 
+  const [submitClicked, setSubmitClicked] = useState(false)
+
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitClicked(true)
 
     if (!disposalDate) {
       alert("Please select the Date");
+      setSubmitClicked(false)
       return;
     }
 
     if (!wasteCategory || !selectedWasteId) {
       alert("Please select waste category and waste item.");
+      setSubmitClicked(false)
       return;
     }
 
     if (selectedUndisposedIds.length === 0) {
       alert("Please select at least one undisposed waste item.");
+      setSubmitClicked(false)
       return;
     }
 
@@ -484,6 +491,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
 
       alert("Saved Successfully");
       router.back();
+      setSubmitClicked(false)
     } catch (err) {
       console.error(err);
       alert("Something went wrong");
@@ -670,6 +678,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
             <div className="px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Remarks</label>
               <textarea
+                required
                 value={remarks}
                 onChange={(e) => setRemarks(e.target.value)}
                 className="w-full rounded border border-slate-300 px-3 py-2"
@@ -680,12 +689,23 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
           </div>
 
         </div>
-        <button
-          type="submit"
-          className="block mt-2 mx-auto cursor-pointer rounded bg-emerald-700 px-4 py-1.5 text-sm text-white hover:bg-emerald-800"
-        >
-          Submit
-        </button>
+        {
+          !submitClicked &&
+          <button
+            type="submit"
+            className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+          >
+            Submit
+          </button>
+        }
+        {
+          submitClicked &&
+          <div
+            className="cursor-pointer rounded w-fit block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+          >
+            Submitting ...
+          </div>
+        }
       </form>
 
 

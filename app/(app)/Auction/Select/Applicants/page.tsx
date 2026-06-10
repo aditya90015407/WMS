@@ -150,10 +150,15 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
     setPage(1);
   }, [query, filters]);
 
+
+  const [submitClicked, setSubmitClicked] = useState(false)
+
   async function handleSelectSubmit() {
+    setSubmitClicked(true)
     try {
       if (!encoded || !String(selectedVid).trim()) {
         toast.error("Please enter VID.");
+        setSubmitClicked(false)
         return;
       }
 
@@ -172,11 +177,13 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
       const data = await res.json();
       if (!res.ok || !data.success) {
         toast.error(data.message || "Failed to save selected vendor");
+        setSubmitClicked(false)
         return;
       }
 
       toast.success("Selected vendor saved!");
       router.back()
+      setSubmitClicked(false)
     } catch (err) {
       console.error("Select submit failed:", err);
       toast.error(err instanceof Error ? err.message : "Error while saving selected vendor");
@@ -324,13 +331,24 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
             /> */}
           </div>
 
-          <button
-            type="button"
-            onClick={handleSelectSubmit}
-            className="cursor-pointer block place-self-center mt-2 rounded-lg bg-teal-600 px-4 py-2 text-sm text-white hover:bg-teal-700"
-          >
-            Submit
-          </button>
+          {!submitClicked &&
+            <button
+              type="button"
+              onClick={handleSelectSubmit}
+              className="cursor-pointer block place-self-center mt-2 rounded-lg bg-teal-600 px-4 py-2 text-sm text-white hover:bg-teal-700"
+            >
+              Submit
+            </button>
+          }
+
+          {submitClicked &&
+            <div
+              className="cursor-pointer block place-self-center mt-2 rounded-lg bg-teal-600 px-4 py-2 text-sm text-white hover:bg-teal-700"
+            >
+              Submitting ...
+            </div>
+          }
+
         </>
       }
 

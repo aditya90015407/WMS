@@ -414,31 +414,43 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                         <p className="mt-1 text-xs text-slate-600">Add remarks and choose the action for this submitted form.</p>
                         <div className="mt-2 text-xs text-slate-500">Review date: {today}</div>
                         <textarea
+                            required
                             rows={2}
                             value={remarks}
                             onChange={(e) => setRemarks(e.target.value)}
                             placeholder="Enter approval or rejection remarks"
                             className="mt-3 w-full rounded border border-slate-300 px-3 py-2 text-sm"
                         />
-                        <div className="mt-4 flex flex-wrap gap-3 space-x-4 justify-center">
-                            <button
-                                type="button"
-                                disabled={saving}
-                                onClick={() => void saveDecision(3, "Accepted")}
-                                className="cursor-pointer text-sm rounded bg-emerald-700 px-2 py-1.5 text-white hover:bg-emerald-800 disabled:opacity-60"
-                            >
-                                Accept
-                            </button>
-                            <button
-                                type="button"
-                                disabled={saving}
-                                onClick={() => void saveDecision(5, "Rejected")}
-                                className="cursor-pointer text-sm rounded bg-rose-700 px-2 py-1.5 text-white hover:bg-rose-800 disabled:opacity-60"
-                            >
-                                Reject
-                            </button>
-                        </div>
 
+                        {!saving &&
+                            <div className="mt-4 flex flex-wrap gap-3 space-x-4 justify-center">
+                                <button
+                                    type="button"
+                                    disabled={saving}
+                                    onClick={() => void saveDecision(3, "Accepted")}
+                                    className="cursor-pointer text-sm rounded bg-emerald-700 px-2 py-1.5 text-white hover:bg-emerald-800 disabled:opacity-60"
+                                >
+                                    Accept
+                                </button>
+                                <button
+                                    type="button"
+                                    disabled={saving}
+                                    onClick={() => void saveDecision(5, "Rejected")}
+                                    className="cursor-pointer text-sm rounded bg-rose-700 px-2 py-1.5 text-white hover:bg-rose-800 disabled:opacity-60"
+                                >
+                                    Reject
+                                </button>
+
+                            </div>
+                        }
+
+                        {
+                            saving &&
+                            <div className="mt-4 flex flex-wrap gap-3 space-x-4 justify-center">
+                                Recording Response ...
+                            </div>
+
+                        }
                     </div>
                 </>
             )}

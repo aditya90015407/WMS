@@ -397,8 +397,12 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         0,
     );
     // console.log(totalSelectedQty)
+
+    const [submitClicked, setSubmitClicked] = useState(false)
+
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setSubmitClicked(true)
 
         if (!ready) return
 
@@ -407,6 +411,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
             selectedVendorIds.length === 0
         ) {
             alert("Please fill all required fields and select at least one vendor.");
+            setSubmitClicked(false)
             return;
         }
 
@@ -424,12 +429,14 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
 
             if (!res.ok || !data.success) {
                 alert(data.message || "Save Failed");
+                setSubmitClicked(false)
                 return;
             }
 
             const iddid = id
             if (!iddid) {
                 alert("IDDID missing in InitiateDisposal response");
+                setSubmitClicked(false)
                 return;
             }
 
@@ -455,10 +462,11 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
                 }),
             );
 
-            console.log("Vendor insert results:", vendorInsertResults);
+            // console.log("Vendor insert results:", vendorInsertResults);
             alert(data.message || "Saved Successfully");
 
             router.back()
+            setSubmitClicked(false)
         } catch (error) {
             console.error("Submit Failed", error);
             alert("Something went wrong while saving");
@@ -849,12 +857,24 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
                     </div> */}
                     </div>
 
-                    <button
-                        type="submit"
-                        className="block place-self-center cursor-pointer rounded bg-emerald-700 px-4 py-1 text-white hover:bg-emerald-800"
-                    >
-                        Submit
-                    </button>
+                    {
+                        !submitClicked &&
+                        <button
+                            type="submit"
+                            className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+                        >
+                            Submit
+                        </button>
+                    }
+
+                    {
+                        submitClicked &&
+                        <div
+                            className="cursor-pointer rounded w-fit block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+                        >
+                            Submitting ...
+                        </div>
+                    }
                 </form>
             </section>
         </div >

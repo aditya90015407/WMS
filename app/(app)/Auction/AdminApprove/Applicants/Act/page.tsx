@@ -168,9 +168,15 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         // setDownloading(false)
     }
 
+    const [submitClicked, setSubmitClicked] = useState(false)
+
+
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
+
+        setSubmitClicked(true)
+
 
         const res = await fetch("/api/SetData/SetAuctionApproval", {
             method: "POST",
@@ -198,6 +204,8 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
             // redirect("./")
             return
         }
+        setSubmitClicked(false)
+
 
     }
 
@@ -368,6 +376,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                         <label className="font-semibold me-3 text-slate-700">Remarks</label>
                         <textarea
                             // type="text"
+                            required
                             rows={1}
                             placeholder=""
                             // value={complaint.date}
@@ -378,12 +387,24 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                     </div>
 
                 </div>
-                <button
-                    type="submit"
-                    className="text-sm cursor-pointer px-4 py-1.5 rounded-md bg-green-700 text-white hover:bg-green-800"
-                >
-                    Submit
-                </button>
+
+                {
+                    !submitClicked &&
+                    <button
+                        type="submit"
+                        className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+                    >
+                        Submit
+                    </button>
+                }
+                {
+                    submitClicked &&
+                    <div
+                        className="cursor-pointer rounded w-fit block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+                    >
+                        Submitting ...
+                    </div>
+                }
 
             </form>
         </div>
