@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, redirect } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import decrypt from "@/components/Decrypt";
 
 type FieldType =
   | "date"
@@ -66,9 +68,33 @@ const rows: RowDef[] = [
 export default function DisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string, disposalType?: string }> }) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
-  const iddid = params.id;
+  // const iddid = params.id;
+  // const disposalType = params.disposalType;
+
+
+  const encryptedIddid = params.id;
+  const encryptedDisposalType = params.disposalType;
+
+  const [iddid, setIddid] = useState("")
+  const [disposalType, setDisposalType] = useState("")
+
+
+  async function decryptId() {
+    const decryptedId = await decrypt(encryptedIddid!)
+    const decryptedDisType = await decrypt(encryptedDisposalType!)
+
+    // console.log(decryptedDisType, decryptedId)
+    setIddid(decryptedId)
+    setDisposalType(decryptedDisType)
+  }
+
+  useEffect(() => {
+    if (!encryptedIddid) return
+    decryptId()
+  }, [encryptedIddid])
+
+
   const router = useRouter();
-  const disposalType = params.disposalType;
   // const iddid = params.get("id") ?? "";
   const [MUID, setMUID] = useState<string>("");
   const [values, setValues] = useState<Record<string, string | string[] | File | null>>({
@@ -195,8 +221,14 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   }, [iddid, today]);
 
 
+
+  const { data: session } = useSession()
+
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const roleid = session?.user.roleId
 
     if (values.senderNameAddress == "" || values.transporterName == "" || values.transporterAddress == "" ||
       values.transporterEmail == "" || values.vehicleType == "" || values.transporterRegNo == "" ||
@@ -205,6 +237,24 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     ) {
       alert("Please fill all required fields (marked with *) ")
       return
+    }
+
+
+    if (roleid == '7' && !values.salePoSoDoc) {
+      alert("Please Upload PO/SO Document")
+      return
+    }
+
+
+    if (roleid == '8') {
+      for (let i = 1; i <= 5; i++) {
+        const file = values[`finalPartyDoc${i}`];
+        if (!file) {
+          alert("Please Upload All Required Documents")
+          return
+        }
+
+      }
     }
 
     const wasteIdsArr = Array.isArray(values.wasteIds) ? values.wasteIds : [];
@@ -290,7 +340,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
         }
 
       }
-      console.log([...attachmentFormData.entries()]);
+      // console.log([...attachmentFormData.entries()]);
       const attachmentRes = await fetch("/api/SetData/SetFinalDisposalDetailsAttachments", {
         method: "POST",
         // headers: { "Content-Type": "application/json" },
@@ -300,9 +350,11 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       const attachmentResult = await attachmentRes.json();
       if (!attachmentRes.ok || !attachmentResult.success) {
         alert(attachmentResult.message || "Attachment save failed");
+        redirect("./")
         return;
       }
     }
+    redirect("./")
     // router.back();
   };
 

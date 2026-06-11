@@ -33,7 +33,8 @@ export async function POST(req: Request) {
 
     //  console.log("UIDI :", UID);
     //  console.log("VTID :", VTID);
-    console.log(form);
+    //  console.log(form);
+
 
     const result = await pool
       .request()
@@ -58,6 +59,7 @@ export async function POST(req: Request) {
       .input("PSID", sql.NVarChar(50), String(form.get("PSID") ?? ""))
       .input("AID", sql.NVarChar(50), String(form.get("AID") ?? ""))
       .input("SpecialHandlingInstructions", sql.NVarChar(300), String(form.get("SpecialHandlingInstructions") ?? ""))
+      .input("Form8Form9", form.get("Form8Form9"))
       .input("EmpCode", sql.NVarChar(50), empCode)
       .input("DateOfDisposal", sql.Date, String(form.get("DateOfDisposal") ?? ""))
       .execute("PRO-WMS_SET");

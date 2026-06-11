@@ -1,24 +1,23 @@
 import { getConnection } from "@/lib/dbConnect";
 import { NextRequest, NextResponse } from "next/server";
 import sql from "mssql";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 
-export async function POST(req: Request) {
+export async function GET() {
+    const session = await getServerSession(authOptions)
+    const EmpCode = await session?.user?.id
+
     try {
         const pool = await getConnection();
         if (!pool || !pool.connected) {
             throw new Error("DB NOT CONNECTED");
         }
 
-        const { id } = await req.json();
-        if (!id) {
-            return NextResponse.json({ success: false, message: "ID missing" }, { status: 400 });
-        }
-        //  console.log(id)
         const result = await pool.request()
-            .input("FLAG", sql.VarChar, "GetAllInitiateDisposalDetailbyIDNI")
-            .input("IDDID", sql.VarChar, id)
+            .input("FLAG", sql.VarChar, "GetAllInitiatedAuctionListEdit")
             .execute("PRO-WMS_GET");
-        // console.log(result.recordset)
+        // console.log(result)
 
         return NextResponse.json({
             success: true,

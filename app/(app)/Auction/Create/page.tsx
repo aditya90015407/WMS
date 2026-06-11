@@ -165,10 +165,10 @@ export default function AuctionList() {
                 />
             </div>
 
-            {loading && <p className="mt-4 text-sm text-slate-600">Loading auction records...</p>}
+            {loading && <p className="mt-4 text-sm text-slate-600">Loading disposal records...</p>}
             {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
             {!loading && !error && filteredRows.length === 0 && (
-                <p className="mt-4 text-sm text-slate-600">No auction records found.</p>
+                <p className="mt-4 text-sm text-slate-600">No disposal records found.</p>
             )}
 
             {!loading && !error && filteredRows.length > 0 && (

@@ -3,12 +3,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
 import decrypt from "@/components/Decrypt";
-import encrypt from "@/components/Encrypt";
 
-type Option = { id: string; name: string };
+type Option = { id: string; name: string; email: string; vendorCode: string };
 type Option1 = { ID: string; NAME: string };
+
+type VendorOption = {
+  id: string; name: string, email: string, vendorCode: string
+};
 
 type UndisposedOption = {
   id: string;
@@ -19,58 +21,56 @@ type UndisposedOption = {
   todayDate: string;
   daysLeft: string;
   label: string;
-  unit: string
+  unit: string;
   muid: string
 };
 
-export default function InternalPage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+export default function AuctionablePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const router = useRouter();
+  // const params = useSearchParams();
+
 
   const params = React.use(searchParams);
-  // const iddid = params.id;
-
-  const encryptedIddid = params.id;
+  const encryptediddid = params.id;
 
   const [iddid, setIddid] = useState("")
 
-
-  async function decryptId() {
-    // const id1 = await encrypt("124") ; const id2 = await encrypt("100") ; const id3 = await encrypt("1")
-    // console.log(id1) ; console.log(id2) ;console.log(id3)
-
-    const decryptedId = await decrypt(encryptedIddid!)
-
-    setIddid(decryptedId)
-  }
-
-  useEffect(() => {
-    if (!encryptedIddid) return
-    decryptId()
-  }, [encryptedIddid])
-
-  const [disposalDate, setDisposalDate] = useState("");
-  const [wasteCategory, setWasteCategory] = useState("");
-  const [selectedWasteId, setSelectedWasteId] = useState("");
-  const [waste, setWaste] = useState("");
-  const [physicalForm, setPhysicalForm] = useState("");
-  const [remarks, setRemarks] = useState("");
-
+  const [auctionDate, setAuctionDate] = useState("");
   const [physicalOptions, setPhysicalOptions] = useState<Option1[]>([]);
-  const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
+  const [wasteCategory, setWasteCategory] = useState("");
   const [wasteOptions, setWasteOptions] = useState<Option[]>([]);
-
+  const [selectedWasteId, setSelectedWasteId] = useState("");
   const [undisposedOptions, setUndisposedOptions] = useState<UndisposedOption[]>([]);
   const [selectedUndisposedIds, setSelectedUndisposedIds] = useState<string[]>([]);
   const [alreadySelectedUndisposedIds, setAlreadySelectedUndisposedIds] = useState<string[]>([]);
   const [savedUndisposedIds, setSavedUndisposedIds] = useState<string[]>([]);
+  const [loadingUndisposed, setLoadingUndisposed] = useState(false);
+  const [alreadySelectedVendorIds, setAlreadySelectedVendorIds] = useState<string[]>([]);
 
+  const [physicalForm, setPhysicalForm] = useState("");
+  const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
+
+  const [waste, setWaste] = useState("");
+  const [remarks, setRemarks] = useState("");
   const [loadingBase, setLoadingBase] = useState(false);
   const [loadingWaste, setLoadingWaste] = useState(false);
-  const [loadingUndisposed, setLoadingUndisposed] = useState(false);
+
+  const [vendorOptions, setVendorOptions] = useState<VendorOption[]>([]);
+  const [selectedVendorIds, setSelectedVendorIds] = useState<string[]>([]);
+
   const [undisposedDropdownOpen, setUndisposedDropdownOpen] = useState(false);
+  const [vendorDropdownOpen, setVendorDropdownOpen] = useState(false);
 
 
-  const [refreshSeed, setRefreshSeed] = useState(0);
+  async function decryptId() {
+    const decryptedId = await decrypt(encryptediddid!)
+    setIddid(decryptedId)
+  }
+
+  useEffect(() => {
+    if (!encryptediddid) return
+    decryptId()
+  }, [encryptediddid])
 
   useEffect(() => {
     const loadDropdowns = async () => {
@@ -114,43 +114,6 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
     void loadBase();
   }, []);
 
-  const { data: session } = useSession();
-
-
-  useEffect(() => {
-    const loadEditDetails = async () => {
-      if (!iddid) return;
-
-      try {
-        const res = await fetch("/api/GetData/GetAllInitiateDisposalDetailbyIDNI", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: iddid }),
-        });
-
-        const payload = await res.json();
-
-        if (!res.ok || !payload.success) {
-          console.error("Failed to load internal edit details", payload);
-          return;
-        }
-
-        const detailRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
-        if (!detailRow) return;
-
-        setDisposalDate(String(detailRow.AuctionDate ?? detailRow.DisposalDate ?? "").split("T")[0]);
-        setWasteCategory(String(detailRow.WCID ?? ""));
-        setSelectedWasteId(String(detailRow.WID ?? ""));
-        setPhysicalForm(String(detailRow.PSID ?? ""));
-        // setRemarks(String(detailRow.Remarks ?? ""));
-      } catch (error) {
-        console.error("loadEditDetails failed", error);
-      }
-    };
-
-    void loadEditDetails();
-  }, [refreshSeed, iddid]);
-
   useEffect(() => {
     const loadWaste = async () => {
       if (!wasteCategory) {
@@ -160,20 +123,15 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
         return;
       }
 
-      const sessionUid = String(session?.user?.uid ?? "").trim();
-      if (!sessionUid) return;
       setLoadingWaste(true);
-
       try {
         const res = await fetch(
-          `/api/auth/Waste/generate?type=drop-waste-for-unit&wcid=${encodeURIComponent(wasteCategory)}&uid=${encodeURIComponent(sessionUid!)}`,
-          {
-            method: "GET",
-            cache: "no-store",
-          },
+          `/api/auth/Waste/generate?type=drop-waste&wcid=${encodeURIComponent(wasteCategory)}`,
+          { cache: "no-store" },
         );
         const payload = (await res.json()) as { success?: boolean; data?: Option[] };
         const data = payload.success && Array.isArray(payload.data) ? payload.data : [];
+        // console.log(data)
         setWasteOptions(data);
       } catch {
         setWasteOptions([]);
@@ -184,6 +142,39 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
 
     void loadWaste();
   }, [wasteCategory]);
+
+  useEffect(() => {
+    const loadEditDetails = async () => {
+      if (!iddid) return;
+
+      try {
+        const res = await fetch("/api/GetData/GetAllInitiateDisposalDetailbyID", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: iddid }),
+        });
+
+        const payload = await res.json();
+        if (!res.ok || !payload.success) {
+          console.error("Failed to load edit details", payload);
+          return;
+        }
+
+        const detailRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
+        if (!detailRow) return;
+
+        setAuctionDate(String(detailRow.AuctionDate ?? "").split("T")[0]);
+        setWasteCategory(String(detailRow.WCID ?? ""));
+        setSelectedWasteId(String(detailRow.WID ?? ""));
+        setPhysicalForm(String(detailRow.PSID ?? ""));
+        setRemarks(String(detailRow.Remarks ?? ""));
+      } catch (error) {
+        console.error("loadEditDetails failed", error);
+      }
+    };
+
+    void loadEditDetails();
+  }, [iddid]);
 
   useEffect(() => {
     if (!selectedWasteId) return;
@@ -224,12 +215,10 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
         const selectedRows: UndisposedOption[] = rows.map((row: any) => {
           const qty = Number(row.WasteQty ?? 0);
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
-          const todayDate = new Date().toISOString().split("T")[0];
-
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
+          const todayDate = new Date().toISOString().split("T")[0];
+          const unit = String(row.MUnit ?? row.unit ?? "").trim();
           const muid = row.MUID
-          const unit = String(row.MUnit ?? "").trim();
-
 
 
           let daysLeft = "";
@@ -241,18 +230,19 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
             daysLeft = String(diffDays);
           }
 
+          const dept = String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim();
 
           return {
             id: String(row.WRID ?? row.Id ?? row.ID ?? "").trim(),
-            dept: String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim(),
+            dept,
             qty,
             genDate,
-            targetDate: "",
+            targetDate,
             todayDate,
             daysLeft,
-            unit,
             muid,
-            label: `${String(row.DeptDesc ?? row.Dept ?? "Previously Selected").trim()} - ${qty.toFixed(2)} ${unit} - ${daysLeft ?? "N/A"} days left`,
+            unit,
+            label: `${dept} - ${qty.toFixed(2)} ${unit} - ${daysLeft || "N/A"}  days left`,
           };
         });
 
@@ -284,7 +274,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
 
       setLoadingUndisposed(true);
       try {
-        const res = await fetch("/api/GetData/GetAllUndisposedWasteByDept", {
+        const res = await fetch("/api/GetData/GetAllUndisposedWaste", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -303,12 +293,13 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
           [];
 
         const options: UndisposedOption[] = raw.map((row: any, index: number) => {
-          const dept = String(row.Dept ?? row.DeptDesc ?? "").trim();
+          const dept = String(row.Dept ?? "").trim();
           const rawQty = String(row.WasteQty ?? "").replace(",", ".");
           const qtyNum = Number.parseFloat(rawQty);
           const qty = Number.isFinite(qtyNum) ? qtyNum : 0;
           const unit = String(row.MUnit ?? "").trim();
           const muid = row.MUID
+
 
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
@@ -336,7 +327,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
             daysLeft,
             unit,
             muid,
-            label: `${dept || "Dept"} - ${qtyLabel} ${unit} - ${daysLeft} days left`,
+            label: `${dept || "Dept"} - ${qtyLabel} ${unit} - ${daysLeft || "N/A"} days left`,
           };
         });
 
@@ -353,7 +344,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
         console.error("loadUndisposed failed", err);
         setUndisposedOptions([]);
         setSelectedUndisposedIds([]);
-        setAlreadySelectedUndisposedIds([])
+        setAlreadySelectedUndisposedIds([]);
       } finally {
         setLoadingUndisposed(false);
       }
@@ -363,15 +354,85 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
   }, [wasteCategory, selectedWasteId]);
 
   useEffect(() => {
+    const loadVendors = async () => {
+      if (!iddid) return;
+
+      try {
+        const selectedRes = await fetch("/api/GetData/GetVendorDetailsEditbyIDDID", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: iddid }),
+        });
+        const selectedData = await selectedRes.json();
+        const selectedRows = Array.isArray(selectedData?.data) ? selectedData.data : [];
+
+        console.log(selectedData, "selected vendors")
+
+        const selectedVendorRowsMapped: VendorOption[] = selectedRows.map((row: any, index: number) => ({
+          id: String(row.VID ?? row.ID ?? row.id ?? index).trim(),
+          name: String(row.NAME ?? row.VendorName ?? row.Name ?? "Vendor").trim(),
+          email: String(row.Email ?? row.email ?? ""),
+          vendorCode: String(row.VendorCode ?? row.vendorCode ?? ""),
+
+        }));
+
+        const selectedIds = selectedVendorRowsMapped.map((item) => item.id).filter(Boolean);
+        setSelectedVendorIds(selectedIds);
+        setAlreadySelectedVendorIds(selectedIds);
+
+        console.log(selectedIds)
+
+
+        const unselectedRes = await fetch("/api/GetData/GetVendor", {
+          method: "POST",
+          cache: "no-store"
+        });
+        const unselectedData = await unselectedRes.json();
+        const unselectedRows = Array.isArray(unselectedData?.data) ? unselectedData.data : [];
+        console.log(unselectedRows, "all vendors")
+
+        const unselectedVendorRowsMapped: VendorOption[] = unselectedRows.map((row: any, index: number) => ({
+          id: String(row.VID ?? row.ID ?? row.id ?? index).trim(),
+          name: String(row.NAME ?? row.VendorName ?? row.name ?? "Vendor").trim(),
+          email: String(row.Email ?? row.email ?? ""),
+          vendorCode: String(row.VendorCode ?? row.vendorCode ?? ""),
+        }));
+
+        const mergedVendorOptions: VendorOption[] = [
+          ...selectedVendorRowsMapped,
+          ...unselectedVendorRowsMapped.filter(
+            (item) => !selectedVendorRowsMapped.some((sel) => sel.id === item.id),
+          ),
+        ].filter((item) => item.id && item.name && item.email && item.vendorCode);
+
+        console.log(mergedVendorOptions, "merged vendors")
+
+        setVendorOptions(mergedVendorOptions);
+      } catch (err) {
+        console.error("Failed to load vendors", err);
+        setVendorOptions([]);
+        setSelectedVendorIds([]);
+      }
+    };
+
+    void loadVendors();
+  }, [iddid]);
+
+
+
+  useEffect(() => {
     if (undisposedOptions.length === 0 || savedUndisposedIds.length === 0) return;
 
     const matchedIds = undisposedOptions
-      .map((item) => item.id)
-      .filter((id) => savedUndisposedIds.includes(id));
+      .map((item) => String(item.id).trim())
+      .filter((id) => savedUndisposedIds.map((x) => String(x).trim()).includes(id));
 
     setSelectedUndisposedIds(matchedIds);
-    setAlreadySelectedUndisposedIds(matchedIds)
+    setAlreadySelectedUndisposedIds(matchedIds);
   }, [undisposedOptions, savedUndisposedIds]);
+
+
+  const displayVendorOptions = vendorOptions.filter((v) => v.name);
 
   const selectedUndisposedItems = undisposedOptions.filter((item) =>
     selectedUndisposedIds.includes(item.id),
@@ -391,117 +452,126 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
   );
 
 
-
-  async function CancelDisposal() {
-    const res = await fetch("/api/SetData/CancelDisposal", {
-      method: "POST",
-      body: JSON.stringify({ "IDDID": iddid })
-    })
-    const data = await res.json()
-    redirect("./")
-  }
+  // async function CancelDisposal() {
+  //   const res = await fetch("/api/SetData/CancelDisposal", {
+  //     method: "POST",
+  //     body: JSON.stringify({ "IDDID": iddid })
+  //   })
+  //   const data = await res.json()
+  //   redirect("./")
+  // }
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!disposalDate) {
-      alert("Please select the Date");
-      return;
-    }
-
-    if (!wasteCategory || !selectedWasteId) {
-      alert("Please select waste category and waste item.");
-      return;
-    }
-
-    if (selectedUndisposedIds.length === 0) {
-      alert("Please select at least one undisposed waste item.");
+    if (
+      !wasteCategory ||
+      !selectedWasteId
+    ) {
+      alert("Please fill all required fields and select at least one waste item and vendor.");
       return;
     }
 
     try {
-      const res = await fetch("/api/SetData/UpdateDisposal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          WCID: wasteCategory,
-          WID: selectedWasteId,
-          TotalQty: totalSelectedQty,
-          MUID: undisposedOptions[0].muid,
-          Auctionable: 3,
-          PSID: physicalForm,
-          AuctionDate: disposalDate,
-          // Remarks: remarks,
-          IDDID: iddid
-        }),
-      });
+      // const res = await fetch("/api/SetData/UpdateDisposal", {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   body: JSON.stringify({
+      //     WCID: wasteCategory,
+      //     WID: selectedWasteId,
+      //     TotalQty: totalSelectedQty,
+      //     MUID: undisposedOptions[0].muid,
+      //     Auctionable: 1,
+      //     AuctionDate: auctionDate,
+      //     PSID: physicalForm,
+      //     Remarks: remarks,
+      //     IDDID: iddid,
+      //   }),
+      // });
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        alert(data.message || "Save Failed");
-        redirect("./")
-      }
+      // const data = await res.json();
 
-      // const wrid = data?.data?.WRID;
-      // if (!wrid) {
-      //   alert("WRID missing from InitiateDisposal response");
+      // if (!res.ok || !data.success) {
+      //   alert(data.message || "Save Failed");
+      //   redirect("./")
       //   return;
       // }
-      const newSelectedIds = undisposedOptions
-        .map((item) => item.id)
-        .filter((id) => selectedUndisposedIds.includes(id))
-        .filter((id) => !alreadySelectedUndisposedIds.includes(id))
+
+      // const newSelectedIds = undisposedOptions
+      //   .map((item) => String(item.id))
+      //   .filter((id) => selectedUndisposedIds.map(String).includes(id))
+      //   .filter((id) => !alreadySelectedUndisposedIds.map(String).includes(id));
+
+      // if (newSelectedIds.length > 0) {
+      //   const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify({
+      //       IDDID: iddid,
+      //       WRID: newSelectedIds,
+      //     }),
+      //   });
+
+      //   const data2 = await res2.json();
+
+      //   if (!res2.ok || !data2.success) {
+      //     alert(data2.message || "InsertAuctionWasteDetails failed");
+      //     return;
+      //   }
+      // }
 
 
-      // console.log(alreadySelectedUndisposedIds, "already")
-      // console.log(selectedUndisposedIds, "saved")
-      // console.log(newSelectedIds, "new ")
-      // console.log(undisposedOptions, "undisposed")
+      const newVendorIds = selectedVendorIds.filter(
+        (id) => !alreadySelectedVendorIds.includes(id)
+      );
 
-      if (newSelectedIds.length > 0) {
-        const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            IDDID: iddid,
-            WRID: newSelectedIds,
+      if (newVendorIds.length > 0) {
+        await Promise.all(
+          newVendorIds.map(async (vendorId) => {
+            const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                IDDID: iddid,
+                VID: vendorId,
+              }),
+            });
+
+            const vendorData = await vendorRes.json();
+
+            if (!vendorRes.ok || !vendorData.success) {
+              throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
+            }
+
+            return vendorData;
           }),
-        });
-
-        const data2 = await res2.json();
-        if (!res2.ok || !data2.success) {
-          return alert(data2.message || "InsertAuctionWasteDetails failed");
-        }
-
+        );
       }
 
       alert("Saved Successfully");
-      router.back();
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong");
+      router.back()
+    } catch (error) {
+      console.error("Submit Failed", error);
+      alert("Something went wrong while saving");
     }
   };
 
   return (
     <section className="max-w-5xl mx-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="relative">
-        <h1 className="text-lg font-semibold text-teal-600 text-center">Internal Disposal</h1>
+        <h1 className="text-lg font-semibold text-teal-600 text-center">Auctionable Disposal</h1>
 
         <Link href="./">
           <img src="/goback.png" alt="" className="h-5 absolute top-0 right-15" />
         </Link>
 
         <img src="/refresh.png" alt="" className="h-4.5 ms-3 cursor-pointer  absolute top-0.5 right-5"
-          onClick={() => setRefreshSeed((x) => x + 1)}
+          onClick={() => window.location.reload()}
         />
       </div>
-
-      <form onSubmit={onSubmit} className="mt-6  text-sm">
-
-        <div className="">
-
-          <div className="grid grid-cols-2">
+      <form onSubmit={onSubmit} className="mt-6 text-sm">
+        <div className=" ">
+          <div className=" grid grid-cols-2">
 
             <div className="px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Disposal ID</label>
@@ -514,13 +584,23 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
               />
             </div>
 
+            {/* <div className="px-4 py-1">
+          <label className="mb-1 block text-xs font-semibold text-slate-700">Auction Date</label>
+          <input
+            type="date"
+            value={auctionDate}
+            onChange={(e) => setAuctionDate(e.target.value)}
+            className="w-full rounded border border-slate-300 px-3 py-2"
+          />
+        </div> */}
+
             <div className="px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Waste Category</label>
               <select
                 value={wasteCategory}
                 onChange={(e) => setWasteCategory(e.target.value)}
                 className="w-full rounded border border-slate-300 px-3 py-2"
-                disabled  //={loadingBase}
+                disabled
               >
                 <option value="">{loadingBase ? "Loading..." : "Select Waste Category"}</option>
                 {categoryOptions.map((item) => (
@@ -541,7 +621,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
                   setWaste(name);
                 }}
                 className="w-full rounded border border-slate-300 px-3 py-2"
-                disabled  //={!wasteCategory || loadingWaste}
+                disabled
               >
                 <option value="">{loadingWaste ? "Loading..." : "Select Waste Item"}</option>
                 {wasteOptions.map((item) => (
@@ -551,50 +631,37 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
                 ))}
               </select>
             </div>
-          </div>
 
 
-          <hr className="col-span-2 mt-4 mb-3 border border-gray-200 w-[97%] mx-auto" />
-
-          <div className="grid grid-cols-2">
-
-
-
-            <div className="px-4 py-1">
-              <label className="mb-1 block text-xs font-semibold text-slate-700">Date of Disposal</label>
-              <input
-                type="date"
-                value={disposalDate}
-                onChange={(e) => setDisposalDate(e.target.value)}
-                className="w-full rounded border border-slate-300 px-3 py-2"
-              />
-            </div>
-
-            <div className="relative px-4 py-1">
+            {/* <div className="grid grid-cols-2 "> */}
+            {/* <div className="relative px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">
                 Undisposed Waste (Dept - Quantity - Days Left)
               </label>
               <button
                 type="button"
                 onClick={() => setUndisposedDropdownOpen((prev) => !prev)}
-                disabled={!wasteCategory || !selectedWasteId || loadingUndisposed}
-                className="w-full rounded border border-slate-300 px-3 py-2 text-left disabled:cursor-not-allowed disabled:bg-slate-100"
+                disabled
+                className="text-sm w-full rounded border border-slate-300 px-3 py-2 text-left "
               >
                 {selectedUndisposedItems.length > 0
                   ? selectedUndisposedItems.map((x) => x.label).join(", ")
                   : loadingUndisposed
                     ? "Loading..."
-                    : "Select Dept - Quantity - Days Left"}
+                    : "Select Dept - Quantity - Days left"}
               </button>
 
               {undisposedDropdownOpen && (
                 <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
                   {sortedUndisposedOptions.length === 0 ? (
-                    <p className="px-2 py-1 text-sm text-slate-500">No undisposed waste</p>
+                    <p className="px-2 py-1 text-xs text-slate-500">No undisposed waste</p>
                   ) : (
                     sortedUndisposedOptions.map((item) => {
                       const checked = selectedUndisposedIds.includes(item.id);
                       const alreadyChecked = alreadySelectedUndisposedIds.includes(item.id);
+
+
+
                       return (
                         <label
                           key={item.id}
@@ -611,13 +678,13 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
                               setSelectedUndisposedIds(nextIds);
                             }}
                           />
-                          <div className="flex flex-col">
-                            <span className="text-sm text-slate-700">
-                              {item.dept || "Dept"} - {item.qty.toFixed(2)}{item.unit || "N/A"}
-                            </span>
-                            <span className="text-sm font-semibold text-red-600">
-                              {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
 
+                          <div className="flex flex-col">
+                            <span className="text-xs text-slate-700">
+                              {item.dept || "Dept"} - {item.qty.toFixed(2)} {item.unit}
+                            </span>
+                            <span className="text-xs font-semibold text-red-600">
+                              {item.daysLeft ? `${item.daysLeft} days left` : "N/A"}
                             </span>
                           </div>
                         </label>
@@ -626,31 +693,31 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
                   )}
                 </div>
               )}
-            </div>
+            </div> */}
 
             <div className="px-4 py-1">
-              <label className="mb-1 block text-xs font-semibold text-slate-700">
-                Total Quantity
-              </label>
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Total Quantity</label>
+
               <div
-                className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+                className="w-full rounded border border-slate-300 px-3 py-2 text-xs"
               >
                 {Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
               </div>
               {/* <input
             type="text"
             readOnly
-            value={totalSelectedQty.toFixed(2)}
-            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-sm"
+            value={Number.isFinite(totalSelectedQty) ? totalSelectedQty.toFixed(2) : "0.00"}{" "}{sortedUndisposedOptions[0]?.unit}
+            className="w-full rounded border border-slate-300 bg-slate-100 px-3 py-2 text-xs"
           /> */}
             </div>
 
             <div className="px-4 py-1">
               <label className="block text-xs font-semibold text-slate-700">Physical Form</label>
               <select
+                disabled
                 value={physicalForm}
                 onChange={(e) => setPhysicalForm(e.target.value)}
-                className="mt-1 text-sm w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               >
                 <option value="">Select</option>
                 {physicalOptions.map((opt) => (
@@ -661,33 +728,97 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
               </select>
             </div>
 
-            {/* <div className="px-4 py-1">
-              <label className="mb-1 block text-xs font-semibold text-slate-700">Remarks</label>
+            <div className="px-4 py-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Initiator Remarks</label>
               <textarea
+                disabled
                 value={remarks}
                 onChange={(e) => setRemarks(e.target.value)}
-                className="w-full rounded border border-slate-300 px-3 py-2"
+                className="w-full text-sm rounded border border-slate-300 px-3 py-2"
                 rows={1}
               />
-            </div> */}
+            </div>
 
+
+            {/* </div> */}
+
+            <hr className="col-span-2 mt-4 mb-3 border border-gray-200 w-[97%] mx-auto" />
+
+            <div className="relative">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Vendor List</label>
+              <button
+                type="button"
+                onClick={() => setVendorDropdownOpen((prev) => !prev)}
+                className="w-full rounded border border-slate-300 px-3 py-2 text-left text-sm"
+              >
+                {selectedVendorIds.length > 0
+                  ? displayVendorOptions
+                    .filter((v) => selectedVendorIds.includes(v.id)).length > 0
+                    ? displayVendorOptions
+                      .filter((v) => selectedVendorIds.includes(v.id))
+                      .map((v) => v.name)
+                      .join(", ")
+                    : "Select vendor(s)"
+                  : "Select vendor(s)"}
+              </button>
+
+              {vendorDropdownOpen && (
+                <div className="absolute z-20 mt-1 max-h-56 w-full overflow-auto rounded border border-slate-300 bg-white p-2 shadow">
+                  {displayVendorOptions.length === 0 ? (
+                    <p className="px-2 py-1 text-sm text-slate-500">No vendors found</p>
+                  ) : (
+                    displayVendorOptions.map((item) => {
+                      // console.log(item, "item")
+                      const checked = selectedVendorIds.includes(item.id);
+                      const alreadyChecked = alreadySelectedVendorIds.includes(item.id);
+                      return (
+                        <label
+                          key={item.id}
+                          className={`flex items-center gap-2 rounded px-2 py-1 hover:bg-slate-50 ${alreadyChecked ? "cursor-not-allowed opacity-60" : ""
+                            }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            disabled={alreadyChecked}
+                            onChange={(e) => {
+                              const nextIds = e.target.checked
+                                ? [...selectedVendorIds, item.id]
+                                : selectedVendorIds.filter((id) => id !== item.id);
+                              // console.log(nextIds)
+                              setSelectedVendorIds(nextIds);
+                            }}
+                          />
+                          <span className="text-sm text-slate-700">
+                            {(item.name || "Dept")} {item.vendorCode ? `- ${item.vendorCode}` : ""}
+                          </span>
+                          <span className="text-sm font-semibold">
+                            {item.email || "-"}
+                          </span>
+                        </label>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
 
           </div>
+
 
         </div>
 
         <button
           type="submit"
-          className="block mt-2 mx-auto cursor-pointer rounded bg-emerald-700 px-4 py-1.5 text-sm text-white hover:bg-emerald-800"
+          className="block mt-3 place-self-center cursor-pointer rounded bg-emerald-700 px-4 py-1.5 text-white hover:bg-emerald-800"
         >
           Submit
         </button>
       </form>
 
-
       <hr className="col-span-2 mt-4 mb-1 border border-gray-100 w-[97%] mx-auto" />
 
-      <div className="text-sm text-slate-700 mt-8">
+      {/* <div className="text-sm text-slate-700 mt-8">
         Do you want to cancel this disposal and revert the status of the included waste items?
         <span
           className="ms-5 place-self-center cursor-pointer rounded bg-rose-700 px-3 py-2 text-md text-white hover:bg-red-800"
@@ -695,8 +826,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
         >
           Yes, Cancel Disposal
         </span>
-      </div>
-
-    </section>
+      </div> */}
+    </section >
   );
 }

@@ -510,7 +510,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
                         <div className=""><span className="text-xs mr-1 font-semibold ">Total Quantity : </span> {disposalDetails?.TotalQty}{" "}{disposalDetails?.MUnit}</div >
                         {/* <div className="">ID : </span> {disposalDetails?.WCID}</div> */}
                         {/* <div className=""><span className="text-xs mr-1 font-semibold ">Created By : </span> {disposalDetails?.CreatedBy}{" "} ( {disposalDetails?.CrBy})</div > */}
-                        <div className=""><span className="text-xs mr-1 font-semibold ">Created On : </span> {disposalDetails?.CrDt.split("T")[0]}</div >
+                        <div className=""><span className="text-xs mr-1 font-semibold ">Created On : </span> {disposalDetails?.CrDt?.split("T")[0]}</div >
                     </div >
                 </div>
                 {/* <div className="mt-6">

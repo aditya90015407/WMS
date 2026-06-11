@@ -4,6 +4,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import decrypt from "@/components/Decrypt";
 
 
 type FieldType =
@@ -125,8 +126,26 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     const [physicalOptions, setPhysicalOptions] = useState<Option[]>([]);
     const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
     const params = React.use(searchParams)
-    const fddid = params.id;
-    const disposalType = params.disposalType;
+    // const fddid = params.id;
+    // const disposalType = params.disposalType;
+
+    const encryptedFddid = params.id;
+    // const disposalType = params.disposalType;
+
+    const [fddid, setFddid] = useState("")
+
+
+    async function decryptId() {
+        const decryptedId = await decrypt(encryptedFddid!)
+        setFddid(decryptedId)
+    }
+
+    useEffect(() => {
+        if (!encryptedFddid) return
+        decryptId()
+    }, [encryptedFddid])
+
+
 
     const [MUID, setMUID] = useState<string>("");
 

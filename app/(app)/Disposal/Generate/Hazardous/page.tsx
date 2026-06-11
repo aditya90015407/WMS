@@ -4,6 +4,9 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import decrypt from "@/components/Decrypt";
+import encrypt from "@/components/Encrypt";
 
 
 type FieldType =
@@ -96,7 +99,7 @@ const rows: RowDef[] = [
   // { key: "transporterSignDate", field: "Name and Stamp (Transporter)", type: "signature-date" },
   // { key: "receiverCert", field: "Receiver certification for receipt of hazardous and other waste", type: "checkbox" },
   // { key: "receiverSignDate", field: "Name and Stamp (Receiver)", type: "signature-date" },
-  // { key: "form8form9", field: "Hard copy of Form-8 and Form-9 submitted to transporter", type: "checkbox" },
+  { key: "form8form9", field: "Hard copy of Form-8 and Form-9 submitted to transporter", type: "checkbox" },
   { key: "salePoSoDoc", field: "Document for Sale PO/SO for external disposal", type: "file" },
   { key: "finalPartyDoc", field: "Final party document intact as provided prior for verification", type: "file" },
 ];
@@ -116,8 +119,31 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   const [physicalOptions, setPhysicalOptions] = useState<Option[]>([]);
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
   const params = React.use(searchParams)
-  const iddid = params.id;
-  const disposalType = params.disposalType;
+  // const iddid = params.id;
+  // const disposalType = params.disposalType;
+
+  const encryptedIddid = params.id;
+  const encryptedDisposalType = params.disposalType;
+
+  const [iddid, setIddid] = useState("")
+  const [disposalType, setDisposalType] = useState("")
+
+
+  async function decryptId() {
+    const decryptedId = await decrypt(encryptedIddid!)
+    const decryptedDisType = await decrypt(encryptedDisposalType!)
+
+    // console.log(decryptedDisType, decryptedId)
+    setIddid(decryptedId)
+    setDisposalType(decryptedDisType)
+  }
+
+  useEffect(() => {
+    if (!encryptedIddid) return
+    decryptId()
+  }, [encryptedIddid])
+
+
 
   const [MUID, setMUID] = useState<string>("");
   // const iddid = params.get("id") ?? "";
@@ -270,10 +296,15 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
 
 
+  const { data: session } = useSession()
 
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const roleid = session?.user.roleId
+
+    // console.log(roleid, "roleid")
 
     if (values.senderNameAddress == "" || values.transporterName == "" || values.transporterAddress == "" ||
       values.transporterEmail == "" || values.vehicleType == "" || values.transporterRegNo == "" ||
@@ -284,6 +315,24 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       alert("Please fill all required fields (marked with *) ")
       return
     }
+
+
+    if (roleid == '7' && !values.salePoSoDoc) {
+      alert("Please Upload PO/SO Document")
+      return
+    }
+
+    if (roleid == '8') {
+      for (let i = 1; i <= 5; i++) {
+        const file = values[`finalPartyDoc${i}`];
+        if (!file) {
+          alert("Please Upload All Required Documents")
+          return
+        }
+
+      }
+    }
+
 
     const formData = new FormData();
 
@@ -310,6 +359,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     // formData.append("EmpCode", "YOUR_EMP_CODE");
     formData.append("DateOfDisposal", String(values?.dateOfDisposal ?? ""));
     formData.append("MUID", MUID);
+    formData.append("Form8Form9", String(values.form8form9));
 
     // console.log(Object.fromEntries(formData.entries()));
     // console.log(String(values.containers ?? ""));
@@ -343,6 +393,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     // console.log(result);
     if (!res.ok || !result.success) {
       alert(result.message || "Save failed");
+      redirect("./")
       return;
     }
 
@@ -382,7 +433,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       const attachmentResult = await attachmentRes.json();
       if (!attachmentRes.ok || !attachmentResult.success) {
         alert(attachmentResult.message || "Attachment save failed");
-        return;
+        redirect("./")
       }
       // console.log(attachmentResult);
     }

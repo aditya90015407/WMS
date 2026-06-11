@@ -5,6 +5,8 @@ import { redirect, useRouter, useSearchParams } from "next/navigation";
 import { Newspaper } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import decrypt from "@/components/Decrypt";
+import encrypt from "@/components/Encrypt";
 
 type Option = { id: string; name: string };
 type Option1 = { ID: string; NAME: string };
@@ -22,10 +24,34 @@ type UndisposedOption = {
   muid: string
 };
 
-export default function NonAuctionablePage({ searchParams }: { searchParams: Promise<{ iddid?: string }> }) {
+export default function NonAuctionablePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+  // const router = useRouter();
+  // const params = useSearchParams();
+
+
+  const params = React.use(searchParams);
+  // const iddid = params.id;
+
+  const encryptedIddid = params.id;
+
+  const [iddid, setIddid] = useState("")
+
+  async function decryptId() {
+    // const id1 = await encrypt("120"); // const id2 = await encrypt("100") ;// const id3 = await encrypt("1")
+    // console.log(id1) // console.log(id2) // console.log(id3)
+
+    const decryptedId = await decrypt(encryptedIddid!)
+    setIddid(decryptedId)
+  }
+
+  useEffect(() => {
+    if (!encryptedIddid) return
+    decryptId()
+  }, [encryptedIddid])
+
   const router = useRouter();
-    const params=React.use(searchParams)
-    const iddid = params.iddid;
+  // const params = useSearchParams();
+  // const iddid = params.get("iddid") ?? params.get("id") ?? "";
 
   const [disposalDate, setDisposalDate] = useState("");
   const [wasteCategory, setWasteCategory] = useState("");
@@ -47,6 +73,8 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
   const [loadingWaste, setLoadingWaste] = useState(false);
   const [loadingUndisposed, setLoadingUndisposed] = useState(false);
   const [undisposedDropdownOpen, setUndisposedDropdownOpen] = useState(false);
+  const [refreshSeed, setRefreshSeed] = useState(0);
+
 
   useEffect(() => {
     const loadDropdowns = async () => {
@@ -124,7 +152,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
     };
 
     void loadEditDetails();
-  }, [iddid]);
+  }, [refreshSeed, iddid]);
 
   const { data: session } = useSession();
 
@@ -421,7 +449,8 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
 
       const data = await res.json();
       if (!res.ok || !data.success) {
-        return alert(data.message || "Save Failed");
+        alert(data.message || "Save Failed");
+        redirect("./")
       }
 
       // const wrid = data?.data?.WRID;
@@ -447,7 +476,8 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
 
         const data2 = await res2.json();
         if (!res2.ok || !data2.success) {
-          return alert(data2.message || "InsertAuctionWasteDetails failed");
+          alert(data2.message || "InsertAuctionWasteDetails failed");
+          redirect("./")
         }
       }
 
@@ -471,7 +501,8 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
         </Link>
 
         <img src="/refresh.png" alt="" className="h-4.5 ms-3 cursor-pointer  absolute top-0.5 right-5"
-          onClick={() => window.location.reload()}
+          onClick={() => setRefreshSeed((x) => x + 1)}
+
         />
       </div>
 

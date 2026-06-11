@@ -62,13 +62,13 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
 
     const params = React.use(searchParams);
     const encryptedId = params.id ?? "";
-    console.log("encryptedId", encryptedId)
+    // console.log("encryptedId", encryptedId)
     // const id = encryptedId ? await decrypt(encryptedId) : "";
     useEffect(() => {
         const handleDecrypt = async () => {
             const decryptedId: string = encryptedId ? (await decrypt(encryptedId)) ?? "" : "";
             setId(decryptedId);
-            console.log("decryptedID", decryptedId)
+            // console.log("decryptedID", decryptedId)
             setReady(true);
             // use id here (set state, etc.)
         };

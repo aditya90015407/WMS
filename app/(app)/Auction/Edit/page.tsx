@@ -44,7 +44,7 @@ export default function DisposalEditPage() {
       setError(null);
 
       try {
-        const res = await fetch("/api/GetData/GetAllInitiatedDisposalListEdit", {
+        const res = await fetch("/api/GetData/GetAllInitiatedAuctionListEdit", {
           method: "GET",
           cache: "no-store",
         });
@@ -111,15 +111,9 @@ export default function DisposalEditPage() {
     const disType = String(row.DisType ?? "").trim().toLowerCase();
     //  console.log(disType,iddid)
     if (!iddid) return;
+    const encryptedID = await encrypt(iddid)
 
-    const encryptedIddid = await encrypt(iddid!)
-
-    const target =
-      disType === "internal"
-        ? `/Disposal/Edit/Internal?id=${encodeURIComponent(encryptedIddid)}`
-        : disType === "auctionable"
-          ? `/Disposal/Edit/Auctionable?id=${encodeURIComponent(encryptedIddid)}`
-          : `/Disposal/Edit/NonAuctionable?id=${encodeURIComponent(encryptedIddid)}`;
+    const target = `/Auction/Edit/Auctionable?id=${encodeURIComponent(encryptedID)}`;
 
     router.push(target);
   };
@@ -128,7 +122,7 @@ export default function DisposalEditPage() {
     <section className="mx-auto max-w-6xl rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="w-full">
-          <h1 className="text-xl font-semibold text-teal-600 text-center w-full">Edit Disposal</h1>
+          <h1 className="text-xl font-semibold text-teal-600 text-center w-full">Edit Auction</h1>
           {/* <p className="text-sm text-slate-600 w-full text-center">
             Choose a disposal record to edit details.
           </p> */}

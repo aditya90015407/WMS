@@ -375,7 +375,7 @@ export default function AuctionablePage() {
       // );
 
       // console.log("Vendor insert results:", vendorInsertResults);
-      // alert(data.message || "Saved Successfully");
+      alert(data.message || "Saved Successfully");
 
       router.back()
     } catch (error) {

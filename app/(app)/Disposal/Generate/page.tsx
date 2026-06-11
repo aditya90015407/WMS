@@ -1,5 +1,6 @@
 "use client";
 
+import encrypt from "@/components/Encrypt";
 import { log } from "console";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -118,7 +119,7 @@ export default function DisposalListPage() {
                   <tr
                     key={index}
                     className="cursor-pointer"
-                    onClick={() => {
+                    onClick={async () => {
                       try {
                         const iddid = String(row.ID ?? "").trim();
                         const wcid = String(row.WCID ?? "").trim();
@@ -129,13 +130,16 @@ export default function DisposalListPage() {
                         // console.log("Row clicked:", { iddid, wcid, disposalType });
                         if (!iddid || !disposalType) return;
 
+                        const encryptedIddid = await encrypt(iddid)
+                        const encryptedDistype = await encrypt(disposalType)
+
                         const target =
                           disposalType == '3'
-                            ? `/Disposal/Generate/Internal?id=${encodeURIComponent(iddid)}&disposalType=${encodeURIComponent(disposalType)}`
+                            ? `/Disposal/Generate/Internal?id=${encodeURIComponent(encryptedIddid)}&disposalType=${encodeURIComponent(encryptedDistype)}`
                             : wcid === "1"
-                              ? `/Disposal/Generate/Hazardous?id=${encodeURIComponent(iddid)}&disposalType=${encodeURIComponent(disposalType)}`
+                              ? `/Disposal/Generate/Hazardous?id=${encodeURIComponent(encryptedIddid)}&disposalType=${encodeURIComponent(encryptedDistype)}`
                               :
-                              `/Disposal/Generate/NonHazardous?id=${encodeURIComponent(iddid)}&disposalType=${encodeURIComponent(disposalType)}`
+                              `/Disposal/Generate/NonHazardous?id=${encodeURIComponent(encryptedIddid)}&disposalType=${encodeURIComponent(encryptedDistype)}`
                           ;
 
                         if (!target) {

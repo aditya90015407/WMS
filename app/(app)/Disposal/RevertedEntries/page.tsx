@@ -147,6 +147,8 @@ export default function RevertedDisposalList() {
                       const finalId = rawId ? await encrypt(rawId) : "";
                       const iddid = await encrypt(String(row.IDDID));
 
+                      const encryptedId = await encrypt(String(row.ID))
+
                       const wcid = String(row.WCID ?? "").trim();
                       // console.log(wcid)
                       const disType = String(row.DisType ?? "").trim().toLowerCase();
@@ -156,10 +158,10 @@ export default function RevertedDisposalList() {
 
                       const target =
                         disType === "internal"
-                          ? `/Disposal/RevertedEntries/Internal?id=${encodeURIComponent(String(row.ID))}`
+                          ? `/Disposal/RevertedEntries/Internal?id=${encodeURIComponent(encryptedId)}`
                           : wcid === "1"
-                            ? `/Disposal/RevertedEntries/Hazardous?id=${encodeURIComponent(String(row.ID))}`
-                            : `/Disposal/RevertedEntries/NonHazardous?id=${encodeURIComponent(String(row.ID))}`;
+                            ? `/Disposal/RevertedEntries/Hazardous?id=${encodeURIComponent(encryptedId)}`
+                            : `/Disposal/RevertedEntries/NonHazardous?id=${encodeURIComponent(encryptedId)}`;
 
                       // const target =
                       //   disType === "internal"
@@ -176,8 +178,6 @@ export default function RevertedDisposalList() {
                         alert("Invalid disposal route");
                         return;
                       }
-
-                      router.push(target);
 
 
                     }
