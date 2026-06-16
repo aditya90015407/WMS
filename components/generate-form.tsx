@@ -83,6 +83,9 @@ export default function GenerateForm({
   minAllowedDate,
 }: GenerateFormProps) {
   const router = useRouter();
+
+  const [submitClicked, setSubmitClicked] = useState(false)
+
   const [form, setForm] = useState<GenerateFormState>(initialState);
   const [message, setMessage] = useState("");
   const [categories, setCategories] = useState<Option[]>([]);
@@ -752,6 +755,7 @@ export default function GenerateForm({
   const confirmSave = async () => {
     setSaving(true);
     setMessage("");
+    setSubmitClicked(true)
     try {
       const res = await fetch("/api/auth/Waste/generate", {
         method: "POST",
@@ -787,6 +791,7 @@ export default function GenerateForm({
     } catch {
       setMessage("Save request failed");
     } finally {
+      setSubmitClicked(false)
       setSaving(false);
     }
   };
@@ -1037,12 +1042,23 @@ export default function GenerateForm({
       </div>
 
       <div className="md:col-span-2 flex items-center gap-3">
-        <button
-          type="submit"
-          className="cursor-pointer rounded-lg bg-[#ff7b00ef] px-5 py-2 text-sm font-medium text-white"
-        >
-          Save
-        </button>
+        {
+          !submitClicked && <button
+            type="submit"
+            className="cursor-pointer rounded-lg bg-[#ff7b00ef] px-5 py-2 text-sm font-medium text-white"
+          >
+            Save
+          </button>
+        }
+
+        {
+          submitClicked && <div
+            className="rounded-lg bg-[#ff7b00ef] px-5 py-2 text-sm font-medium text-white"
+          >
+            Saving ...
+          </div>
+        }
+
         <button
           type="button"
           onClick={() => router.back()}
@@ -1074,14 +1090,26 @@ export default function GenerateForm({
             <p><span className="font-medium">Quantity:</span> {`${form.quantity} ${getOptionName(units, form.unitId)}` || "-"}</p>
           </div>
           <div className="mt-4 flex items-center gap-2">
-            <button
-              type="button"
-              onClick={confirmSave}
-              disabled={saving}
-              className="cursor-pointer rounded-lg bg-[#ff7b00ef] px-4 py-2 text-sm font-medium text-white"
-            >
-              {saving ? "Saving..." : "Confirm Save"}
-            </button>
+            {
+              !submitClicked && <button
+                type="button"
+                onClick={confirmSave}
+                disabled={saving}
+                className="cursor-pointer rounded-lg bg-[#ff7b00ef] px-4 py-2 text-sm font-medium text-white"
+              >
+                Confirm Save
+              </button>
+            }
+
+            {
+              submitClicked && <div
+                onClick={confirmSave}
+                className="cursor-pointer rounded-lg bg-[#ff7b00ef] px-4 py-2 text-sm font-medium text-white"
+              >
+                Saving ...
+              </div>
+            }
+
             <button
               type="button"
               onClick={() => { setShowReview(false); }}

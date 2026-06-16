@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     }
 
 
-    console.log(form);
+    // console.log(form);
 
     const result = await pool
       .request()

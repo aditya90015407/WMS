@@ -31,6 +31,8 @@ export default function Vendor() {
     const [vendors, SetVendors] = useState<Vendor[]>([])
     const [vendorsFiltered, SetVendorsFiltered] = useState<Vendor[]>([])
 
+    const [submitClicked, setSubmitClicked] = useState(false)
+
     const [filter, setFilter] = useState("")
 
     async function GetVendorList() {
@@ -142,6 +144,8 @@ export default function Vendor() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        setSubmitClicked(true)
+
         if (vendorName === "" || vendorEmail === "" || vendorCode === "") {
             toast.error("Please fill all required fields")
             return
@@ -174,6 +178,7 @@ export default function Vendor() {
             }
 
             toast.error("Failed to add vendor");
+            setSubmitClicked(false)
         } catch {
             toast.error("Unable to validate Vendor ID");
         }
@@ -236,14 +241,22 @@ export default function Vendor() {
 
                         <div className="text-sm place-self-center">
                             <div className="flex">
-                                <button
-                                    onClick={handleSubmit}
-                                    type="submit"
-                                    className="bg-blue-800 cursor-pointer text-white px-6 py-2 mx-1 rounded-lg mt-4 text-md"
-                                >
-                                    Add
-                                </button>
-
+                                {!submitClicked &&
+                                    <button
+                                        onClick={handleSubmit}
+                                        type="submit"
+                                        className="bg-blue-800 cursor-pointer text-white px-6 py-2 mx-1 rounded-lg mt-4 text-md"
+                                    >
+                                        Add
+                                    </button>
+                                }
+                                {submitClicked &&
+                                    <div
+                                        className="bg-blue-800 cursor-pointer text-white px-6 py-2 w-fit mx-1 rounded-lg mt-4 text-md"
+                                    >
+                                        Adding ...
+                                    </div>
+                                }
                                 <div
                                     onClick={() => window.location.reload()}
                                     className="bg-cyan-700 cursor-pointer text-white px-6 py-2 mx-2 rounded-lg mt-4 text-md"

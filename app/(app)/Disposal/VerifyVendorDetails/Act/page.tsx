@@ -62,6 +62,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
   const [error, setError] = useState<string | null>(null);
   const [decision, setDecision] = useState("");
 
+  const [submitClicked, setSubmitClicked] = useState(false)
+
   const [formValues, setFormValues] = useState<ParticipantDetails>({
     IDDID: "",
     VID: "",
@@ -169,6 +171,7 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
     try {
       setSaving(true);
       setDecision("");
+      setSubmitClicked(true)
       // console.log(formValues)
       const res = await fetch("/api/SetData/SetTransportationDetails", {
         method: "POST",
@@ -197,9 +200,8 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
         setDecision(payload.message || "Failed to save details");
         return;
       }
-
-
       setDecision("Details updated successfully");
+      setSubmitClicked(false)
       router.back()
     } catch (err) {
       console.error(err);
@@ -440,14 +442,23 @@ export default function VerifyVendorDetailsActPage({ searchParams }: { searchPar
             /> */}
 
             <div className="mt-4 place-self-center">
-              <button
-                type="button"
-                disabled={saving}
-                onClick={() => void handleSave()}
-                className="cursor-pointer text-sm text-center rounded bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
-              >
-                Save Details
-              </button>
+              {!submitClicked &&
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void handleSave()}
+                  className="cursor-pointer text-sm text-center rounded bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                >
+                  Save Details
+                </button>
+              }
+              {submitClicked &&
+                <div
+                  className="cursor-pointer text-sm w-fit text-center rounded bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800 disabled:opacity-60"
+                >
+                  Saving ...
+                </div>
+              }
             </div>
 
             {decision ? (

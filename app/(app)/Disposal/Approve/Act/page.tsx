@@ -258,6 +258,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
                     <div className="mt-4">
                         <label className="font-semibold">Remarks</label>
                         <textarea
+                            required
                             rows={1}
                             value={remarks}
                             onChange={(e) => setRemarks(e.target.value)}

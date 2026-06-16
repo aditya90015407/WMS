@@ -353,10 +353,15 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
         // setDownloading(false)
     }
 
+    const [submitClicked, setSubmitClicked] = useState(false)
+
 
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        setSubmitClicked(true)
+
 
         const formData = new FormData();
 
@@ -426,10 +431,13 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
         if (values.salePoSoDoc instanceof File && hasFinalPartyDoc) {
             const attachmentFormData = new FormData();
             attachmentFormData.append("FDDID", fddid!);
-            attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+            // attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
             // console.log("heyy")
 
 
+            if (values.salePoSoDoc instanceof File) {
+                attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
+            }
 
             for (let i = 1; i <= 5; i++) {
                 const file = values[`finalPartyDoc${i}`];
@@ -458,6 +466,8 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
             // console.log(attachmentResult);
         }
         redirect("./")
+        setSubmitClicked(false)
+
         // router.push(`/Form/Form10?id=${iddid}`);
 
     };
@@ -810,12 +820,23 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
                     </div>
 
                 </div>
-                <button
-                    type="submit"
-                    className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
-                >
-                    Submit
-                </button>
+                {
+                    !submitClicked &&
+                    <button
+                        type="submit"
+                        className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+                    >
+                        Submit
+                    </button>
+                }
+                {
+                    submitClicked &&
+                    <div
+                        className="cursor-pointer rounded w-fit block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+                    >
+                        Submitting ...
+                    </div>
+                }
             </form>
         </section>
     );

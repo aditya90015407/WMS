@@ -218,9 +218,12 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
   const { data: session } = useSession()
 
 
+  const [submitClicked, setSubmitClicked] = useState(false)
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    setSubmitClicked(true)
     const roleid = session?.user.roleId
 
     const wasteIdsArr = Array.isArray(form.wasteIds) ? form.wasteIds : [];
@@ -299,6 +302,8 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
     alert("Saved successfully");
     redirect("./")
+
+    setSubmitClicked(false)
 
   };
 
@@ -460,12 +465,23 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
                   Submit
                 </td>
                 <td className="border border-slate-200 px-4 py-3">
-                  <button
-                    type="submit"
-                    className="cursor-pointer rounded-md bg-emerald-700 px-4 py-2 font-medium text-white hover:bg-emerald-800"
-                  >
-                    Submit
-                  </button>
+                  {
+                    !submitClicked &&
+                    <button
+                      type="submit"
+                      className="cursor-pointer rounded block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+                    >
+                      Submit
+                    </button>
+                  }
+                  {
+                    submitClicked &&
+                    <div
+                      className="cursor-pointer rounded w-fit block place-self-center text-sm bg-emerald-700 px-3 py-2 text-white hover:bg-emerald-800"
+                    >
+                      Submitting ...
+                    </div>
+                  }
                 </td>
               </tr>
             </tbody>

@@ -77,6 +77,8 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
     const [remarks, setRemarks] = useState("")
     const [acceptance, setAcceptance] = useState("")
 
+    const [submitClicked, setSubmitClicked] = useState(false)
+
 
     async function fetchDetails() {
 
@@ -127,6 +129,8 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
 
+        setSubmitClicked(true)
+
         const res = await fetch("/api/SetData/SetWasteApproval", {
             method: "POST",
             body: JSON.stringify({
@@ -150,6 +154,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
             // redirect("./")
             return
         }
+        setSubmitClicked(false)
 
     }
 
@@ -275,12 +280,21 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                     </div>
 
                 </div>
-                <button
-                    type="submit"
-                    className="text-sm cursor-pointer px-4 py-1.5 rounded-md bg-green-700 text-white hover:bg-green-800"
-                >
-                    Submit
-                </button>
+                {
+                    !submitClicked && <button
+                        type="submit"
+                        className="text-sm cursor-pointer px-4 py-1.5 rounded-md bg-green-700 text-white hover:bg-green-800"
+                    >
+                        Submit
+                    </button>
+                }
+                {
+                    submitClicked && <div
+                        className="text-sm cursor-pointer px-4 py-1.5 w-fit rounded-md bg-green-700 text-white hover:bg-green-800"
+                    >
+                        Submittting ...
+                    </div>
+                }
             </form >
         </div >
     );

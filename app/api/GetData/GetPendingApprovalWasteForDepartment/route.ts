@@ -22,7 +22,7 @@ export async function POST(req: Request) {
                 .input("empCode",NVarChar(50),empCode)
                 .input("uid",NVarChar(50),uid)
                 .execute("PRO-WMS_GET");
-     console.log(result)
+    //  console.log(result)
 
     return NextResponse.json({
       success: true,

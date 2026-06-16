@@ -98,6 +98,8 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
     const [receiver, setReceiver] = useState<ReceiverDropdown[]>([])
     const [disposer, setDisposer] = useState<DropdownData[]>([])
 
+    const [submitClicked, setSubmitClicked] = useState(false)
+
 
     async function fetchDetails() {
 
@@ -236,6 +238,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
+        setSubmitClicked(true)
 
         const res = await fetch("/api/SetData/UpdateWaste", {
             method: "POST",
@@ -258,6 +261,8 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
         const data = await res.json()
         // console.log(data)
 
+
+
         if (data.STATUS == 'Updated Successfully !') {
             toast.success("Updated Successfully !")
             redirect("./")
@@ -269,6 +274,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
             // redirect("./")
             return
         }
+        setSubmitClicked(false)
 
     }
 
@@ -568,12 +574,21 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
 
                 <hr className="border border-gray-200 my-4" />
 
-                <button
-                    type="submit"
-                    className="text-sm cursor-pointer px-4 py-1.5 rounded-md bg-green-700 text-white hover:bg-green-800"
-                >
-                    Submit
-                </button>
+                {
+                    !submitClicked && <button
+                        type="submit"
+                        className="text-sm cursor-pointer px-4 py-1.5 rounded-md bg-green-700 text-white hover:bg-green-800"
+                    >
+                        Submit
+                    </button>
+                }
+                {
+                    submitClicked && <div
+                        className="text-sm cursor-pointer px-4 py-1.5 w-fit rounded-md bg-green-700 text-white hover:bg-green-800"
+                    >
+                        Submitting
+                    </div>
+                }
             </form>
         </div>
     );

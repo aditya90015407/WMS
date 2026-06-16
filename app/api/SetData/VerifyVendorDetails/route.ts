@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         const VendorDetailsVerified = body.VendorDetailsVerified;
         const IDDID = body.IDDID
 
-        console.log(body)
+        // console.log(body)
 
         const result = await pool
             .request()
