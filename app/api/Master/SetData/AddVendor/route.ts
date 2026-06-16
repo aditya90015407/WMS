@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     const VendorEmail = body.VendorEmail
     const VendorCode = body.VendorCode
 
-    const Password = await encrypt(VendorCode)
+    const Password = await encrypt(VendorEmail)
 
 
     // console.log(body, CrBy)

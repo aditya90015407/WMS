@@ -44,6 +44,25 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+
+  const [loginAttempt, setLoginAttempt] = useState(0)
+
+
+  const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
+  // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+  const passwordRegex = /^(?=.{12,})[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+
+  async function isValidCredential(username: any, password: any) {
+    // console.log(username, password)
+    // const pass = await decryptPassword(password);
+    // console.log(pass)
+    return usernameRegex.test(username) && passwordRegex.test(password);
+    // return usernameRegex.test(username);
+  }
+
+
   const clearErrors = () => {
     setUsernameError(null);
     setPasswordError(null);
@@ -64,9 +83,17 @@ export default function LoginPage() {
   // }, [])
 
 
+  // **********************************   SSO Starts   ************************************
+
+  // const [QS, setQS] = useState("EETtDpkruKXuZmmZ7XOyDf8fywx+w6EYOB3KVbe2tjLaA2IHh0EMdq+BEu4ChUJ38HLZDZWrpA0CKfnsiFwFjbgHYX9WWXVylxRrkVch//UA1XKopoRIIBnPFBGBlsf+EUh8Rwk+UeUwRmmMHn2yKw==")
+
+  // const pathname = usePathname()
+  // const searchParams = useSearchParams()
+  // const fullurl = pathname + "?" + params
+
   // const currenturl = new URL(window.location.href)
   // const params = currenturl.search
-  // const QueryString = params.split("?QS=")[1]
+  // const QueryString = params.split("QS=")[1]
 
   // console.log(currenturl, "currenturl")
   // console.log(params, "params")
@@ -77,35 +104,113 @@ export default function LoginPage() {
 
 
   // async function ProcessQueryString() {
-  //   // console.log("hi i am entering processQueryString")
+  //     // console.log("hi i am entering processQueryString")
 
-  //   const decryptedQueryString = await decrypt(QueryString!)
-  //   // console.log(decryptedQueryString, "decrypytedquerystring")
+  //     const decryptedQueryString = await decrypt(QueryString!)
+  //     // console.log(decryptedQueryString, "decrypytedquerystring")
 
-  //   const userEmailQS = decryptedQueryString.split(",")[0]
-  //   const userIDQS = decryptedQueryString.split(",")[1]
-  //   const userEmail = userEmailQS.split("=")[1]
-  //   const userID = userIDQS.split("=")[1]
-  //   // console.log(userEmail, "UserEmail")
-  //   // console.log(userID, "UserID")
+  //     const userEmailQS = decryptedQueryString.split(",")[0]
+  //     const userIDQS = decryptedQueryString.split(",")[1]
+  //     const userEmail = userEmailQS.split("=")[1]
+  //     const userID = userIDQS.split("=")[1]
+  //     // console.log(userEmail, "UserEmail")
+  //     // console.log(userID, "UserID")
+
+  //     // console.log("hi i am exiting processQueryString")
+
+  //     const res = await fetch(`/api/SSO_Login`, {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ "Email": userEmail }),
+  //     });
 
 
+  //     const data = await res.json();
+  //     // console.log(data)
+  //     // console.log(data.empName)
 
-  //   // console.log("hi i am exiting processQueryString")
+
+  //     const status = await res.status;
+
+  //     await signIn("credentials", {
+  //         redirect: false,
+  //         userId: data.appUserID,
+  //         role: data.empRoll,
+  //         name: data.empName,
+  //         email: data.empEmail,
+  //         dept: data.empDept,
+  //         deptid: data.empDeptId,
+  //         desg: data.empDesg,
+
+  //     });
+
+  //     setTimeout(() => {
+  //         if (status == 200) {
+  //             // console.log(data.empRoll)
+  //             if (data.empRoll == "ADMIN") {
+
+  //                 redirect("/Admin")
+  //             }
+  //             else if (data.empRoll == "SEGMENT LEAD") {
+
+  //                 redirect("/SegmentLead")
+  //             }
+  //             else if (data.empRoll == "AGENCY") {
+  //                 redirect("/Department")
+  //             }
+  //             else if (data.empRoll == "ZONAL REPRESENTATIVE") {
+  //                 redirect("/ZonalRepresentative")
+  //             }
+  //             else if (data.empRoll == "LAB") {
+  //                 redirect("/Lab")
+  //             }
+  //             else if (data.empRoll == "VIEWER") {
+  //                 redirect("/Viewer")
+  //             }
+  //             else if (data.empRoll == "Agency HOD") {
+  //                 redirect("/HOD")
+  //             }
+  //             else {
+  //                 toast.error("No Valid Role Assigned , Please Contact Administrator", {
+  //                     position: "top-right"
+  //                 })
+  //                 return
+  //             }
+
+  //         }
+  //         else {
+  //             toast.error("Kindly verify your credentials and try again !", {
+  //                 position: "top-right"
+  //             })
+  //             setSignClick(false)
+  //         }
+
+  //     }, 1000);
   // }
 
   // useEffect(() => {
-  //   ProcessQueryString()
+  //     ProcessQueryString()
   // }, [])
 
 
+  // ********************************   SSO Ends   ****************************
 
 
 
   const onSubmit = async () => {
     clearErrors();
 
+
     // console.log(employeeCode, password)
+
+    setLoginAttempt(prev => prev + 1);
+
+    if (loginAttempt > 4) {
+      toast.error("Maximum Login Attempts Exceeded. Please try after some time.", {
+        position: "top-right"
+      })
+      return
+    }
 
     if (!employeeCode.trim()) {
       setUsernameError("Employee Code is required");
@@ -116,6 +221,23 @@ export default function LoginPage() {
       setPasswordError("Password is required");
       return;
     }
+
+
+    if (!await isValidCredential(employeeCode, password)) {
+      toast.error("Invalid Username or Password Pattern", {
+        position: "top-right"
+      })
+      return
+    }
+
+
+    if (employeeCode == password) {
+      toast.error("Username and Password can't be Same", {
+        position: "top-right"
+      })
+      return
+    }
+
 
     setIsLoading(true);
 

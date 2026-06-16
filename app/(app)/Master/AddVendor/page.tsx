@@ -35,6 +35,18 @@ export default function Vendor() {
 
     const [filter, setFilter] = useState("")
 
+    const emailRegex = /^(?=.{12,})[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+
+    async function isValidEmail(email: any) {
+        // console.log(username, password)
+        // const pass = await decryptPassword(password);
+        // console.log(pass)
+        return emailRegex.test(email);
+        // return usernameRegex.test(username);
+    }
+
+
     async function GetVendorList() {
         const res = await fetch("/api/Master/GetData/GetAllVendors", {
             method: "POST"
@@ -102,7 +114,7 @@ export default function Vendor() {
             let attempts = 0;
 
             while (attempts < 50) {
-                const candidate = Math.floor(10000000 + Math.random() * 90000000).toString();
+                const candidate = Math.floor(100000000 + Math.random() * 900000000).toString();
 
                 if (!existingCodes.has(candidate)) {
                     nextId = candidate;
@@ -148,8 +160,18 @@ export default function Vendor() {
 
         if (vendorName === "" || vendorEmail === "" || vendorCode === "") {
             toast.error("Please fill all required fields")
+            setSubmitClicked(false)
             return
         }
+
+        if (!await isValidEmail(vendorEmail)) {
+            toast.error("Invalid Email", {
+                position: "top-right"
+            })
+            setSubmitClicked(false)
+            return
+        }
+
 
         try {
             const existingCodes = await getExistingVendorCodes();
