@@ -51,7 +51,7 @@ export default function LoginPage() {
   const usernameRegex = /^[a-zA-Z0-9_]{3,30}$/;
   // const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
 
-  const passwordRegex = /^(?=.{8,})[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+  const passwordRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 
   async function isValidCredential(username: any, password: any) {
@@ -223,20 +223,20 @@ export default function LoginPage() {
     }
 
 
-    if (!await isValidCredential(employeeCode, password)) {
-      toast.error("Invalid Username or Password Pattern", {
-        position: "top-right"
-      })
-      return
-    }
+    // if (!await isValidCredential(employeeCode, password)) {
+    //   toast.error("Invalid Username or Password Pattern", {
+    //     position: "top-right"
+    //   })
+    //   return
+    // }
 
 
-    if (employeeCode == password) {
-      toast.error("Username and Password can't be Same", {
-        position: "top-right"
-      })
-      return
-    }
+    // if (employeeCode == password) {
+    //   toast.error("Username and Password can't be Same", {
+    //     position: "top-right"
+    //   })
+    //   return
+    // }
 
 
     setIsLoading(true);

@@ -1,19 +1,21 @@
-"use client";
+// "use client";
 
 import type { ReactNode } from "react";
-import { useEffect } from "react";
-import { redirect, usePathname, useRouter } from "next/navigation";
+// import { useEffect } from "react";
+import { redirect } from "next/navigation";
 import AppNavbar from "@/components/app-navbar";
 import AppSidebar from "@/components/app-sidebar";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]/options";
 
 type AppLayoutProps = {
   children: ReactNode;
 };
 
-export default function AppLayout({ children }: AppLayoutProps) {
-  const router = useRouter();
-  const pathname = usePathname();
+export default async function AppLayout({ children }: AppLayoutProps) {
+  // const router = useRouter();
+  // const pathname = usePathname();
 
   // useEffect(() => {
   //   const navEntry = performance.getEntriesByType(
@@ -25,8 +27,18 @@ export default function AppLayout({ children }: AppLayoutProps) {
   //   }
   // }, [pathname, router]);
 
-  // const { data: session } = useSession();
-  // if (!session) redirect("/sign-in")
+  try {
+    const session = await getServerSession(authOptions);
+    // console.log(session)
+    if (!session) {
+      await signOut({ callbackUrl: '/sign-in', redirect: true })
+      redirect("/sign-in");
+    }
+  }
+  catch {
+    redirect('/sign-in')
+  }
+
 
   return (
     // <div className="min-w-6xl min-h-screen bg-gradient-to-b from-emerald-50 to-emerald-100">

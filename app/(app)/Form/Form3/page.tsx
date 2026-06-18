@@ -515,8 +515,8 @@ export default function Form3Page() {
               <tbody>
                 {pagedRows.length === 0 && (
                   <tr>
-                    <td colSpan={13} className="border border-slate-300 px-2 py-3 text-center text-slate-600">
-                      No records found for the current search.
+                    <td colSpan={13} className=" text-sm border border-slate-300 px-2 py-3 text-center text-slate-600">
+                      No records found.
                     </td>
                   </tr>
                 )}

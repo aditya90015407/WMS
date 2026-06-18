@@ -791,8 +791,8 @@ export default function WasteViewPage() {
               <tbody className="translate-y-1">
                 {pagedRows.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="border border-slate-300 px-2 py-3 text-center text-slate-600">
-                      No records found for the current search.
+                    <td colSpan={9} className="text-sm border border-slate-300 px-2 py-3 text-center text-slate-600">
+                      No records found.
                     </td>
                   </tr>
                 )}
