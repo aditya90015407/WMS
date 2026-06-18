@@ -1,5 +1,5 @@
 "use client";
-
+ 
 import { useEffect, useMemo, useState } from "react";
 import { Download } from "lucide-react";
 // import { toForm3Entry } from "@/lib/form3-columns";
@@ -13,27 +13,27 @@ import { spawn } from "child_process";
 
 
 type ViewRow = Record<string, string | number | null>;
-
+ 
 type ApiResponse = {
   success?: boolean;
   data?: ViewRow[];
   message?: string;
   error?: string;
 };
-
+ 
 type FormEntry = Form3Entry & {
   iddid: string;
   disposalType: string;
   manifestDocumentNo: string;
 };
-
+ 
 const PAGE_SIZE = 10;
-
+ 
 const toText = (value: unknown): string => {
   if (value === null || value === undefined) return "";
   return String(value);
 };
-
+ 
 const esc = (value: string): string =>
   value
     .replaceAll("&", "&amp;")
@@ -41,11 +41,11 @@ const esc = (value: string): string =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
-
+ 
 const getDestinedDisplay = (entry: FormEntry): string => {
   const disposerLabel = entry.genDept?.trim() || "";
   const receiverLabel = entry.receiver?.trim() || "";
-
+ 
   if (disposerLabel && receiverLabel) {
     return `Destined To :  ${receiverLabel} , Received From : ${disposerLabel}`;
   }
@@ -112,7 +112,7 @@ const buildDetailRows = (entry: FormEntry) => [
   // ["Waste Category ID", entry.wcid],
   // ["Status Code", entry.stsCode],
 ].filter(([, value]) => String(value ?? "").trim() !== "");
-
+ 
 const getFirstValue = (row: Record<string, unknown>, keys: string[]) => {
   for (const key of keys) {
     const value = row?.[key];
@@ -120,17 +120,17 @@ const getFirstValue = (row: Record<string, unknown>, keys: string[]) => {
       return String(value).trim();
     }
   }
-
+ 
   return "";
 };
-
+ 
 const mapVehicleType = (value: string) => {
   if (value === "1" || value.toLowerCase() === "truck") return "Truck";
   if (value === "2" || value.toLowerCase() === "tanker") return "Tanker";
   if (value === "3" || value.toLowerCase() === "special vehicle") return "Special Vehicle";
   return value;
 };
-
+ 
 const mapPhysicalForm = (value: string) => {
   if (value === "1" || value.toLowerCase() === "solid") return "Solid";
   if (value === "2" || value.toLowerCase() === "semi-solid" || value.toLowerCase() === "semisolid") return "Semi-solid";
@@ -141,14 +141,14 @@ const mapPhysicalForm = (value: string) => {
   if (value === "7" || value.toLowerCase() === "liquid") return "Liquid";
   return value;
 };
-
+ 
 const toForm10Data = (entry: FormEntry): Form10Data => ({
   senderNameAddress: entry.unitDesc || "",
   senderPhone: "",
   senderEmail: "",
   senderAuthorizationNo: "",
   manifestDocumentNo: entry.manifestDocumentNo || entry.code || "",
-
+ 
   transporterNameAddress: entry.disposer || "",
   transporterPhone: "",
   transporterEmail: "",
@@ -182,13 +182,13 @@ const toForm10Data = (entry: FormEntry): Form10Data => ({
   receiverYear: "",
   MUnit: ""
 });
-
+ 
 const toForm10DataFromApiRow = (row: Record<string, unknown>): Form10Data => {
   const transporterName = getFirstValue(row, ["TransporterName"]);
   const transporterAddress = getFirstValue(row, ["TransporterAddress"]);
   const receiverName = getFirstValue(row, ["ReceiverName"]);
   const receiverAddress = getFirstValue(row, ["ReceiverAddress"]);
-
+ 
   return {
     senderNameAddress: getFirstValue(row, ["SenderNameAddress", "UnitDesc", "NAME", "SenderName"]),
     senderPhone: getFirstValue(row, ["SenderPhone", "Phone", "PHONE"]),
@@ -229,7 +229,7 @@ const toForm10DataFromApiRow = (row: Record<string, unknown>): Form10Data => {
     MUnit: getFirstValue(row, ["MUnit"])
   };
 };
-
+ 
 const createForm3Html = (entry: FormEntry): string => {
 
   // console.log(entry)
@@ -377,9 +377,9 @@ const createForm3Html = (entry: FormEntry): string => {
   </div>
 </body>
 </html>`;
-
+ 
 };
-
+ 
 const createForm10Html = (form: Form10Data, code: string): string => {
   return `<!doctype html>
 <html>
@@ -424,7 +424,7 @@ const createForm10Html = (form: Form10Data, code: string): string => {
 </body>
 </html>`;
 };
-
+ 
 export default function WasteViewPage() {
   const [rows, setRows] = useState<ViewRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -502,7 +502,7 @@ export default function WasteViewPage() {
         setLoading(false);
       }
     };
-
+ 
     void loadRows();
   }, [roleId]);
 
@@ -543,11 +543,11 @@ export default function WasteViewPage() {
       };
     });
   }, [rows]);
-
+ 
   const filteredRows = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
     if (!query) return tableRows;
-
+ 
     return tableRows.filter((item) =>
       [
         item.code,
@@ -569,19 +569,19 @@ export default function WasteViewPage() {
         .includes(query),
     );
   }, [tableRows, searchTerm]);
-
+ 
   const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
-
+ 
   const pagedRows = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredRows.slice(start, start + PAGE_SIZE);
   }, [filteredRows, currentPage]);
-
+ 
   useEffect(() => {
     setPage(1);
   }, [rows.length, searchTerm]);
-
+ 
   const onDownload = (entry: FormEntry) => {
     const formHtml = createForm3Html(entry);
     // console.log(entry.Schedule)
@@ -656,11 +656,11 @@ export default function WasteViewPage() {
       alert("Please allow popups to download Form 3 as PDF.");
       return;
     }
-
+ 
     printWindow.document.open();
     printWindow.document.write(html);
     printWindow.document.close();
-
+ 
     printWindow.onload = () => {
       setTimeout(() => {
         printWindow.focus();
@@ -668,26 +668,26 @@ export default function WasteViewPage() {
       }, 500);
     };
   };
-
-
-
+ 
+ 
+ 
   const fetchForm10Data = async (id: string): Promise<Form10Data> => {
     const res = await fetch("/api/GetData/GetForm10Details", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ID: id }),
     });
-
+ 
     const payload = await res.json();
-
+ 
     if (!res.ok || !payload.success) {
       throw new Error(payload.message || "Failed to load Form 10 details");
     }
-
+ 
     const row = Array.isArray(payload.data) ? payload.data[0] : payload.data;
     return toForm10DataFromApiRow((row ?? {}) as Record<string, unknown>);
   };
-
+ 
   const openForm10 = (entry: FormEntry) => {
     const linkedId = entry.iddid || entry.code;
     if (!linkedId) {
@@ -699,7 +699,7 @@ export default function WasteViewPage() {
       "_blank"
     );
   };
-
+ 
   const onDownloadForm10 = async (entry: FormEntry) => {
     let form: Form10Data;
     try {
@@ -709,9 +709,9 @@ export default function WasteViewPage() {
       alert("Failed to load Form 10.");
       return;
     }
-
+ 
     const formHtml = createForm10Html(form, entry.code);
-
+ 
     const html = `
 <!doctype html>
 <html>
@@ -732,22 +732,22 @@ export default function WasteViewPage() {
   </div>
 </body>
 </html>`;
-
+ 
     const printWindow = window.open("", "_blank", "width=900,height=650");
     if (!printWindow) return;
-
+ 
     printWindow.document.open();
     printWindow.document.write(html);
     printWindow.document.close();
-
+ 
     printWindow.onload = () => {
       printWindow.focus();
       printWindow.print();
       printWindow.close();
     };
   };
-
-
+ 
+ 
   return (
     <section className="bg-white mx-auto max-w-6xl rounded-2xl border border-slate-200 p-3 shadow-sm sm:p-6">
       <div className="text-center w-full relative ">
@@ -756,10 +756,10 @@ export default function WasteViewPage() {
           onClick={() => window.location.reload()}
         />
       </div>
-
+ 
       {loading && <p className="mt-4 text-sm text-slate-600">Loading records...</p>}
       {!loading && error && <p className="mt-4 text-sm text-red-600">{error}</p>}
-
+ 
       {!loading && !error && (
         <div className="mt-4 space-y-3">
           <input
@@ -796,7 +796,7 @@ export default function WasteViewPage() {
                     </td>
                   </tr>
                 )}
-
+ 
                 {pagedRows.map((item, index) => (
                   <tr
                     key={`waste-entry-${(currentPage - 1) * PAGE_SIZE + index}`}
