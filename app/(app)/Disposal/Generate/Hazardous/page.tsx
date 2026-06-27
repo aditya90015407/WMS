@@ -376,6 +376,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     if (values.salePoSoDoc instanceof File) {
       formData.append("salePoSoDoc", values.salePoSoDoc);
     }
+
     for (let i = 1; i <= 5; i++) {
       const file = values[`finalPartyDoc${i}`];
 
@@ -411,7 +412,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     );
 
     // console.log("heyy")
-    if (values.salePoSoDoc instanceof File && hasFinalPartyDoc) {
+    if (values.salePoSoDoc instanceof File || hasFinalPartyDoc) {
       const attachmentFormData = new FormData();
       attachmentFormData.append("FDDID", fddid);
       // attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
@@ -601,7 +602,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       if (row.key === "finalPartyDoc") {
 
         const labels = [
-          "CTO Respective File", "HW Authorization OSPCB File", "HW Authorization SPCB File", "BlueBook File", "Registration Certificate File"
+          "CTO Respective File", "HW Authorization OSPCB File", "HW Authorization SPCB File", "BlueBook File", "EPR Registration Certificate File"
         ];
         return (
           <div className="space-y-3">

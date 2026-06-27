@@ -330,7 +330,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
 
 
-    if (values.salePoSoDoc instanceof File && hasFinalPartyDoc) {
+    if (values.salePoSoDoc instanceof File || hasFinalPartyDoc) {
       const attachmentFormData = new FormData();
       attachmentFormData.append("FDDID", fddid);
       // attachmentFormData.append("salePoSoDoc", values.salePoSoDoc);
@@ -496,7 +496,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       if (row.key === "finalPartyDoc") {
 
         const labels = [
-          "Cto Respective File", "HwAuthorizationOspcb File", "HwAuthorizationSpcb File", "BlueBook File", "Registration Certificate File"
+          "Cto Respective File", "HwAuthorizationOspcb File", "HwAuthorizationSpcb File", "BlueBook File", "EPR Registration Certificate File"
         ];
         return (
           <div className="space-y-3">

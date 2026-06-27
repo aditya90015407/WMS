@@ -538,7 +538,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
-            Registration Certificate File
+            EPR Registration Certificate File
           </label>
           <input
             required

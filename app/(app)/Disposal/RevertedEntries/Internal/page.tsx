@@ -621,7 +621,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       if (row.key === "finalPartyDoc") {
 
         const labels = [
-          "CTO Respective File", "HW Authorization OSPCB File", "HW Authorization SPCB File", "BlueBook File", "Registration Certificate File"
+          "CTO Respective File", "HW Authorization OSPCB File", "HW Authorization SPCB File", "BlueBook File", "EPR Registration Certificate File"
         ];
         return (
           <div className="space-y-3">
