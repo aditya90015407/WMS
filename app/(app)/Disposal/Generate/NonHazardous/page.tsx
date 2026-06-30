@@ -35,7 +35,7 @@ type RowDef = {
 const rows: RowDef[] = [
   // { key: "disposalDate", field: "Date", type: "date", hint: "Date of disposal (within 90 days of generation)" },
   { key: "wasteIds", field: "Disposal ID", type: "multi-select" },
-  { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal" },
+  // { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal" },
   {
     key: "senderNameAddress",
     field: "Sender's Unit *",
@@ -195,7 +195,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
         setValues((prev) => ({
           ...prev,
           senderNameAddress: String(row?.UID ?? prev.senderNameAddress ?? ""),
-          disposalDate: today,
+          // disposalDate: today,
           wasteIds: [String(iddid)],
           transporterName: `${row?.TransporterName ?? ""}`.trim(),
           transporterAddress: `${row?.TransporterAddress ?? ""}`.trim(),
@@ -210,7 +210,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           physicalForm: String(row?.PSID ?? ""),
           wasteDescription: String(row?.Waste ?? ""),
           totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
-          dateOfDisposal: String(row?.AuctionDate ?? "")
+          // dateOfDisposal: String(row?.AuctionDate ?? "")
         }));
       } catch (err) {
         console.error("Failed to load non-hazardous form details", err);
@@ -237,7 +237,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     if (values.senderNameAddress == "" || values.transporterName == "" || values.transporterAddress == "" ||
       values.transporterEmail == "" || values.vehicleType == "" || values.transporterRegNo == "" ||
       values.vehicleRegNo == "" || values.receiverName == "" || values.receiverAddress == "" ||
-      values.totalQty == "" || values.physicalForm == "" || values.dateOfDisposal == ""
+      values.totalQty == "" || values.physicalForm == "" 
     ) {
       alert("Please fill all required fields (marked with *) ")
       setSubmitClicked(false)
@@ -289,7 +289,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", "");
     // formData.append("EmpCode", "YOUR_EMP_CODE");
-    formData.append("DateOfDisposal", String(values.dateOfDisposal));
+    // formData.append("DateOfDisposal", String(values.dateOfDisposal));
     formData.append("MUID", MUID);
 
     if (values.salePoSoDoc instanceof File) {

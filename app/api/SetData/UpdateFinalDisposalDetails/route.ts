@@ -30,7 +30,7 @@ export async function POST(req: Request) {
       .request()
       .input("FLAG", sql.NVarChar(50), "UpdateFinalDisposalDetails")
       .input("FDDID", sql.NVarChar(50), String(form.get("FDDID") ?? ""))
-      .input("DateOfDisposal", sql.Date, String(form.get("DateOfDisposal") ?? ""))
+      // .input("DateOfDisposal", sql.Date, String(form.get("DateOfDisposal") ?? ""))
       .input("UID", sql.Int, Number(form.get("UID") ?? ""))
       .input("TransporterName", sql.NVarChar(200), String(form.get("TransporterName") ?? ""))
       .input("TransporterAddress", sql.NVarChar(300), String(form.get("TransporterAddress") ?? ""))

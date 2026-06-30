@@ -39,7 +39,7 @@ type RowDef = {
 const rows: RowDef[] = [
   { key: "ID", field: "Final Disposal ID", type: "auto", hint: "Comma separated IDs", required: true },
   { key: "IDDID", field: "Initiated Disposal ID", type: "auto", hint: "Comma separated IDs", required: true },
-  { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal", required: true },
+  // { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal", required: true },
   {
     key: "AID",
     field: "Disposed To",
@@ -259,7 +259,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           Waste: String(row?.Waste ?? ""),
           totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
           unit: String(row?.MUnit ?? ""),
-          dateOfDisposal: String(row?.DateOfDisposal ?? ""),
+          // dateOfDisposal: String(row?.DateOfDisposal ?? ""),
           NoOfContainers: String(row?.NoOfContainers),
           SpecialHandlingInstructions: row?.SpecialHandlingInstructions,
           ApproverRemarks: row?.ApproverRemarks,
@@ -366,7 +366,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
     formData.append("FDDID", fddid!);
     formData.append("IDDID", String(values.IDDID));
-    formData.append("DateOfDisposal", String(values?.dateOfDisposal ?? ""));
+    // formData.append("DateOfDisposal", String(values?.dateOfDisposal ?? ""));
     formData.append("UID", String(values.senderNameAddress ?? ""));
     formData.append("TransporterName", String(values.transporterName ?? ""));
     formData.append("TransporterAddress", String(values.transporterAddress ?? ""));

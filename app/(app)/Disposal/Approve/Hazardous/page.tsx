@@ -11,7 +11,7 @@ type FinalDisposalRow = Record<string, string | number | boolean | null>;
 const fields = [
     ["ID", "Final Disposal ID"],
     ["IDDID", "Initiated Disposal ID"],
-    ["DateOfDisposal", "Date of Disposal"],
+    // ["DateOfDisposal", "Date of Disposal"],
     ["SenderInfo", "Senders's Name and Mailing Address"],
     ["SenderAuthNo", "Sender Authorization No."],
     ["ManifestDocumentNo", "Manifest Document No."],

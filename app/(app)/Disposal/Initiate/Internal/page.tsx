@@ -248,7 +248,7 @@ export default function DisposalRecycleForm() {
     setSubmitClicked(true)
 
 
-    if (!disposalDate || !wasteCategory || !selectedWasteId) {
+    if (!wasteCategory || !selectedWasteId) {
       alert("Please fill Date, Waste Category and Waste.");
       return;
     }
@@ -264,7 +264,7 @@ export default function DisposalRecycleForm() {
           TotalQty: totalQty,
           MUID: undisposedOptions[0].muid,
           Auctionable: 3,
-          AuctionDate: disposalDate,
+          // AuctionDate: disposalDate,
           PSID: physicalForm,
           AID: disposedTo,
           Remarks: "",
@@ -331,15 +331,15 @@ export default function DisposalRecycleForm() {
         {/* <div className="grid gap-4 md:grid-cols-2"> */}
         <div className="grid gap-4 md:grid-cols-2 space-x-10 mx-3 text-sm">
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-700">Date of Disposal</label>
+          {/* <div>
+            <label className="block text-xs font-semibold text-slate-700">Proposed Date of Disposal</label>
             <input
               type="date"
               value={disposalDate}
               onChange={(e) => setDisposalDate(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
             />
-          </div>
+          </div> */}
 
           <div>
             <label className="block text-xs font-semibold text-slate-700">Disposed To</label>

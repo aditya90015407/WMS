@@ -283,7 +283,7 @@ export default function Form10Page() {
                   <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Waste Category</th>
                   <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Waste</th>
                   <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Quantity</th>
-                  <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Created On</th>
+                  {/* <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Created On</th> */}
                   <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Form 10</th>
                 </tr>
               </thead>
@@ -313,9 +313,9 @@ export default function Form10Page() {
                     <td className="border border-slate-300 px-2 py-2 text-slate-800">
                       {toText(row.TotalQty)}{" "}{row.MUnit}
                     </td>
-                    <td className="border border-slate-300 px-2 py-2 text-slate-800">
+                    {/* <td className="border border-slate-300 px-2 py-2 text-slate-800">
                       {formatDate(row.CrDt)}
-                    </td>
+                    </td> */}
                     <td className="border border-slate-300 px-2 py-2 text-slate-800">
                       {checkingAvailability ? (
                         <span className="text-slate-500">Checking...</span>

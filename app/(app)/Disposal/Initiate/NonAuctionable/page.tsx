@@ -263,7 +263,7 @@ export default function NonAuctionablePage() {
           MUID: undisposedOptions[0].muid,
           Auctionable: 2,
           PSID: physicalForm,
-          AuctionDate: Date,
+          // AuctionDate: Date,
           Remarks: remarks,
         }),
       });
@@ -319,15 +319,15 @@ export default function NonAuctionablePage() {
 
         <div className="grid gap-4 md:grid-cols-2 space-x-10 mx-3 text-sm">
 
-          <div>
-            <label className="mb-1 block text-xs font-semibold text-slate-700"> Date of Disposal </label>
+          {/* <div>
+            <label className="mb-1 block text-xs font-semibold text-slate-700">Proposed Date of Disposal </label>
             <input
               type="date"
               value={Date}
               onChange={(e) => setDate(e.target.value)}
               className="w-full rounded border border-slate-300 px-3 py-2"
             />
-          </div>
+          </div> */}
 
           <div>
             <label className="mb-1 block text-xs font-semibold text-slate-700">Waste Category</label>

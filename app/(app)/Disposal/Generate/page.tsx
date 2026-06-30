@@ -109,9 +109,9 @@ export default function DisposalListPage() {
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                     Remarks
                   </th>
-                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                  {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                     Disposal/Auction Date
-                  </th>
+                  </th> */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -159,9 +159,9 @@ export default function DisposalListPage() {
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.DisType}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.WasteCategory}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.Remarks}</td>
-                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                    {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                       {row.AuctionDate}
-                    </td>
+                    </td> */}
                   </tr>
                 ))}
               </tbody>

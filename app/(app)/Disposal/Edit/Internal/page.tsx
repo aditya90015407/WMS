@@ -138,7 +138,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
         const detailRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
         if (!detailRow) return;
 
-        setDisposalDate(String(detailRow.AuctionDate ?? detailRow.DisposalDate ?? "").split("T")[0]);
+        // setDisposalDate(String(detailRow.AuctionDate ?? detailRow.DisposalDate ?? "").split("T")[0]);
         setWasteCategory(String(detailRow.WCID ?? ""));
         setSelectedWasteId(String(detailRow.WID ?? ""));
         setPhysicalForm(String(detailRow.PSID ?? ""));
@@ -408,11 +408,11 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
 
     setSubmitClicked(true)
 
-    if (!disposalDate) {
-      alert("Please select the Date");
-      setSubmitClicked(false)
-      return;
-    }
+    // if (!disposalDate) {
+    //   alert("Please select the Date");
+    //   setSubmitClicked(false)
+    //   return;
+    // }
 
     if (!wasteCategory || !selectedWasteId) {
       alert("Please select waste category and waste item.");
@@ -570,7 +570,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
 
 
 
-            <div className="px-4 py-1">
+            {/* <div className="px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Date of Disposal</label>
               <input
                 type="date"
@@ -578,7 +578,7 @@ export default function InternalPage({ searchParams }: { searchParams: Promise<{
                 onChange={(e) => setDisposalDate(e.target.value)}
                 className="w-full rounded border border-slate-300 px-3 py-2"
               />
-            </div>
+            </div> */}
 
             <div className="relative px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">

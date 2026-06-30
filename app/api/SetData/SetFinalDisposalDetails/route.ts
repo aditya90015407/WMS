@@ -4,12 +4,15 @@ import { getConnection } from "@/lib/dbConnect";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { request } from "https";
+import { Form } from "lucide-react";
 
 export async function POST(req: Request) {
   try {
     const form = await req.formData();
     const session = await getServerSession(authOptions);
     const empCode = String(session?.user?.id ?? "").trim();
+
+    // console.log(form)
 
     if (!empCode) {
       return NextResponse.json(
@@ -30,6 +33,8 @@ export async function POST(req: Request) {
       typeof VTID1 === "string"
         ? VTID1.split("|")[0]
         : "";
+
+    const Form8Form9 = form.get("Form8Form9") == 'true' ? 1 : 0
 
     //  console.log("UIDI :", UID);
     //  console.log("VTID :", VTID);
@@ -59,9 +64,9 @@ export async function POST(req: Request) {
       .input("PSID", sql.NVarChar(50), String(form.get("PSID") ?? ""))
       .input("AID", sql.NVarChar(50), String(form.get("AID") ?? ""))
       .input("SpecialHandlingInstructions", sql.NVarChar(300), String(form.get("SpecialHandlingInstructions") ?? ""))
-      .input("Form8Form9", form.get("Form8Form9"))
+      .input("Form8Form9", Form8Form9)
       .input("EmpCode", sql.NVarChar(50), empCode)
-      .input("DateOfDisposal", sql.Date, String(form.get("DateOfDisposal") ?? ""))
+      // .input("DateOfDisposal", sql.Date, String(form.get("DateOfDisposal") ?? ""))
       .execute("PRO-WMS_SET");
 
     const rows = result.recordset[0];

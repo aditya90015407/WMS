@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         }
 
         const formData = await req.formData();
-        console.log(formData, "ffff")
+        // console.log(formData, "ffff")
         // const finalPartyDocs = formData.getAll("finalPartyDoc{i}");
 
         // console.log("fffffff",finalPartyDocs);

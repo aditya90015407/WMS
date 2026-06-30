@@ -27,7 +27,7 @@ export async function POST(req: Request) {
     const totalQty = Number(body.TotalQty ?? 0);
     const MUID = body.MUID
     const auctionable = Number(body.Auctionable ?? 1);
-    const auctionDate = String(body.AuctionDate ?? "").trim();
+    // const auctionDate = String(body.AuctionDate ?? "").trim();
     const remarks = String(body.Remarks ?? "").trim();
     const physicalForm = String(body.PSID ?? "").trim();
     const disposedTo = String(body.AID ?? "").trim();
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       .input("TotalQty", sql.Decimal(18, 3), totalQty)
       .input("MUID", sql.Int, MUID)
       .input("Auctionable", sql.Int, auctionable)
-      .input("AuctionDate", auctionDate)
+      // .input("AuctionDate", auctionDate)
       .input("PSID", sql.NVarChar(30), physicalForm)
       .input("AID", sql.NVarChar(30), disposedTo)
       .input("Remarks", sql.NVarChar(sql.MAX), remarks)

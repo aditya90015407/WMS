@@ -40,7 +40,7 @@ type RowDef = {
 
 const rows: RowDef[] = [
   { key: "wasteIds", field: "Disposal ID", type: "auto", hint: "Comma separated IDs", required: true },
-  { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal", required: true },
+  // { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal", required: true },
   {
     key: "senderNameAddress",
     field: "Sender's Unit *",
@@ -273,7 +273,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           Waste: String(row?.Waste ?? ""),
           totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
           unit: String(row?.MUnit ?? ""),
-          dateOfDisposal: String(row?.AuctionDate ?? "")
+          // dateOfDisposal: String(row?.AuctionDate ?? "")
         }));
 
       }
@@ -315,7 +315,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       values.transporterEmail == "" || values.vehicleType == "" || values.transporterRegNo == "" ||
       values.vehicleRegNo == "" || values.receiverName == "" || values.receiverAddress == "" ||
       values.receiverAuthNo == "" || values.totalQty == "" || values.containers == "" || !values.containers ||
-      values.physicalForm == "" || values.dateOfDisposal == ""
+      values.physicalForm == ""
     ) {
       alert("Please fill all required fields (marked with *) ")
       setSubmitClicked(false)
@@ -365,7 +365,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", String(values.specialHandling ?? ""));
     // formData.append("EmpCode", "YOUR_EMP_CODE");
-    formData.append("DateOfDisposal", String(values?.dateOfDisposal ?? ""));
+    // formData.append("DateOfDisposal", String(values?.dateOfDisposal ?? ""));
     formData.append("MUID", MUID);
     formData.append("Form8Form9", String(values.form8form9));
 
