@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
         const EmpCode = String(session.user.id ?? "").trim();
         const IDDID = body.IDDID
 
-        console.log(body)
+        // console.log(body)
 
         if (!FDDID) {
             return NextResponse.json(

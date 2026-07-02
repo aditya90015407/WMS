@@ -254,7 +254,6 @@ export default function DisposalRecycleForm() {
     }
 
     try {
-      // 1) Initiate Disposal
       const res = await fetch("/api/SetData/InitiateDisposal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -283,7 +282,6 @@ export default function DisposalRecycleForm() {
         return;
       }
 
-      // 2) Insert Auction Waste Details for ALL selected WRIDs
       const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

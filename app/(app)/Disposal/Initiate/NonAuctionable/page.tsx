@@ -241,10 +241,10 @@ export default function NonAuctionablePage() {
     setSubmitClicked(true)
 
 
-    if (!Date) {
-      alert("Please select the Date");
-      return;
-    }
+    // if (!Date) {
+    //   alert("Please select the Date");
+    //   return;
+    // }
 
     if (!wasteCategory || !selectedWasteId) {
       alert("Please select waste category and waste item.");
@@ -252,7 +252,6 @@ export default function NonAuctionablePage() {
     }
 
     try {
-      // 1) Initiate Disposal
       const res = await fetch("/api/SetData/InitiateDisposal", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -279,7 +278,6 @@ export default function NonAuctionablePage() {
         return;
       }
 
-      // 2) Insert Auction Waste Details for ALL selected WRIDs
       const res2 = await fetch("/api/SetData/InsertAuctionWasteDetails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -76,6 +76,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
         CrBy: string
         IsActive: string
         CreatedBy: string
+        ActualDateofDisposal: string
     }
     const [disposalDetails, setDisposalDetails] = useState<DisposalDetails>()
 
@@ -188,6 +189,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                 <div className=""><span className="text-xs mr-1 font-semibold ">Waste Category : </span> {disposalDetails?.WasteCategory}</div >
                 <div className=""><span className="text-xs mr-1 font-semibold ">Created By : </span> {disposalDetails?.CreatedBy}{" "} ( {disposalDetails?.CrBy})</div >
                 {/* <div className=""><span className="text-xs mr-1 font-semibold ">Created On : </span> {disposalDetails?.CrDt.split("T")[0]}</div > */}
+                <div className=""><span className="text-xs mr-1 font-semibold ">Disposed On: </span> {disposalDetails?.ActualDateofDisposal?.split("T")[0] ?? "N/A"}</div >
             </div >
 
             <div className="mt-6">
