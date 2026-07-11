@@ -81,7 +81,8 @@ const rows: RowDef[] = [
   // { key: "receiverAddress", field: "Address ", type: "textarea", hint: "Enter receiver address", required: true },
   // { key: "receiverAuthNo", field: "Receiver Authorization No. ", type: "text", hint: "Enter receiver authorization number", required: true },
   { key: "Waste", field: "Waste Description", type: "auto", required: true },
-  { key: "totalQty", field: "Total Quantity", type: "auto", required: true },
+  { key: "totalQty", field: "Total Quantity", type: "text", required: true },
+  { key: "unit", field: "Unit Of Measurement", type: "auto", required: true },
   // { key: "NoOfContainers", field: "No. of Containers ", type: "number", hint: "Enter total containers" },
   {
     key: "physicalForm",
@@ -257,7 +258,10 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           Waste: String(row?.Waste ?? ""),
-          totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
+          totalQty: `${String(row?.TotalQty ?? "")}`,
+          previousQty: `${String(row?.TotalQty ?? "")}`,
+          remainingQty: String(row.RemainingQuantity),
+          maxQty: String(row.MaxQty),
           unit: String(row?.MUnit ?? ""),
           // dateOfDisposal: String(row?.DateOfDisposal ?? ""),
           NoOfContainers: String(row?.NoOfContainers),
@@ -361,6 +365,16 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     e.preventDefault();
     setSubmitClicked(true)
 
+
+    const maxAllowedQuantity = Number(values.remainingQty!) + Number(values.previousQty!);
+
+    // console.log(maxAllowedQuantity, values.remainingQty, values.previousQty, values.totalQty)
+
+    if (Number(values?.totalQty!) > maxAllowedQuantity!) {
+      alert("Quantity to be disposed is more than the available quantity")
+      setSubmitClicked(false)
+      return
+    }
 
     const formData = new FormData();
 

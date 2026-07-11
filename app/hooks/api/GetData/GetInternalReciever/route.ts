@@ -16,7 +16,7 @@ export async function GET(req: Request) {
       .input("FLAG", sql.VarChar, "GetInternalReceiver")
 
       .execute("PRO-WMS_GET");
-    console.log(result);
+    // console.log(result);
     return NextResponse.json({ success: true, data: result.recordset ?? [] },
       { status: 200 },)
   }

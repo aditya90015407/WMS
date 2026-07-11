@@ -17,7 +17,7 @@ export async function POST(req: Request) {
             .input("FLAG", sql.VarChar, "GetVendorListByIDDID")
             .input("IDDID", sql.VarChar, String(id))
             .execute("PRO-WMS_GET");
-        console.log(result.recordset, id)
+        // console.log(result.recordset, id)
 
         return NextResponse.json({
             success: true,

@@ -22,7 +22,7 @@ type EditPayload = {
 export async function handleEditPost(request: Request) {
   try {
     const body = (await request.json()) as EditPayload;
-    console.log(body)
+    // console.log(body)
     const authSession = await getServerSession(authOptions);
     const createdBy = String(authSession?.user?.id ?? "").trim();
 
@@ -95,7 +95,7 @@ export async function handleEditPost(request: Request) {
       .input("CRBY", sql.NVarChar(50), createdBy)
       .execute("PRO-WMS_SET");
 
-    console.log(result, "esrfjdsff")
+    // console.log(result, "esrfjdsff")
 
     const firstRow = result.recordset?.[0] as Record<string, unknown> | undefined;
     const values = firstRow ? Object.values(firstRow) : [];

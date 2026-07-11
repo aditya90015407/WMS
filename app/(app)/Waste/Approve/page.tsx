@@ -197,7 +197,7 @@ export default function WasteApprove() {
                 // const session= useSession();
                 // console.log(session);
                 if (!deptID || !uid || !empCode) {
-                    console.log("Session values not ready yet", { deptID, uid, empCode });
+                    // console.log("Session values not ready yet", { deptID, uid, empCode });
                     return;
                 }
 
@@ -214,7 +214,7 @@ export default function WasteApprove() {
 
 
                 const rawData = await res2.json();
-                console.log("GetPendingApprovalWasteForDepartment response:", rawData);
+                // console.log("GetPendingApprovalWasteForDepartment response:", rawData);
 
                 const list = Array.isArray(rawData)
                     ? rawData

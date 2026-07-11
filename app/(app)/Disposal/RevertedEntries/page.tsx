@@ -80,7 +80,7 @@ export default function RevertedDisposalList() {
         }
 
         const rawData = Array.isArray(raw) ? raw : raw?.data ?? [];
-        console.log(rawData)
+        // console.log(rawData)
         const data = rawData.map(normalizeData)
         setRows(data);
       }
@@ -118,7 +118,7 @@ export default function RevertedDisposalList() {
               <tr>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Final Disposal ID</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Initiated Disposal ID</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Date of Disposal</th>
+                {/* <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Date of Disposal</th> */}
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Disposal Type</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste Category</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste</th>
@@ -186,7 +186,7 @@ export default function RevertedDisposalList() {
                   >
                     <td className="px-3 py-2 text-xs text-slate-700">{row.ID}</td>
                     <td className="px-3 py-2 text-xs text-slate-700">{row.IDDID}</td>
-                    <td className="px-3 py-2 text-xs text-slate-700">{row.DateOfDisposal}</td>
+                    {/* <td className="px-3 py-2 text-xs text-slate-700">{row.DateOfDisposal}</td> */}
                     <td className="px-3 py-2 text-xs text-slate-700">{row.DisType}</td>
                     <td className="px-3 py-2 text-xs text-slate-700">{row.WasteCategory}</td>
                     <td className="px-3 py-2 text-xs text-slate-700">{row.Waste}</td>

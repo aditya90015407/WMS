@@ -81,6 +81,49 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
     const [disposalDetails, setDisposalDetails] = useState<DisposalDetails>()
 
 
+    type FinalDisposalList = {
+        ID: string
+        IDDID: string
+        DateOfDisposal: string
+        UID: string
+        Unit: string
+        UnitDesc: string
+        ManifestDocumentNo: string
+        TransporterName: string
+        TransporterAddress: string
+        TransporterPhone: string
+        TransporterEmail: string
+        VTID: string
+        VehicleType: string
+        TransporterRegNo: string
+        VehicleRegNo: string
+        ReceiverName: string
+        ReceiverAddress: string
+        ReceiverAuthNo: string
+        TotalQty: string
+        NoOfContainers: string
+        MUID: string
+        MUnit: string
+        PSID: string
+        PhysicalState: string
+        SpecialHandlingInstructions: string
+        Form8Form9: string
+        AID: string
+        IRName: string
+        InternalReceiver: string
+        StsCode: string
+        Status: string
+        ApproverRemarks: string
+        ActualDateofDisposal: string
+        CrBy: string
+        CrDt: string
+        UpBy: string
+        UpDt: string
+        IsActive: string
+    }
+
+    const [finalDisposals, setFinalDisposals] = useState<FinalDisposalList[]>([])
+
     async function GetWasteList() {
         if (!id) return
         const res = await fetch("/api/GetData/GetWasteListByIDDID", {
@@ -122,10 +165,23 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
         setDisposalDetails(data)
     }
 
+    async function GetFinalDisposalList() {
+        if (!id) return
+        const res = await fetch("/api/GetData/GetFinalDisposalListByIDDID", {
+            method: "POST",
+            body: JSON.stringify({ "id": id })
+        })
+        const rawdata = await res.json()
+        const data = await rawdata.data
+        // console.log(data)
+        setFinalDisposals(data)
+    }
+
     useEffect(() => {
         GetWasteList()
         GetVendorList()
         GetDisposalDetails()
+        GetFinalDisposalList()
     }, [id])
 
 
@@ -307,6 +363,172 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                     )}
                 </div>
             }
+
+            <div className="mt-6">
+                <p className="text-sm font-semibold text-cyan-700  my-2">Final Disposals</p>
+                {finalDisposals.length > 0 ? (
+                    <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white max-h-70 max-w-4xl">
+                        <table className="min-w-full divide-y divide-slate-200 text-sm">
+                            <thead className="bg-emerald-600">
+                                <tr>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        ID
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        Unit
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        ManifestDocumentNo
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        TransporterName
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        TransporterAddress
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        TransporterPhone
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        TransporterEmail
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        VehicleType
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        TransporterRegNo
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        VehicleRegNo
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        ReceiverName
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        ReceiverAddress
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        ReceiverAuthNo
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        TotalQty
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        NoOfContainers
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        PhysicalState
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        SpecialHandlingInstructions
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        Form8Form9
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        Receiver
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        Status
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        ApproverRemarks
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        ActualDateofDisposal
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        Created By
+                                    </th>
+                                    <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
+                                        Created On
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 bg-white">
+                                {finalDisposals.map((w, i) => (
+                                    <tr key={String(i)}>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.ID}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.Unit}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.ManifestDocumentNo}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.TransporterName}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.TransporterAddress}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.TransporterPhone}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.TransporterEmail}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.VehicleType}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.TransporterRegNo}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.VehicleRegNo}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.ReceiverName}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.ReceiverAddress}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.ReceiverAuthNo}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.TotalQty}{w.MUnit}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.NoOfContainers}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.PhysicalState}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.SpecialHandlingInstructions}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.Form8Form9 == '1' ? "Yes" : "No"}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.InternalReceiver}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.Status}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.ApproverRemarks}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.ActualDateofDisposal}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.CrBy}
+                                        </td>
+                                        <td className="whitespace-nowrap px-3 py-2 text-slate-700">
+                                            {w.CrDt}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <span className="text-slate-500">N/A</span>
+                )}
+            </div>
 
         </section >
     );

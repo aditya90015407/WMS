@@ -70,13 +70,12 @@ export async function POST(req: Request) {
       .execute("PRO-WMS_SET");
 
     const rows = result.recordset[0];
-    const fddid = rows?.FDDID;
+    // const fddid = rows?.FDDID;
     // console.log(fddid);
     return NextResponse.json({
       success: true,
-      fddid,
+      // fddid,
       data: result.recordset ?? [],
-
     });
   } catch (error: any) {
 

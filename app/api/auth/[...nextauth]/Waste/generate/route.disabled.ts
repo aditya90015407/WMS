@@ -418,7 +418,7 @@ export async function handleGeneratePost(request: Request) {
       });
     }
 
-    console.log(body)
+    // console.log(body)
 
     const result = await pool
       .request()

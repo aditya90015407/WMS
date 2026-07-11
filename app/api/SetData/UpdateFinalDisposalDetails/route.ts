@@ -25,11 +25,16 @@ export async function POST(req: Request) {
 
 
     // console.log(form);
+    // console.log(form.get("TotalQty"));
+
+
+    const Form8Form9 = form.get("Form8Form9") == 'true' ? 1 : 0
 
     const result = await pool
       .request()
       .input("FLAG", sql.NVarChar(50), "UpdateFinalDisposalDetails")
       .input("FDDID", sql.NVarChar(50), String(form.get("FDDID") ?? ""))
+      .input("IDDID", sql.NVarChar(50), String(form.get("IDDID") ?? ""))
       // .input("DateOfDisposal", sql.Date, String(form.get("DateOfDisposal") ?? ""))
       .input("UID", sql.Int, Number(form.get("UID") ?? ""))
       .input("TransporterName", sql.NVarChar(200), String(form.get("TransporterName") ?? ""))
@@ -42,19 +47,20 @@ export async function POST(req: Request) {
       .input("ReceiverName", sql.NVarChar(200), String(form.get("ReceiverName") ?? ""))
       .input("ReceiverAddress", sql.NVarChar(300), String(form.get("ReceiverAddress") ?? ""))
       .input("ReceiverAuthNo", sql.NVarChar(100), String(form.get("ReceiverAuthNo") ?? ""))
-      .input("TotalQty", sql.Decimal(18, 3), Number(form.get("TotalQty") ?? 0))
+      .input("TotalQty", sql.Decimal(18, 3), String(form.get("TotalQty") ?? 0))
       .input("MUID", sql.NVarChar(50), String(form.get("MUID") ?? ""))
       .input("NoOfContainers", sql.Int, Number(form.get("NoOfContainers") ?? 0))
       // .input("WasteType", sql.NVarChar(100), String(form.get("WasteType") ?? ""))
       .input("PSID", sql.NVarChar(50), String(form.get("PSID") ?? ""))
       .input("SpecialHandlingInstructions", sql.NVarChar(300), String(form.get("SpecialHandlingInstructions") ?? ""))
       .input("AID", sql.NVarChar(50), String(form.get("AID") ?? ""))
+      .input("Form8Form9", Form8Form9)
       .input("EmpCode", sql.NVarChar(50), empCode)
       .execute("PRO-WMS_SET");
 
-    // const rows = result.recordset[0];
+    const rows = result.recordset;
     // const fddid = rows?.FDDID;
-    // console.log(fddid);
+    // console.log(rows);
     return NextResponse.json({
       success: true,
       // fddid,

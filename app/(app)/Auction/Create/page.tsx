@@ -110,7 +110,7 @@ export default function AuctionList() {
         if (!q) return allAuctionRows;
 
         return allAuctionRows.filter((row) =>
-            [row.AuctionID, row.DisposalType, row.AuctionDate, row.WasteCategory, row.Remarks]
+            [row.AuctionID, row.DisposalType, row.WasteCategory, row.Waste, row.TotalQty, row.MUnit]
                 .some((value) => toText(value).toLowerCase().includes(q)),
         );
     }, [allAuctionRows, query]);

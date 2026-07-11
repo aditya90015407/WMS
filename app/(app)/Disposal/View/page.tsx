@@ -115,13 +115,13 @@ export default function DisposalEditPage() {
 
         return rows.filter((row) =>
             [
-                row.ID,
+                // row.ID,
                 row.IDDID,
                 row.DisType,
                 row.WasteCategory,
                 row.Waste,
                 row.TotalQty,
-                // row.Status,
+                row.Status,
                 row.CrDt,
                 row.MUnit
             ]

@@ -30,6 +30,8 @@ export async function POST(req: Request) {
       VendorSelfTransport
     } = await req.json();
 
+    // console.log(VendorSelfTransport)
+
     if (!APID) {
       return NextResponse.json(
         { success: false, message: "APID is required" },
@@ -40,7 +42,7 @@ export async function POST(req: Request) {
     const result = await pool
       .request()
       .input("FLAG", sql.VarChar, "SetTransportationDetails")
-      .input("VendorSelfTransport", sql.Int, VendorSelfTransport)
+      .input("VendorSelfTransport", VendorSelfTransport)
       .input("APID", sql.Int, Number(APID)) // change to VarChar if APID is string
       .input("TransporterName", sql.VarChar, TransporterName ?? "")
       .input("TransporterAddress", sql.VarChar, TransporterAddress ?? "")

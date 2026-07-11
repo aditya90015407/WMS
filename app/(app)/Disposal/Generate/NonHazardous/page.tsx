@@ -52,7 +52,8 @@ const rows: RowDef[] = [
   { key: "receiverName", field: "Receiver Name *", type: "text", hint: "Enter receiver name" },
   { key: "receiverAddress", field: "Address *", type: "textarea", hint: "Enter receiver address" },
   { key: "wasteDescription", field: "Waste Description", type: "view" },
-  { key: "totalQty", field: "Total Quantity", type: "view" },
+  { key: "totalQty", field: "Quantity to be Disposed", type: "text" },
+  { key: "unit", field: "Unit Of Measurement", type: "auto", required: true },
   {
     key: "physicalForm", field: "Physical Form *", type: "select",
     options: ["1|Solid", "2|Liquid", "3|Sludge", "4|Semisolid", "5|Oily", "6|Tarry", "7|Slurry", "9|Fines"]
@@ -209,7 +210,9 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           wasteDescription: String(row?.Waste ?? ""),
-          totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
+          totalQty: `${String(row?.RemainingQuantity ?? "")}`,
+          remainingQty: String(row.RemainingQuantity),
+          unit: String(row?.MUnit ?? ""),
           // dateOfDisposal: String(row?.AuctionDate ?? "")
         }));
       } catch (err) {
@@ -237,12 +240,20 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     if (values.senderNameAddress == "" || values.transporterName == "" || values.transporterAddress == "" ||
       values.transporterEmail == "" || values.vehicleType == "" || values.transporterRegNo == "" ||
       values.vehicleRegNo == "" || values.receiverName == "" || values.receiverAddress == "" ||
-      values.totalQty == "" || values.physicalForm == "" 
+      values.totalQty == "" || values.physicalForm == ""
     ) {
       alert("Please fill all required fields (marked with *) ")
       setSubmitClicked(false)
       return
     }
+
+
+    if ((values?.totalQty!) > values?.remainingQty!) {
+      alert("Quantity to be disposed is more than the available quantity")
+      setSubmitClicked(false)
+      return
+    }
+
 
 
     if (roleid == '7' && !values.salePoSoDoc) {

@@ -399,7 +399,7 @@ export default function WasteApprove({ searchParams }: { searchParams: Promise<{
 
     async function GetTwiceRejectedAuctionParticipants() {
         if (!IDDID) return
-        const res = await fetch("/api/GetData/GetTwiceRejectedAuctionParticipantsByID", {
+        const res = await fetch("/api/GetData/GetTwiceRejected_Or_StoreRejected_AuctionParticipantsByID", {
             method: "POST",
             body: JSON.stringify({ "ID": IDDID })
         })

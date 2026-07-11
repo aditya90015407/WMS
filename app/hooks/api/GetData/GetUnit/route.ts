@@ -17,7 +17,7 @@ export async function GET(req:Request){
            .request()
            .input("FLAG",sql.VarChar,"DROP-UNIT")
            .execute("PRO-WMS_GET");
-            console.log(result)
+          //   console.log(result)
            return NextResponse.json(result.recordset);
 
     

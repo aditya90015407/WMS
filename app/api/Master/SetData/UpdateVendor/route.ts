@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
 
 
-    console.log(body, EmpCode)
+    // console.log(body, EmpCode)
 
     const result = await pool.request()
         .input("FLAG", "UpdateVendor")

@@ -158,8 +158,8 @@ export default function Form10Page() {
         toText(row.WasteCategory),
         toText(row.Waste),
         toText(row.TotalQty),
-        toText(row.TransporterName),
-        toText(row.ReceiverName),
+        // toText(row.TransporterName),
+        // toText(row.ReceiverName),
       ]
         .join(" ")
         .toLowerCase()
@@ -270,7 +270,7 @@ export default function Form10Page() {
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by ID, IDDID, waste, receiver..."
+            placeholder="Search by Final / Initial Disposal ID, waste, category ..."
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-800 outline-none focus:border-slate-500 sm:max-w-sm"
           />
 

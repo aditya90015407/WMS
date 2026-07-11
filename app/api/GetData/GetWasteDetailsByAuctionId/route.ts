@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     if (!id) {
       return NextResponse.json({ success: false, message: "ID missing" }, { status: 400 });
     }
-    console.log(id)
+    // console.log(id)
 
 
     // const id1 = await decrypt(id);

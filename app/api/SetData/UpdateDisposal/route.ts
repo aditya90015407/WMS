@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     const disposedTo = String(body.AID ?? "").trim();
     const iddid = body.IDDID
 
-    console.log(body)
+    // console.log(body)
 
     const result = await pool
       .request()

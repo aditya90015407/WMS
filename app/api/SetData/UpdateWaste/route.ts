@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const TargetDate = body.TargetDate
     const StorageMethod = body.StorageMethod
 
-    console.log(body, CrBy)
+    // console.log(body, CrBy)
 
     const result = await pool.request()
         .input("FLAG", "GWT-UPD")

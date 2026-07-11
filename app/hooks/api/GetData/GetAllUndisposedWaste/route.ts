@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       .execute("PRO-WMS_GET");
 
     const rows = result.recordset ?? [];
-    console.log(rows)
+    // console.log(rows)
     const deptList = rows
       .map((r: any) => String(r.Dept ?? "").trim())
       .filter(Boolean);
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
       (sum: number, r: any) => sum + (Number(r.WasteQty) || 0),
       0,
     );
-     console.log(totalWasteQty)
+    //  console.log(totalWasteQty)
     return NextResponse.json({
       success: true,
       data: {

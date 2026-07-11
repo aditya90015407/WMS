@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
         const ID = body.ID
         // console.log(body)
 
-        const result = await pool.request().input("FLAG", "GetTwiceRejectedAuctionParticipantsByID")
+        const result = await pool.request().input("FLAG", "GetTwiceRejected_Or_StoreRejected_AuctionParticipantsByID")
             .input("ID", ID)
             .execute("PRO-WMS_GET");
 

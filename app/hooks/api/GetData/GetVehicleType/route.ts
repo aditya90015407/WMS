@@ -15,7 +15,7 @@ export async function POST() {
        .request()
        .input("FLAG",sql.VarChar,'Drop-VehicleType')
        .execute("PRO-WMS_GET");
-        console.log(result.recordset);
+        // console.log(result.recordset);
        return NextResponse.json({ success: true, data: result.recordset ?? [] });
 
             }catch(err: any)

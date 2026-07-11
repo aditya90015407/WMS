@@ -24,7 +24,7 @@ export async function POST(req: Request) {
       .input("FLAG", sql.VarChar, "Menu")
       .input("EmpCode", sql.VarChar, empCode)
       .execute("PRO-WMS_GET");
-    console.log(result.recordset)
+    // console.log(result.recordset)
     return NextResponse.json({ success: true, data: result.recordset ?? [] });
   } catch (err: any) {
     return NextResponse.json(

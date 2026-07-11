@@ -82,7 +82,8 @@ const rows: RowDef[] = [
   { key: "receiverAddress", field: "Address ", type: "textarea", hint: "Enter receiver address", required: true },
   { key: "receiverAuthNo", field: "Receiver Authorization No. ", type: "text", hint: "Enter receiver authorization number", required: true },
   { key: "Waste", field: "Waste Description", type: "auto", required: true },
-  { key: "totalQty", field: "Total Quantity", type: "auto", required: true },
+  { key: "totalQty", field: "Total Quantity", type: "text", required: true },
+  { key: "unit", field: "Unit Of Measurement", type: "auto", required: true },
   { key: "NoOfContainers", field: "No. of Containers ", type: "number", hint: "Enter total containers" },
   {
     key: "physicalForm",
@@ -106,7 +107,7 @@ const rows: RowDef[] = [
   // { key: "transporterSignDate", field: "Name and Stamp (Transporter)", type: "signature-date" },
   // { key: "receiverCert", field: "Receiver certification for receipt of hazardous and other waste", type: "checkbox" },
   // { key: "receiverSignDate", field: "Name and Stamp (Receiver)", type: "signature-date" },
-  // { key: "form8form9", field: "Hard copy of Form-8 and Form-9 submitted to transporter", type: "checkbox" },
+  { key: "form8form9", field: "Hard copy of Form-8 and Form-9 submitted to transporter", type: "checkbox" },
   { key: "salePoSoDoc", field: "Document for Sale PO/SO for external disposal", type: "file" },
   { key: "finalPartyDoc", field: "Final party document intact as provided prior for verification", type: "file" },
 ];
@@ -254,7 +255,10 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           Waste: String(row?.Waste ?? ""),
-          totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
+          totalQty: `${String(row?.TotalQty ?? "")}`,
+          previousQty: `${String(row?.TotalQty ?? "")}`,
+          remainingQty: String(row.RemainingQuantity),
+          maxQty: String(row.MaxQty),
           unit: String(row?.MUnit ?? ""),
           // dateOfDisposal: String(row?.DateOfDisposal ?? ""),
           NoOfContainers: String(row?.NoOfContainers),
@@ -356,6 +360,16 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     e.preventDefault();
     setSubmitClicked(true)
 
+    const maxAllowedQuantity = Number(values.remainingQty!) + Number(values.previousQty!);
+
+    // console.log(maxAllowedQuantity, values.remainingQty, values.previousQty, values.totalQty)
+
+    if (Number(values?.totalQty!) > maxAllowedQuantity!) {
+      alert("Quantity to be disposed is more than the available quantity")
+      setSubmitClicked(false)
+      return
+    }
+
     const formData = new FormData();
 
     formData.append("FDDID", fddid!);
@@ -378,6 +392,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     formData.append("NoOfContainers", String(values.NoOfContainers ?? ""));
     formData.append("PSID", String(values.physicalForm ?? ""));
     formData.append("SpecialHandlingInstructions", String(values.SpecialHandlingInstructions ?? ""));
+    formData.append("Form8Form9", String(values.form8form9));
     // formData.append("EmpCode", "YOUR_EMP_CODE");
 
     // console.log(Object.fromEntries(formData.entries()));

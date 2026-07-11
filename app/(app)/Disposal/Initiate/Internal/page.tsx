@@ -128,8 +128,8 @@ export default function DisposalRecycleForm() {
 
         const disposedPayload = await disposedRes.json();
         const physicalPayload = await physicalRes.json();
-        console.log(physicalPayload)
-        console.log(disposedPayload)
+        // console.log(physicalPayload)
+        // console.log(disposedPayload)
         setDisposedOptions(
           disposedPayload.success && Array.isArray(disposedPayload.data)
             ? disposedPayload.data

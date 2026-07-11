@@ -14,7 +14,7 @@ export async function POST (req: NextRequest)
      const body=await req.json();
      const empCode = String(body?.EmpCode ?? body?.empCode ?? "").trim();
      
-     console.log(empCode);
+    //  console.log(empCode);
 
      if (!empCode) {
       return NextResponse.json(
@@ -29,7 +29,7 @@ export async function POST (req: NextRequest)
                 .execute("PRO-WMS_GET");
  
 
-                console.log(result.recordset)
+                // console.log(result.recordset)
         return NextResponse.json(result.recordset);
 }  catch (err:any){
     return NextResponse.json({success:false,message:err?.message},

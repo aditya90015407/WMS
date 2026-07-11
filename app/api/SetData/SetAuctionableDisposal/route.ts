@@ -45,7 +45,7 @@ export async function POST(req:Request){
              .input("Remarks",sql.NVarChar(sql.MAX),remarks )
              .execute("PRO-WMS_SET");
    
-             console.log(result.recordset[0].STATUS)
+            //  console.log(result.recordset[0].STATUS)
              const refNo=result.recordset[0].STATUS.split('-')[1];
  
              const wcid=String(body.wasteCategoryId ?? "").trim();
@@ -68,7 +68,7 @@ export async function POST(req:Request){
            
             const wasteResults: any[] = [];
  
-            console.log(vendorIds)
+            // console.log(vendorIds)
  
             for (const wid of wasteIds) {
             const wasteResult = await pool

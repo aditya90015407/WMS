@@ -150,9 +150,9 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Disposal Type
                                     </th>
-                                    <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                                    {/* <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Final Disposal Date
-                                    </th>
+                                    </th> */}
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Created On
                                     </th>
@@ -207,9 +207,9 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.DisType ?? "")}
                                         </td>
-                                        <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
+                                        {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.AuctionDate ?? "")}
-                                        </td>
+                                        </td> */}
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.CrDt?.split("T")[0] ?? "")}
                                         </td>

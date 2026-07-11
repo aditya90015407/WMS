@@ -273,7 +273,7 @@ export default function LoginPage() {
         return;
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       setGlobalError("Something went wrong. Please try again.");
       setIsLoading(false);
     }

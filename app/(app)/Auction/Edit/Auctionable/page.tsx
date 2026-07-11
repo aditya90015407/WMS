@@ -366,7 +366,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         const selectedData = await selectedRes.json();
         const selectedRows = Array.isArray(selectedData?.data) ? selectedData.data : [];
 
-        console.log(selectedData, "selected vendors")
+        // console.log(selectedData, "selected vendors")
 
         const selectedVendorRowsMapped: VendorOption[] = selectedRows.map((row: any, index: number) => ({
           id: String(row.VID ?? row.ID ?? row.id ?? index).trim(),
@@ -380,7 +380,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         setSelectedVendorIds(selectedIds);
         setAlreadySelectedVendorIds(selectedIds);
 
-        console.log(selectedIds)
+        // console.log(selectedIds)
 
 
         const unselectedRes = await fetch("/api/GetData/GetVendor", {
@@ -389,7 +389,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         });
         const unselectedData = await unselectedRes.json();
         const unselectedRows = Array.isArray(unselectedData?.data) ? unselectedData.data : [];
-        console.log(unselectedRows, "all vendors")
+        // console.log(unselectedRows, "all vendors")
 
         const unselectedVendorRowsMapped: VendorOption[] = unselectedRows.map((row: any, index: number) => ({
           id: String(row.VID ?? row.ID ?? row.id ?? index).trim(),
@@ -405,7 +405,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           ),
         ].filter((item) => item.id && item.name && item.email && item.vendorCode);
 
-        console.log(mergedVendorOptions, "merged vendors")
+        // console.log(mergedVendorOptions, "merged vendors")
 
         setVendorOptions(mergedVendorOptions);
       } catch (err) {

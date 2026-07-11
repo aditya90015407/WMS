@@ -59,25 +59,36 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         ApproverRemarks: string
         UpBy: string
         UpDt: string
-        ApproverName: string
+        ApproverAcceptance: string
+        ApproverActionDate: string
+        ApproverID: string
+        AdminAcceptance: string
+        AdminRemarks: string
+        AdminActionDate: string
+        AdminID: string
+        StoreAcceptance: string
+        StoreRemarks: string
+        StoreActionDate: string
+        StoreApproverID: string
     }
 
-    type ApprovalRejectionHistory = {
-        ID: string
-        AprvType: string
-        Remarks: string
-        AprvStage: string
-        AprvStageDesc: string
-        LastApprvRejBy: string
-        CreatedBy: string
-        CreatedDate: string
-        Status: string
-    }
+
+    // type ApprovalRejectionHistory = {
+    //     ID: string
+    //     AprvType: string
+    //     Remarks: string
+    //     AprvStage: string
+    //     AprvStageDesc: string
+    //     LastApprvRejBy: string
+    //     CreatedBy: string
+    //     CreatedDate: string
+    //     Status: string
+    // }
 
     const [auctionParticipant, setAuctionParticipant] = useState<AuctionParticipant>()
     const [auctionParticipantLine, setAuctionParticipantLine] = useState<AuctionParticipantLine[]>([])
 
-    const [approvalRejectionHistory, setApprovalRejectionHistory] = useState<ApprovalRejectionHistory[]>([])
+    // const [approvalRejectionHistory, setApprovalRejectionHistory] = useState<ApprovalRejectionHistory[]>([])
 
     const [remarks, setRemarks] = useState("")
     const [acceptance, setAcceptance] = useState("")
@@ -106,30 +117,30 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
     }
 
-    async function fetchHistory() {
+    // async function fetchHistory() {
 
-        const encoded = params.id;
-        const id = await decrypt(encoded!)
+    //     const encoded = params.id;
+    //     const id = await decrypt(encoded!)
 
-        const res = await fetch("/api/GetData/GetApprovalRejectionHistory", {
-            method: "POST",
-            body: JSON.stringify({ "ID": id })
-        })
+    //     const res = await fetch("/api/GetData/GetApprovalRejectionHistory", {
+    //         method: "POST",
+    //         body: JSON.stringify({ "ID": id })
+    //     })
 
-        const rawData = await res.json()
-        const data = rawData.map(normalizeData)
+    //     const rawData = await res.json()
+    //     const data = rawData.map(normalizeData)
 
-        setApprovalRejectionHistory(data)
+    //     setApprovalRejectionHistory(data)
 
-        // console.log(rawData)
-        // console.log(data[0])
+    //     // console.log(rawData)
+    //     // console.log(data[0])
 
-    }
+    // }
 
 
     useEffect(() => {
         fetchDetails()
-        fetchHistory()
+        // fetchHistory()
     }, [])
 
 
@@ -234,7 +245,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
                 <hr className="border border-gray-200 my-4" />
 
-                <div className="block w-full">
+                <div className="block w-full max-w-4xl mx-auto">
                     <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 w-full block">
                         <div className="py-1 text-center text-sm font-semibold text-pink-500">Documents Upload History</div>
                         <table className="min-w-full divide-y divide-slate-200">
@@ -259,11 +270,29 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Uploaded On</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Approver Acceptance</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Approver Remarks</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Approved / Rejected By</th>
+                                    >Approver ID</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Approved / Rejected On</th>
+                                    >Approver Action Date</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Admin Acceptance</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Admin Remarks</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Admin ID</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Admin Action Date</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Store Acceptance</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Store Remarks</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Store Approver ID</th>
+                                    <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                                    >Store Action Date</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 bg-white">
@@ -309,9 +338,14 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                                 onClick={() => downloadAttachment(row.EPR_Cert_AttachPath, "EPR_Cert_AttachPath")}
                                             />
                                         </td>
+
                                         <td
-                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.Remarks}
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700 min-w-[350px]"
+                                        >
+                                            <div className="max-h-[150px] overflow-auto whitespace-pre-wrap"
+                                            >
+                                                {row.Remarks ?? "-"}
+                                            </div>
                                         </td>
                                         {/* <td
                                         className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
@@ -323,15 +357,63 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.ApproverRemarks}
+                                        >{row.ApproverAcceptance == '1' ? "Accepted" : row.ApproverAcceptance == '0' ? "Rejected" : "NA"}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700 min-w-[400px]"
+                                        >
+                                            <div className="max-h-[150px] overflow-auto whitespace-pre-wrap"
+                                            >
+                                                {row.ApproverRemarks ?? "-"}
+                                            </div>
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.ApproverName}
+                                        >{row.ApproverID}
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.UpDt?.split("T")[0]}
+                                        >{row.ApproverActionDate}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.AdminAcceptance == '1' ? "Accepted" : row.AdminAcceptance == '0' ? "Rejected" : "NA"}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700 min-w-[400px]"
+                                        >
+                                            <div className="max-h-[150px] overflow-auto whitespace-pre-wrap"
+                                            >
+                                                {row.AdminRemarks ?? "-"}
+                                            </div>
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.AdminID}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.AdminActionDate}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.StoreAcceptance == '1' ? "Accepted" : row.StoreAcceptance == '0' ? "Rejected" : "NA"}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700 min-w-[400px]"
+                                        >
+                                            <div className="max-h-[150px] overflow-auto whitespace-pre-wrap"
+                                            >
+                                                {row.StoreRemarks ?? "-"}
+                                            </div>
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.StoreApproverID}
+                                        </td>
+                                        <td
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                                        >{row.StoreActionDate}
                                         </td>
                                     </tr>
                                 ))}

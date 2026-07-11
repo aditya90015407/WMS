@@ -485,7 +485,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
               required
               accept=".pdf,.png,.jpg,.jpeg"
               onChange={(e) => setCtoFile(e.target.files?.[0] ?? null)}
-              className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+              className="cursor-pointer border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
             <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
           </div>
@@ -497,7 +497,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
               required
               accept=".pdf,.png,.jpg,.jpeg"
               onChange={(e) => setHwAuthFile(e.target.files?.[0] ?? null)}
-              className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+              className="cursor-pointer border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
             <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
           </div>
@@ -509,7 +509,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
               required
               accept=".pdf,.png,.jpg,.jpeg"
               onChange={(e) => setHwAuthSpcbFile(e.target.files?.[0] ?? null)}
-              className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+              className="cursor-pointer border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
             <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
           </div>
@@ -523,7 +523,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
               required
               accept=".pdf,.png,.jpg,.jpeg"
               onChange={(e) => setBlueBookFile(e.target.files?.[0] ?? null)}
-              className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+              className="cursor-pointer border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
             <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
           </div>
@@ -537,7 +537,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
               required
               accept=".pdf,.png,.jpg,.jpeg"
               onChange={(e) => setEprFile(e.target.files?.[0] ?? null)}
-              className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
+              className="cursor-pointer border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm focus:outline-none focus:ring-1 focus:ring-blue-400"
             />
             <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
           </div>

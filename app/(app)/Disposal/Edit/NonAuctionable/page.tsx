@@ -130,7 +130,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
         });
 
         const payload = await res.json();
-        console.log(payload)
+        // console.log(payload)
 
         if (!res.ok || !payload.success) {
           console.error("Failed to load edit details", payload);
@@ -138,7 +138,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
         }
 
         const detailRow = Array.isArray(payload.data) ? payload.data[0] : payload.data;
-        console.log(payload)
+        // console.log(payload)
         if (!detailRow) return;
 
         // setDisposalDate(String(detailRow.AuctionDate ?? detailRow.DisposalDate ?? "").split("T")[0]);
@@ -230,9 +230,9 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
 
         const selectedRows: UndisposedOption[] = rows.map((row: any) => {
           const qty = Number(row.WasteQty ?? 0);
-          console.log("rows:", rows)
+          // console.log("rows:", rows)
           const genDate = String(row.GenerationDate ?? "").split("T")[0].trim();
-          console.log(genDate)
+          // console.log(genDate)
           const todayDate = new Date().toISOString().split("T")[0];
           const targetDate = String(row.TargetDate ?? "").split("T")[0].trim();
           const muid = row.MUID
@@ -329,7 +329,7 @@ export default function NonAuctionablePage({ searchParams }: { searchParams: Pro
             daysLeft = String(diffDays);
 
           }
-          console.log(daysLeft)
+          // console.log(daysLeft)
           const qtyLabel = qty.toFixed(2);
           const id = String(row.WRID ?? row.Id ?? row.ID ?? index);
 

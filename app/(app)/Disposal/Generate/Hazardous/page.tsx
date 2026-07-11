@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import decrypt from "@/components/Decrypt";
 import encrypt from "@/components/Encrypt";
+import toast from "react-hot-toast";
 
 
 type FieldType =
@@ -83,8 +84,9 @@ const rows: RowDef[] = [
   { key: "receiverAddress", field: "Address *", type: "textarea", hint: "Enter receiver address", required: true },
   { key: "receiverAuthNo", field: "Receiver Authorization No. *", type: "text", hint: "Enter receiver authorization number", required: true },
   { key: "Waste", field: "Waste Description", type: "auto", required: true },
-  { key: "totalQty", field: "Total Quantity", type: "auto", required: true },
-  { key: "containers", field: "No. of Containers *", type: "number", hint: "Enter total containers" },
+  { key: "totalQty", field: "Quantity to be Disposed", type: "text", required: true },
+  { key: "unit", field: "Unit Of Measurement", type: "auto", required: true },
+  { key: "containers", field: "No. of Containers *", type: "number", hint: "Enter No. of containers" },
   {
     key: "physicalForm",
     field: "Physical Form *",
@@ -271,7 +273,8 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           Waste: String(row?.Waste ?? ""),
-          totalQty: `${String(row?.TotalQty ?? "")} ${String(row?.MUnit ?? "")}`,
+          totalQty: `${String(row?.RemainingQuantity ?? "")}`,
+          remainingQty: String(row.RemainingQuantity),
           unit: String(row?.MUnit ?? ""),
           // dateOfDisposal: String(row?.AuctionDate ?? "")
         }));
@@ -318,6 +321,14 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       values.physicalForm == ""
     ) {
       alert("Please fill all required fields (marked with *) ")
+      setSubmitClicked(false)
+      return
+    }
+
+    // console.log(values.totalQty, values.remainingQty)
+
+    if ((values?.totalQty!) > values?.remainingQty!) {
+      alert("Quantity to be disposed is more than the available quantity")
       setSubmitClicked(false)
       return
     }
@@ -447,6 +458,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       }
       // console.log(attachmentResult);
     }
+    toast.success("Disposal Generated successfully")
     redirect("./")
 
     setSubmitClicked(false)

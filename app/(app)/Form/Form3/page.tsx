@@ -345,7 +345,7 @@ export default function Form3Page() {
         item.date,
         item.targetDate,
         item.wasteCategory,
-        item.wasteType,
+        // item.wasteType,
         item.waste,
         item.quantity,
         item.storageMethod,
@@ -353,8 +353,8 @@ export default function Form3Page() {
         item.disposer,
         item.receiver,
         item.approvalStatus,
-        item.wcid,
-        item.EN,
+        // item.wcid,
+        // item.EN,
       ]
         .join(" ")
         .toLowerCase()

@@ -37,7 +37,7 @@ export async function POST(req: Request) {
       .input("AuctionDate", sql.Date, auctionDate)
       .input("EmpCode", sql.Int, Number(empCode))
       .execute("PRO-WMS_SET");
-    console.log(result.recordset)
+    // console.log(result.recordset)
     const status = String(result.recordset?.[0]?.STATUS ?? "");
     const match = status.match(/-\s*(\d+)/);
     const wrid = match?.[1] ? Number(match[1]) : null;

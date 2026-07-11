@@ -45,7 +45,7 @@ export default function DisposalListPage() {
   const currentRows = allDisposalList.slice(start, start + pageSize);
 
   useEffect(() => {
-    const loadAuctions = async () => {
+    const loadDisposals = async () => {
       setLoading(true);
       setError(null);
       try {
@@ -59,13 +59,13 @@ export default function DisposalListPage() {
         setAllDisposalList(data);
       } catch {
         setAllDisposalList([]);
-        setError("Failed to load auction list");
+        setError("Failed to load disposal list");
       } finally {
         setLoading(false);
       }
     };
 
-    void loadAuctions();
+    void loadDisposals();
   }, []);
 
   return (

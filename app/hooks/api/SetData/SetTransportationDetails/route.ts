@@ -47,7 +47,7 @@ export async function POST(req:Request) {
       .input("ReceiverAddress", sql.VarChar, ReceiverAddress ?? "")
       .input("ReceiverAuthNo", sql.VarChar, ReceiverAuthNo ?? "")
       .execute("PRO-WMS_SET");
-      console.log(result)
+      // console.log(result)
 
     return NextResponse.json({ success: true, message: "Transporter saved" });
   } catch (err: any) {

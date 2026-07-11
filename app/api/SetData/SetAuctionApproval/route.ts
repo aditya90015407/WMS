@@ -28,6 +28,12 @@ export async function POST(req: NextRequest) {
     if (ApprovalLevel == 2 && Acceptance == 1) {
         StsCode = 10
     }
+    else if (ApprovalLevel == 3) {
+        if (Acceptance == 1) {
+            StsCode = 12
+        }
+        else StsCode = 13
+    }
 
     // console.log(body, EmpCode)
 
@@ -35,6 +41,8 @@ export async function POST(req: NextRequest) {
         .input("FLAG", "SetAuctionApproval")
         .input("APID", APID)
         .input("APLID", APLID)
+        .input("ApprovalLevel", ApprovalLevel)
+        .input("Status", Acceptance == 1 ? 1 : 0)
         .input("Remarks", Remarks)
         .input("StsCode", StsCode)
         .input("EmpCode", EmpCode)

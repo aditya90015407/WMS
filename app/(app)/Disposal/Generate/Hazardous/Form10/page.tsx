@@ -84,7 +84,7 @@ export default function HazardousForm10Page({ searchParams }: { searchParams: Pr
 
   useEffect(() => {
     const loadForm10Details = async () => {
-      console.log(id)
+      // console.log(id)
       if (!id) return;
 
       try {

@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     const form = await req.formData();
-    console.log(form)
+    // console.log(form)
     const fddid = String(form.get("FDDID") ?? "").trim();
 
     if (!fddid) {
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     };
 
     await saveFile(salePoSoDoc, salePoSoDocName);
-    console.log({ fddid, salePoSoDocName })
+    // console.log({ fddid, salePoSoDocName })
     const res = await pool
       .request()
       .input("FLAG", sql.VarChar, "SetFinalDisposalDetailsAttachments")

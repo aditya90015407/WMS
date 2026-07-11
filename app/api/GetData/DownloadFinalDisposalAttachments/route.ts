@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
         const body = await req.json()
         const Attachments = body.Attachments
 
-        console.log(body)
+        // console.log(body)
 
         if (!Attachments || Attachments.length === 0) {
             return NextResponse.json(

@@ -128,8 +128,8 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
         setStatus("Missing disposal id.");
         return;
       }
-      console.log("fddid:", fddid);
-      console.log("iddid:", iddid);
+      // console.log("fddid:", fddid);
+      // console.log("iddid:", iddid);
 
       try {
         // const statusRes = await fetch("/api/GetData/GetDisposalApprovalStatus", {

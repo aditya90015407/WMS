@@ -42,7 +42,7 @@ export async function POST(req: Request) {
         }
 
         const formData = await req.formData();
-        console.log(formData, "ffff")
+        // console.log(formData, "ffff")
         // const finalPartyDocs = formData.getAll("finalPartyDoc{i}");
 
         // console.log("fffffff",finalPartyDocs);
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
         const documentProof = formData.get("documentProof");
 
 
-        console.log("tttttttt", finalPartyDoc1, finalPartyDoc2, finalPartyDoc3, finalPartyDoc4, finalPartyDoc5, documentProof)
+        // console.log("tttttttt", finalPartyDoc1, finalPartyDoc2, finalPartyDoc3, finalPartyDoc4, finalPartyDoc5, documentProof)
         // console.log(finalPartyDoc,"ppppppppp")
         // for (const file of finalPartyDocs) {
         // if (file instanceof File) {
@@ -158,15 +158,15 @@ export async function POST(req: Request) {
         const documentProofName =
             await saveFile(documentProof);
 
-        console.log({
-            salePoSoDocName,
-            finalPartyDoc1Name,
-            finalPartyDoc2Name,
-            finalPartyDoc3Name,
-            finalPartyDoc4Name,
-            finalPartyDoc5Name,
-            documentProofName
-        });
+        // console.log({
+        //     salePoSoDocName,
+        //     finalPartyDoc1Name,
+        //     finalPartyDoc2Name,
+        //     finalPartyDoc3Name,
+        //     finalPartyDoc4Name,
+        //     finalPartyDoc5Name,
+        //     documentProofName
+        // });
 
         if (documentProofName) {
             await pool

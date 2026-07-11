@@ -39,22 +39,22 @@ let pool: sql.ConnectionPool | null = null;
 export async function getConnection(): Promise<sql.ConnectionPool> {
   // If pool exists and is already connected, return it
   if (pool && pool.connected) {
-    console.log("Database Connected !!!");
+    // console.log("Database Connected !!!");
     return pool;
   }
 
   // If pool exists and is currently connecting, wait for it
   if (pool && pool.connecting) {
-    console.log("Database connection in progress, waiting...");
+    // console.log("Database connection in progress, waiting...");
     return pool;
   }
 
   // Create new pool and connect
   try {
-    console.log("Creating new database connection...");
+    // console.log("Creating new database connection...");
     pool = new sql.ConnectionPool(config);
     await pool.connect();
-    console.log("Database Connection Successful.");
+    // console.log("Database Connection Successful.");
 
     return pool;
   } catch (err) {

@@ -49,7 +49,7 @@ export async function POST(req: Request) {
 
       const rows=result.recordset[0];
       const fddid=rows?.FDDID;
-      console.log(fddid);
+      // console.log(fddid);
     return NextResponse.json({
       success: true,
       fddid,

@@ -70,6 +70,8 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
     MUnit: ""
   });
 
+  const [acceptance, setAcceptance] = useState("")
+
   const formatDate = (value?: string) => {
     if (!value) return "N/A";
     return String(value).split("T")[0];
@@ -110,7 +112,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
           });
 
           const detailsPayload = await detailsRes.json();
-          console.log(detailsPayload)
+          // console.log(detailsPayload)
           if (detailsPayload?.success) {
             setAuctionDetails(detailsPayload.data ?? null);
           }
@@ -161,6 +163,10 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
       toast.error("APID is missing");
       return;
     }
+    // if (!acceptance) {
+    //   toast.error("Please accept or reject the order")
+    //   return
+    // }
 
     try {
       setSaving(true);
@@ -184,18 +190,23 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
         }),
       });
 
+      const resAcceptance = await fetch("/api/SetData/SetSelectedAuctionAcceptance", {
+        method: "POST",
+        body: JSON.stringify({ "IDDID": decodedIddid, "APID": transportForm.APID, "Acceptance": acceptance })
+      })
+
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        toast.error(data.message || "Failed to save transporter details");
+        toast.error(data.message || "Failed to record response");
         return;
       }
 
-      toast.success("Transporter details saved successfully");
+      toast.success("Response recorded successfully");
       router.back()
     } catch (err) {
-      console.error("Transport submit failed:", err);
-      toast.error("Something went wrong while saving transporter details");
+      // console.error("Record Response failed:", err);
+      toast.error("Something went wrong while recording response");
     } finally {
       setSaving(false);
     }
@@ -353,33 +364,196 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
         </div> */}
       </div>
 
-      {
 
-        <form onSubmit={handleTransportSubmit} className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
 
-          <div>
+      <form onSubmit={handleTransportSubmit} className="mt-6 rounded-xl border border-slate-200 bg-white p-4">
 
-            <label className="inline-flex items-center cursor-pointer font-semibold text-slate-500 text-sm">
-              Do you have Transport Facilities ?
-              <div className="relative mx-4">
+        <div>
+          <label className=" me-3 text-slate-700 text-sm">Do you accept the Order?</label>
+          {/* <label className="font-semibold">Action <span className="text-red-600 font-semibold text-sm pr-2">* </span></label> */}
+          <select
+            required
+            onChange={(e) => setAcceptance(e.target.value)}
+            className=" border border-gray-200 cursor-pointer p-2 mt-1 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-emerald-400">
+            <option value="">Select </option>
+            <option value="1">Yes</option>
+            <option value="0">No</option>
+          </select>
+        </div>
+
+        <div>
+
+          {acceptance == '1' &&
+            <div className="mt-2">
+              <label className="inline-flex items-center cursor-pointer font-semibold text-slate-500 text-sm">
+                I acknowledge and agree that I am responsible for arranging my own transportation.
+                {/* <div className="relative mx-4"> */}
                 <input
                   type="checkbox"
+                  required
                   onChange={() => setTransportFacilities(!transportFacilities)}
-                  className="sr-only peer"
+                  className="ms-5"
                 />
 
-                <div className="w-20 h-8 bg-gray-500 rounded-full peer-checked:bg-emerald-600 transition-colors"></div>
+                {/* <div className="w-20 h-8 bg-gray-500 rounded-full peer-checked:bg-emerald-600 transition-colors"></div>
 
-                <div className="absolute left-1 top-1 w-8 h-6 bg-white rounded-full transition-transform peer-checked:translate-x-10"></div>
+              <div className="absolute left-1 top-1 w-8 h-6 bg-white rounded-full transition-transform peer-checked:translate-x-10"></div>
 
-                <span className="absolute inset-0 flex items-center justify-between px-2 text-xs font-medium text-white pointer-events-none">
-                  <span>Yes</span>
-                  <span>No</span>
-                </span>
+              <span className="absolute inset-0 flex items-center justify-between px-2 text-xs font-medium text-white pointer-events-none">
+                <span>Yes</span>
+                <span>No</span>
+              </span> */}
+                {/* </div> */}
+              </label>
+            </div>
+          }
+
+          {/* {transportFacilities &&
+          <>
+            <h3 className="mt-4 mb-2 text-center text-sm font-semibold text-cyan-600 mb-3"></h3>
+
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <label className="font-semibold">APID</label>
+                <input
+                  type="text"
+                  value={transportForm.APID}
+                  readOnly
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm bg-slate-100"
+                />
               </div>
-            </label>
 
-            {/* <label className="text-sm font-semibold">
+              <div>
+                <label className="font-semibold text-slate-600 text-xs">Transporter Name</label>
+                <input
+                  type="text"
+                  value={transportForm.TransporterName}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, TransporterName: e.target.value }))
+                  }
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-600 text-xs">Transporter Address</label>
+                <input
+                  type="text"
+                  value={transportForm.TransporterAddress}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, TransporterAddress: e.target.value }))
+                  }
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-600 text-xs">Transporter Phone</label>
+                <input
+                  type="text"
+                  value={transportForm.TransporterPhone}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, TransporterPhone: e.target.value }))
+                  }
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-600 text-xs">Transporter Email</label>
+                <input
+                  type="email"
+                  value={transportForm.TransporterEmail}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, TransporterEmail: e.target.value }))
+                  }
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-600 text-xs">Vehicle Type</label>
+                <select
+                  value={transportForm.VTID}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, VTID: e.target.value }))
+                  }
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+                >
+                  <option value="">Select Vehicle Type</option>
+                  {vehicleTypes.map((vt, i) => (
+                    <option key={i} value={vt.id}>
+                      {vt.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-600 text-xs">Transporter Reg No</label>
+                <input
+                  type="text"
+                  value={transportForm.TransporterRegNo}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, TransporterRegNo: e.target.value }))
+                  }
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-600 text-xs">Vehicle Reg No</label>
+                <input
+                  type="text"
+                  value={transportForm.VehicleRegNo}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, VehicleRegNo: e.target.value }))
+                  }
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-600 text-xs">Receiver Name</label>
+                <input
+                  type="text"
+                  value={transportForm.ReceiverName}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, ReceiverName: e.target.value }))
+                  }
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-600 text-xs">Receiver Address</label>
+                <input
+                  type="text"
+                  value={transportForm.ReceiverAddress}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, ReceiverAddress: e.target.value }))
+                  }
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-600 text-xs">Receiver Auth No</label>
+                <input
+                  type="text"
+                  value={transportForm.ReceiverAuthNo}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, ReceiverAuthNo: e.target.value }))
+                  }
+                  className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
+                />
+              </div>
+            </div>
+          </>
+        } */}
+
+
+          {/* <label className="text-sm font-semibold">
               Do you have Transport Facilities ?
             </label>
             <span className="ms-5 mr-2">Yes</span>
@@ -387,162 +561,43 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
             {/* <span className="relative w-20 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-gray-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-[55px] rtl:peer-checked:after:-translate-x-[55px] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:w-5 after:h-5 after:transition-all dark:border-gray-600 peer-checked:bg-gray-600 dark:peer-checked:bg-blue-600"></span> 
 
             <span className="ms-5 ml-2">No</span> */}
-          </div>
+        </div>
 
-          {transportFacilities &&
-            <>
-              <h3 className="mt-4 mb-2 text-center text-sm font-semibold text-cyan-600 mb-3"></h3>
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                {/* <div>
-            <label className="font-semibold">APID</label>
-            <input
-              type="text"
-              value={transportForm.APID}
-              readOnly
-              className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm bg-slate-100"
-            />
-          </div> */}
+        {/* <div>
+          <label className="inline-flex items-center cursor-pointer font-semibold text-slate-500 text-sm">
+            Do you Accept the order?
+            <div className="relative mx-4">
+              <input
+                type="checkbox"
+                onChange={() => setAcceptance(!acceptance)}
+                className="sr-only peer"
+              />
 
-                <div>
-                  <label className="font-semibold text-slate-600 text-xs">Transporter Name</label>
-                  <input
-                    type="text"
-                    value={transportForm.TransporterName}
-                    onChange={(e) =>
-                      setTransportForm((p) => ({ ...p, TransporterName: e.target.value }))
-                    }
-                    className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
-                  />
-                </div>
+              <div className="w-20 h-8 bg-gray-500 rounded-full peer-checked:bg-emerald-600 transition-colors"></div>
 
-                <div>
-                  <label className="font-semibold text-slate-600 text-xs">Transporter Address</label>
-                  <input
-                    type="text"
-                    value={transportForm.TransporterAddress}
-                    onChange={(e) =>
-                      setTransportForm((p) => ({ ...p, TransporterAddress: e.target.value }))
-                    }
-                    className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
-                  />
-                </div>
+              <div className="absolute left-1 top-1 w-8 h-6 bg-white rounded-full transition-transform peer-checked:translate-x-10"></div>
 
-                <div>
-                  <label className="font-semibold text-slate-600 text-xs">Transporter Phone</label>
-                  <input
-                    type="text"
-                    value={transportForm.TransporterPhone}
-                    onChange={(e) =>
-                      setTransportForm((p) => ({ ...p, TransporterPhone: e.target.value }))
-                    }
-                    className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
-                  />
-                </div>
+              <span className="absolute inset-0 flex items-center justify-between px-2 text-xs font-medium text-white pointer-events-none">
+                <span>Yes</span>
+                <span>No</span>
+              </span>
+            </div>
+          </label>
+        </div> */}
 
-                <div>
-                  <label className="font-semibold text-slate-600 text-xs">Transporter Email</label>
-                  <input
-                    type="email"
-                    value={transportForm.TransporterEmail}
-                    onChange={(e) =>
-                      setTransportForm((p) => ({ ...p, TransporterEmail: e.target.value }))
-                    }
-                    className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
-                  />
-                </div>
 
-                <div>
-                  <label className="font-semibold text-slate-600 text-xs">Vehicle Type</label>
-                  <select
-                    value={transportForm.VTID}
-                    onChange={(e) =>
-                      setTransportForm((p) => ({ ...p, VTID: e.target.value }))
-                    }
-                    className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
-                  >
-                    <option value="">Select Vehicle Type</option>
-                    {vehicleTypes.map((vt, i) => (
-                      <option key={i} value={vt.id}>
-                        {vt.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+        <div className=" place-self-center">
+          <button
+            type="submit"
+            disabled={saving}
+            className="cursor-pointer w-full mt-4 text-white "
+          >
+            <span className="bg-cyan-700 w-fit px-4 py-2 rounded-md text-sm disabled:opacity-60">{saving ? "Submitting..." : "Submit"}</span>
+          </button>
+        </div>
+      </form>
 
-                <div>
-                  <label className="font-semibold text-slate-600 text-xs">Transporter Reg No</label>
-                  <input
-                    type="text"
-                    value={transportForm.TransporterRegNo}
-                    onChange={(e) =>
-                      setTransportForm((p) => ({ ...p, TransporterRegNo: e.target.value }))
-                    }
-                    className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-semibold text-slate-600 text-xs">Vehicle Reg No</label>
-                  <input
-                    type="text"
-                    value={transportForm.VehicleRegNo}
-                    onChange={(e) =>
-                      setTransportForm((p) => ({ ...p, VehicleRegNo: e.target.value }))
-                    }
-                    className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-semibold text-slate-600 text-xs">Receiver Name</label>
-                  <input
-                    type="text"
-                    value={transportForm.ReceiverName}
-                    onChange={(e) =>
-                      setTransportForm((p) => ({ ...p, ReceiverName: e.target.value }))
-                    }
-                    className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-semibold text-slate-600 text-xs">Receiver Address</label>
-                  <input
-                    type="text"
-                    value={transportForm.ReceiverAddress}
-                    onChange={(e) =>
-                      setTransportForm((p) => ({ ...p, ReceiverAddress: e.target.value }))
-                    }
-                    className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-semibold text-slate-600 text-xs">Receiver Auth No</label>
-                  <input
-                    type="text"
-                    value={transportForm.ReceiverAuthNo}
-                    onChange={(e) =>
-                      setTransportForm((p) => ({ ...p, ReceiverAuthNo: e.target.value }))
-                    }
-                    className="border border-gray-200 p-2 mt-1 rounded-lg w-full text-sm"
-                  />
-                </div>
-              </div>
-            </>
-          }
-          <div className=" place-self-center">
-            <button
-              type="submit"
-              disabled={saving}
-              className="cursor-pointer w-full mt-4 text-white "
-            >
-              <span className="bg-cyan-700 w-fit px-4 py-2 rounded-md text-sm disabled:opacity-60">{saving ? "Submitting..." : "Submit"}</span>
-            </button>
-          </div>
-        </form>
-      }
     </div>
   );
 }

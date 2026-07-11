@@ -182,7 +182,7 @@ export default function AuctionApply() {
         });
 
         const rawData = await res2.json()
-        console.log(rawData)
+        // console.log(rawData)
         const data = rawData.map(normalizeData)
         setAllauctionList(data)
 

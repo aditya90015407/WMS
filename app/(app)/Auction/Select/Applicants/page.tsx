@@ -105,7 +105,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
         const id = await decrypt(encoded);
         setIDDID(id)
 
-        const res2 = await fetch("/api/GetData/GetLevel2ApprovedAuctionParticipantsByID", {
+        const res2 = await fetch("/api/GetData/GetStoreApprovedAuctionParticipantsByID", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ID: encoded }),
@@ -197,7 +197,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div className="w-full">
-          <h1 className="text-md text-center my-1 font-semibold text-teal-600">Select / Finalise Vendor</h1>
+          <h1 className="text-md text-center my-1 font-semibold text-teal-600">Select / Finalise Vendor for Auction: {iddid}</h1>
           <h1 className="text-xs text-center font-semibold text-teal-600">Approved Applicants List</h1>
         </div>
         {/* <button

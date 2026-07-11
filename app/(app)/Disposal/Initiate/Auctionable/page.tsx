@@ -309,7 +309,7 @@ export default function AuctionablePage() {
     if (
       !wasteCategory ||
       !selectedWasteId ||
-      selectedUndisposedIds.length === 0
+      selectedUndisposedIds.length === 0 || physicalForm == '' || !physicalForm
     ) {
       alert("Please fill all required fields and select at least one waste item and vendor.");
       return;

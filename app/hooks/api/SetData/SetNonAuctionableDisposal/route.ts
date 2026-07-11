@@ -39,7 +39,7 @@ export async function POST(req: Request) {
 
         const body1 = req.json();
         //  console.log(body1)
-        console.log(result.recordset[0].STATUS)
+        // console.log(result.recordset[0].STATUS)
         const refNo = result.recordset[0].STATUS.split('-')[1];
 
         const wasteIdsCsv = Array.isArray(body.wasteIds) ? body.wasteIds.join(",") : "";

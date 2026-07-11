@@ -557,8 +557,12 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                                         >{row.CreatedBy}
                                         </td>
                                         <td
-                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.Remarks}
+                                            className="whitespace-nowrap px-2 py-1 text-xs text-slate-700 min-w-[400px]"
+                                        >
+                                            <div className="max-h-[150px] overflow-auto whitespace-pre-wrap"
+                                            >
+                                                {row.Remarks ?? "-"}
+                                            </div>
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"

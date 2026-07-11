@@ -13,6 +13,7 @@ type InternalDisposalFormState = {
   disposedTo: string;
   wasteDescription: string;
   totalQuantity: string;
+  remainingQuantity: string;
   physicalForm: string;
   documentProof: File | null;
   munit: string,
@@ -63,6 +64,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     disposedTo: "",
     wasteDescription: "",
     totalQuantity: "",
+    remainingQuantity: "",
     physicalForm: "",
     documentProof: null,
     munit: "",
@@ -138,7 +140,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
         const payload = await res.json();
 
-        console.log(payload)
+        // console.log(payload)
         if (!res.ok || !payload.success) return;
 
         const row = Array.isArray(payload.data) ? payload.data[0] : payload.data;
@@ -151,7 +153,10 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
           row?.Waste ?? row?.WasteDescription ?? row?.WasteName ?? "",
         ).trim();
         const fetchedTotalQty = String(
-          row?.TotalQty ?? row?.Quantity ?? row?.WasteQty ?? "",
+          row?.RemainingQuantity ?? "",
+        ).trim();
+        const fetchedRemainingQty = String(
+          row?.RemainingQuantity ?? "",
         ).trim();
         const fetchedMUnit = String(
           row.MUnit,
@@ -192,7 +197,8 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
           wasteIds: fetchedWasteId ? [fetchedWasteId] : prev.wasteIds,
           disposedTo: fetchedDisposedTo,
           wasteDescription: fetchedWasteDescription,
-          totalQuantity: fetchedTotalQty,
+          totalQuantity: fetchedRemainingQty,
+          remainingQuantity: fetchedRemainingQty,
           physicalForm: fetchedPhysicalForm,
           munit: fetchedMUnit,
           muid: fetchedMUID
@@ -224,6 +230,16 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     e.preventDefault();
 
     setSubmitClicked(true)
+
+
+    // console.log(form.remainingQuantity, ",", form.totalQuantity)
+    if ((form?.totalQuantity!) > form?.remainingQuantity!) {
+      alert("Quantity to be disposed is more than the available quantity")
+      setSubmitClicked(false)
+      return
+    }
+
+
     const roleid = session?.user.roleId
 
     const wasteIdsArr = Array.isArray(form.wasteIds) ? form.wasteIds : [];
@@ -253,8 +269,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     formData.append("DateOfDisposal", String(form.disposalDate ?? today));
     formData.append("AID", String(form.disposedTo));
 
-
-
+    // console.log(formData)
     const res = await fetch("/api/SetData/SetFinalDisposalDetails", {
       method: "POST",
       body: formData,
@@ -334,7 +349,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
               </tr>
             </thead>
             <tbody>
-              <tr>
+              {/* <tr>
                 <td className="border border-slate-200 px-4 py-3 font-medium text-slate-900">
                   Disposal Date
                 </td>
@@ -346,7 +361,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
                     className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-slate-500"
                   />
                 </td>
-              </tr>
+              </tr> */}
 
               <tr>
                 <td className="border border-slate-200 px-4 py-3 font-medium text-slate-900">
@@ -376,6 +391,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
                 </td>
                 <td className="border border-slate-200 px-4 py-3">
                   <select
+                    required
                     value={form.disposedTo}
                     onChange={(e) => updateField("disposedTo", e.target.value)}
                     className="w-full rounded-md border border-slate-300 px-3 py-2 outline-none focus:border-slate-500"
@@ -406,21 +422,41 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
               <tr>
                 <td className="border border-slate-200 px-4 py-3 font-medium text-slate-900">
-                  Total Quantity
+                  Quantity to be Disposed
                 </td>
                 <td className="border border-slate-200 px-4 py-3">
-                  {/* <input
-                    readOnly
-                    value={form.totalQuantity}{form.munit}
-                    placeholder="Quantity shall be automatically add up from ID selection"
-                    className="w-full rounded-md border border-slate-200 bg-slate-100 px-3 py-2 text-slate-700"
-                  /> */}
-
+                  <input
+                    value={form.totalQuantity}
+                    onChange={(e) => updateField("totalQuantity", e.target.value)}
+                    placeholder="Wuantity to be disposed"
+                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700"
+                  />
+                  {/* 
                   <div
                     className="w-full rounded-md border border-slate-200 bg-slate-100 px-3 py-2 text-slate-700"
                   >
                     {form.totalQuantity}{" "}{form.munit}
-                  </div>
+                  </div> */}
+                </td>
+              </tr>
+
+              <tr>
+                <td className="border border-slate-200 px-4 py-3 font-medium text-slate-900">
+                  Unit of Measurement
+                </td>
+                <td className="border border-slate-200 px-4 py-3">
+                  <input
+                    readOnly
+                    value={form.munit}
+                    placeholder="Quantity shall be automatically add up from ID selection"
+                    className="w-full rounded-md border border-slate-200 bg-slate-100 px-3 py-2 text-slate-700"
+                  />
+                  {/* 
+                  <div
+                    className="w-full rounded-md border border-slate-200 bg-slate-100 px-3 py-2 text-slate-700"
+                  >
+                    {form.totalQuantity}{" "}{form.munit}
+                  </div> */}
                 </td>
               </tr>
 

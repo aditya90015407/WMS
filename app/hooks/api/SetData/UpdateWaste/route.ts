@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const WasteQty = body.WasteQty
     const TargetDate = body.TargetDate
 
-    console.log(body, CrBy)
+    // console.log(body, CrBy)
 
     const result = await pool.request()
         .input("FLAG", "GWT-UPD")
