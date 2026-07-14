@@ -374,10 +374,9 @@ export default function WasteApprove() {
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Total Qty</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                  >Remarks</th>
-                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Posted On</th>
-
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                  >Remarks</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -411,11 +410,15 @@ export default function WasteApprove() {
                     </td>
                     <td
                       className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                    >{row.Remarks}
+                    >{row.CrDt?.split("T")[0]}
                     </td>
                     <td
-                      className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                    >{row.CrDt?.split("T")[0]}
+                      className="whitespace-nowrap px-2 py-1 text-xs text-slate-700 min-w-[150px]"
+                    >
+                      <div className="max-h-[150px] overflow-auto whitespace-pre-wrap"
+                      >
+                        {row.Remarks ?? "-"}
+                      </div>
                     </td>
                   </tr>
                 ))}

@@ -320,6 +320,7 @@ export default function AuctionablePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          UID: selectedPlantUnit,
           WCID: wasteCategory,
           WID: selectedWasteId,
           TotalQty: totalSelectedQty,

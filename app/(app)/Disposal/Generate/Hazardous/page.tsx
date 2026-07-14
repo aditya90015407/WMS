@@ -35,81 +35,87 @@ type RowDef = {
 };
 
 
-
-
-
-
-const rows: RowDef[] = [
-  { key: "wasteIds", field: "Disposal ID", type: "auto", hint: "Comma separated IDs", required: true },
-  // { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal", required: true },
-  {
-    key: "senderNameAddress",
-    field: "Sender's Unit *",
-    // field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
-    type: "select", required: true
-    //  options: [
-    //     "JSL (IND-IV-HW-587/6854)",
-    //     "JCL (IND-IV-HW-1225/6852)",
-    //     "JUSL (IND-IV-HW-1224/6858)",
-    //     "JFL (Not Available)",
-    //   ],
-  },
-
-  // {
-  //   key: "senderAuthNo",
-  //   field: "Sender Authorization No.",
-  //   type: "select",
-  //   options: [
-  //     "JSL (IND-IV-HW-587/6854)",
-  //     "JCL (IND-IV-HW-1225/6852)",
-  //     "JUSL (IND-IV-HW-1224/6858)",
-  //     "JFL (Not Available)",
-  //   ],
-  // },
-  { key: "manifestNo", field: "Manifest Document No.", type: "auto" },
-  { key: "transporterName", field: "Transporter Name  *", type: "textarea", hint: "Enter transporter name ", required: true },
-  { key: "transporterAddress", field: "Transporter Address *", type: "textarea", hint: "Enter transporter full address", required: true },
-  { key: "transporterPhone", field: "Transporter Phone No. *", type: "phone", hint: "Transporter Phone ", required: true },
-  { key: "transporterEmail", field: "Transporter Email *", type: "email", hint: "Transporter Email", required: true },
-  {
-    key: "vehicleType",
-    field: "Type of Vehicle *",
-    type: "select",
-    options: ["1|Truck", "2|Tanker", "3|Special Vehicle"],
-    required: true
-  },
-  { key: "transporterRegNo", field: "Transporter Registration No. *", type: "text", hint: "Transporter registration number", required: true },
-  { key: "vehicleRegNo", field: "Vehicle Registration No. *", type: "text", hint: "Enter vehicle number", required: true },
-  { key: "receiverName", field: "Receiver Name *", type: "text", hint: "Enter receiver name", required: true },
-  { key: "receiverAddress", field: "Address *", type: "textarea", hint: "Enter receiver address", required: true },
-  { key: "receiverAuthNo", field: "Receiver Authorization No. *", type: "text", hint: "Enter receiver authorization number", required: true },
-  { key: "Waste", field: "Waste Description", type: "auto", required: true },
-  { key: "totalQty", field: "Quantity to be Disposed", type: "text", required: true },
-  { key: "unit", field: "Unit Of Measurement", type: "auto", required: true },
-  { key: "containers", field: "No. of Containers *", type: "number", hint: "Enter No. of containers" },
-  {
-    key: "physicalForm",
-    field: "Physical Form *",
-    type: "select",
-    options: ["1|Solid", "2|Liquid", "3|Sludge", "4|Semisolid", "5|Oily", "6|Tarry", "7|Slurry", "9|Fines"],
-    required: true
-  },
-  { key: "specialHandling", field: "Special handling Instruction", type: "textarea", hint: "Enter handling notes (if applicable)" },
-  // { key: "senderCertificate", field: "Sender's certificate", type: "checkbox" },
-  // { key: "senderSignDate", field: "Name and Stamp (Sender)", type: "signature-date" },
-  // { key: "transporterAck", field: "Transporter acknowledgement of receipt of waste", type: "checkbox" },
-  // { key: "transporterSignDate", field: "Name and Stamp (Transporter)", type: "signature-date" },
-  // { key: "receiverCert", field: "Receiver certification for receipt of hazardous and other waste", type: "checkbox" },
-  // { key: "receiverSignDate", field: "Name and Stamp (Receiver)", type: "signature-date" },
-  { key: "form8form9", field: "Hard copy of Form-8 and Form-9 submitted to transporter", type: "checkbox" },
-  { key: "salePoSoDoc", field: "Document for Sale PO/SO for external disposal", type: "file" },
-  { key: "finalPartyDoc", field: "Final party document intact as provided prior for verification", type: "file" },
-];
 type Option = { id: string; name: string };
 
 export default function DisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string, disposalType?: string }> }) {
   const router = useRouter();
 
+
+
+  const { data: session } = useSession()
+
+
+  const rows: RowDef[] = [
+    { key: "wasteIds", field: "Disposal ID", type: "auto", hint: "Comma separated IDs", required: true },
+    // { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal", required: true },
+    {
+      key: "senderNameAddress",
+      field: "Sender's Unit *",
+      // field: "Sender's Name & Mailing Address (including phone no. and e-mail)",
+      type: "select", required: true
+      //  options: [
+      //     "JSL (IND-IV-HW-587/6854)",
+      //     "JCL (IND-IV-HW-1225/6852)",
+      //     "JUSL (IND-IV-HW-1224/6858)",
+      //     "JFL (Not Available)",
+      //   ],
+    },
+
+    // {
+    //   key: "senderAuthNo",
+    //   field: "Sender Authorization No.",
+    //   type: "select",
+    //   options: [
+    //     "JSL (IND-IV-HW-587/6854)",
+    //     "JCL (IND-IV-HW-1225/6852)",
+    //     "JUSL (IND-IV-HW-1224/6858)",
+    //     "JFL (Not Available)",
+    //   ],
+    // },
+    // { key: "manifestNo", field: "Manifest Document No.", type: "auto" },
+    { key: "transporterName", field: "Transporter Name  *", type: "textarea", hint: "Enter transporter name ", required: true },
+    { key: "transporterAddress", field: "Transporter Address *", type: "textarea", hint: "Enter transporter full address", required: true },
+    { key: "transporterPhone", field: "Transporter Phone No. *", type: "phone", hint: "Transporter Phone ", required: true },
+    { key: "transporterEmail", field: "Transporter Email *", type: "email", hint: "Transporter Email", required: true },
+    {
+      key: "vehicleType",
+      field: "Type of Vehicle *",
+      type: "select",
+      options: ["1|Truck", "2|Tanker", "3|Special Vehicle"],
+      required: true
+    },
+    { key: "transporterRegNo", field: "Transporter Registration No. *", type: "text", hint: "Transporter registration number", required: true },
+    { key: "vehicleRegNo", field: "Vehicle Registration No. *", type: "text", hint: "Enter vehicle number", required: true },
+    { key: "receiverName", field: "Receiver Name *", type: "text", hint: "Enter receiver name", required: true },
+    { key: "receiverAddress", field: "Address *", type: "textarea", hint: "Enter receiver address", required: true },
+    { key: "receiverAuthNo", field: "Receiver Authorization No. *", type: "text", hint: "Enter receiver authorization number", required: true },
+    { key: "Waste", field: "Waste Description", type: "auto", required: true },
+    { key: "remainingQty", field: "Remaining Quantity", type: "auto", required: true },
+    { key: "totalQty", field: "Quantity to be Disposed *", type: "text", required: true },
+    { key: "unit", field: "Unit Of Measurement", type: "auto", required: true },
+    { key: "containers", field: "No. of Containers *", type: "number", hint: "Enter No. of containers" },
+    {
+      key: "physicalForm",
+      field: "Physical Form *",
+      type: "select",
+      options: ["1|Solid", "2|Liquid", "3|Sludge", "4|Semisolid", "5|Oily", "6|Tarry", "7|Slurry", "9|Fines"],
+      required: true
+    },
+    { key: "specialHandling", field: "Special handling Instruction", type: "textarea", hint: "Enter handling notes (if applicable)" },
+    // { key: "senderCertificate", field: "Sender's certificate", type: "checkbox" },
+    // { key: "senderSignDate", field: "Name and Stamp (Sender)", type: "signature-date" },
+    // { key: "transporterAck", field: "Transporter acknowledgement of receipt of waste", type: "checkbox" },
+    // { key: "transporterSignDate", field: "Name and Stamp (Transporter)", type: "signature-date" },
+    // { key: "receiverCert", field: "Receiver certification for receipt of hazardous and other waste", type: "checkbox" },
+    // { key: "receiverSignDate", field: "Name and Stamp (Receiver)", type: "signature-date" },
+    { key: "form8form9", field: "Hard copy of Form-8 and Form-9 submitted to transporter", type: "checkbox" },
+    { key: "salePoSoDoc", field: "Document for Sale PO/SO for external disposal", type: "file" },
+    ...(session?.user.roleId != '7' ? [{
+      key: "finalPartyDoc",
+      field: "Final party document intact as provided prior for verification",
+      type: "file" as FieldType,
+    }] : []),
+  ];
 
   const [values, setValues] = useState<Record<string, string | string[] | boolean | File | null>>({
     manifestNo: "",
@@ -273,7 +279,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           Waste: String(row?.Waste ?? ""),
-          totalQty: `${String(row?.RemainingQuantity ?? "")}`,
+          totalQty: '',
           remainingQty: String(row.RemainingQuantity),
           unit: String(row?.MUnit ?? ""),
           // dateOfDisposal: String(row?.AuctionDate ?? "")
@@ -296,10 +302,6 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     setValues((prev) => ({ ...prev, [key]: value }));
 
   };
-
-
-
-  const { data: session } = useSession()
 
   const [submitClicked, setSubmitClicked] = useState(false)
 

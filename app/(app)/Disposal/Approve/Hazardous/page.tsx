@@ -271,9 +271,9 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
         setSaving(true);
 
 
-        if (stsCode == 3) {
-            UpdateDisposedWaste()
-        }
+        // if (stsCode == 3) {
+        //     UpdateDisposedWaste()
+        // }
 
         try {
             const res = await fetch("/api/SetData/SetDisposalApproval", {

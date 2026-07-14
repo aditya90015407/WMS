@@ -5,6 +5,7 @@ import { useSearchParams, useRouter, redirect } from "next/navigation";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import decrypt from "@/components/Decrypt";
+import { totalmem } from "os";
 
 type FieldType =
   | "date"
@@ -32,39 +33,7 @@ type RowDef = {
   required?: boolean
 };
 
-const rows: RowDef[] = [
-  // { key: "disposalDate", field: "Date", type: "date", hint: "Date of disposal (within 90 days of generation)" },
-  { key: "wasteIds", field: "Disposal ID", type: "multi-select" },
-  // { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal" },
-  {
-    key: "senderNameAddress",
-    field: "Sender's Unit *",
-    type: "select",
-  },
-  // { key: "manifestNo", field: "Manifest Document No.", type: "auto" },
-  { key: "transporterName", field: "Transporter Name  *", type: "textarea", hint: "Enter transporter name ", required: true },
-  { key: "transporterAddress", field: "Transporter Address *", type: "textarea", hint: "Enter transporter full address", required: true },
-  { key: "transporterPhone", field: "Transporter Phone No. *", type: "phone", hint: "Transporter Phone ", required: true },
-  { key: "transporterEmail", field: "Transporter Email *", type: "email", hint: "Transporter Email", required: true },
-  { key: "vehicleType", field: "Type of Vehicle *", type: "select", options: ["1|Truck", "2|Tanker", "3|Special Vehicle"] },
-  { key: "transporterRegNo", field: "Transporter Registration No. *", type: "text", hint: "Enter registration number" },
-  { key: "vehicleRegNo", field: "Vehicle registration No. *", type: "text", hint: "Enter vehicle number" },
-  { key: "receiverName", field: "Receiver Name *", type: "text", hint: "Enter receiver name" },
-  { key: "receiverAddress", field: "Address *", type: "textarea", hint: "Enter receiver address" },
-  { key: "wasteDescription", field: "Waste Description", type: "view" },
-  { key: "totalQty", field: "Quantity to be Disposed", type: "text" },
-  { key: "unit", field: "Unit Of Measurement", type: "auto", required: true },
-  {
-    key: "physicalForm", field: "Physical Form *", type: "select",
-    options: ["1|Solid", "2|Liquid", "3|Sludge", "4|Semisolid", "5|Oily", "6|Tarry", "7|Slurry", "9|Fines"]
-  },
-  { key: "salePoSoDoc", field: "Document for Sale PO/SO to be uploaded for external disposal", type: "file" },
-  {
-    key: "finalPartyDoc",
-    field: "Final party document intact as provided prior for verification",
-    type: "file",
-  },
-];
+
 
 export default function DisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string, disposalType?: string }> }) {
   const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
@@ -72,6 +41,48 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   // const iddid = params.id;
   // const disposalType = params.disposalType;
 
+  const { data: session } = useSession()
+
+
+  const rows: RowDef[] = [
+    // { key: "disposalDate", field: "Date", type: "date", hint: "Date of disposal (within 90 days of generation)" },
+    { key: "wasteIds", field: "Disposal ID", type: "multi-select" },
+    // { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal" },
+    {
+      key: "senderNameAddress",
+      field: "Sender's Unit *",
+      type: "select",
+    },
+    // { key: "manifestNo", field: "Manifest Document No.", type: "auto" },
+    { key: "transporterName", field: "Transporter Name  *", type: "textarea", hint: "Enter transporter name ", required: true },
+    { key: "transporterAddress", field: "Transporter Address *", type: "textarea", hint: "Enter transporter full address", required: true },
+    { key: "transporterPhone", field: "Transporter Phone No. *", type: "phone", hint: "Transporter Phone ", required: true },
+    { key: "transporterEmail", field: "Transporter Email *", type: "email", hint: "Transporter Email", required: true },
+    { key: "vehicleType", field: "Type of Vehicle *", type: "select", options: ["1|Truck", "2|Tanker", "3|Special Vehicle"] },
+    { key: "transporterRegNo", field: "Transporter Registration No. *", type: "text", hint: "Enter registration number" },
+    { key: "vehicleRegNo", field: "Vehicle registration No. *", type: "text", hint: "Enter vehicle number" },
+    { key: "receiverName", field: "Receiver Name *", type: "text", hint: "Enter receiver name" },
+    { key: "receiverAddress", field: "Address *", type: "textarea", hint: "Enter receiver address" },
+    { key: "wasteDescription", field: "Waste Description", type: "view" },
+    { key: "remainingQty", field: "Remaining Quantity", type: "auto", required: true },
+    { key: "totalQty", field: "Quantity to be Disposed *", type: "text" },
+    { key: "unit", field: "Unit Of Measurement", type: "auto", required: true },
+    {
+      key: "physicalForm", field: "Physical Form *", type: "select",
+      options: ["1|Solid", "2|Liquid", "3|Sludge", "4|Semisolid", "5|Oily", "6|Tarry", "7|Slurry", "9|Fines"]
+    },
+    { key: "salePoSoDoc", field: "Document for Sale PO/SO to be uploaded for external disposal", type: "file" },
+    ...(session?.user.roleId != '7' ? [{
+      key: "finalPartyDoc",
+      field: "Final party document intact as provided prior for verification",
+      type: "file" as FieldType,
+    }] : []),
+    // {
+    //   key: "finalPartyDoc",
+    //   field: "Final party document intact as provided prior for verification",
+    //   type: "file",
+    // },
+  ];
 
   const encryptedIddid = params.id;
   const encryptedDisposalType = params.disposalType;
@@ -210,7 +221,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           vehicleType: String(row?.VTID ?? ""),
           physicalForm: String(row?.PSID ?? ""),
           wasteDescription: String(row?.Waste ?? ""),
-          totalQty: `${String(row?.RemainingQuantity ?? "")}`,
+          totalQty: '',
           remainingQty: String(row.RemainingQuantity),
           unit: String(row?.MUnit ?? ""),
           // dateOfDisposal: String(row?.AuctionDate ?? "")
@@ -224,10 +235,6 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   }, [iddid, today]);
 
 
-
-  const { data: session } = useSession()
-
-
   const [submitClicked, setSubmitClicked] = useState(false)
 
 
@@ -236,6 +243,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     setSubmitClicked(true)
 
     const roleid = session?.user.roleId
+    // console.log(values.totalQty, values.remainingQty)
 
     if (values.senderNameAddress == "" || values.transporterName == "" || values.transporterAddress == "" ||
       values.transporterEmail == "" || values.vehicleType == "" || values.transporterRegNo == "" ||
@@ -247,14 +255,11 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       return
     }
 
-
-    if ((values?.totalQty!) > values?.remainingQty!) {
+    if (Number(values?.totalQty!) > Number(values?.remainingQty)!) {
       alert("Quantity to be disposed is more than the available quantity")
       setSubmitClicked(false)
       return
     }
-
-
 
     if (roleid == '7' && !values.salePoSoDoc) {
       alert("Please Upload PO/SO Document")

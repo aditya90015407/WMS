@@ -197,7 +197,7 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
           wasteIds: fetchedWasteId ? [fetchedWasteId] : prev.wasteIds,
           disposedTo: fetchedDisposedTo,
           wasteDescription: fetchedWasteDescription,
-          totalQuantity: fetchedRemainingQty,
+          totalQuantity: '',
           remainingQuantity: fetchedRemainingQty,
           physicalForm: fetchedPhysicalForm,
           munit: fetchedMUnit,
@@ -232,8 +232,8 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
     setSubmitClicked(true)
 
 
-    // console.log(form.remainingQuantity, ",", form.totalQuantity)
-    if ((form?.totalQuantity!) > form?.remainingQuantity!) {
+    console.log(form.remainingQuantity, ",", form.totalQuantity)
+    if (Number(form?.totalQuantity!) > Number(form?.remainingQuantity!)) {
       alert("Quantity to be disposed is more than the available quantity")
       setSubmitClicked(false)
       return
@@ -422,13 +422,35 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
               <tr>
                 <td className="border border-slate-200 px-4 py-3 font-medium text-slate-900">
+                  Remaining Quantity
+                </td>
+                <td className="border border-slate-200 px-4 py-3">
+                  <input
+                    readOnly
+                    value={form.remainingQuantity}
+                    // onChange={(e) => updateField("totalQuantity", e.target.value)}
+                    placeholder="Quantity to be disposed"
+                    className="w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700"
+                  />
+                  {/* 
+                  <div
+                    className="w-full rounded-md border border-slate-200 bg-slate-100 px-3 py-2 text-slate-700"
+                  >
+                    {form.totalQuantity}{" "}{form.munit}
+                  </div> */}
+                </td>
+              </tr>
+
+              <tr>
+                <td className="border border-slate-200 px-4 py-3 font-medium text-slate-900">
                   Quantity to be Disposed
                 </td>
                 <td className="border border-slate-200 px-4 py-3">
                   <input
+                    required
                     value={form.totalQuantity}
                     onChange={(e) => updateField("totalQuantity", e.target.value)}
-                    placeholder="Wuantity to be disposed"
+                    placeholder="Quantity to be disposed"
                     className="w-full rounded-md border border-slate-200 px-3 py-2 text-slate-700"
                   />
                   {/* 

@@ -62,14 +62,17 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         ApproverAcceptance: string
         ApproverActionDate: string
         ApproverID: string
+        ApproverName: string
         AdminAcceptance: string
         AdminRemarks: string
         AdminActionDate: string
         AdminID: string
+        AdminName: string
         StoreAcceptance: string
         StoreRemarks: string
         StoreActionDate: string
         StoreApproverID: string
+        StoreApproverName: string
     }
 
 
@@ -281,7 +284,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Approver Remarks</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Approver ID</th>
+                                    >Approver Name</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Approver Action Date</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
@@ -289,7 +292,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Admin Remarks</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Admin ID</th>
+                                    >Admin Name</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Admin Action Date</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
@@ -297,7 +300,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Store Remarks</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Store Approver ID</th>
+                                    >Store Approver Name</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Store Action Date</th>
                                 </tr>
@@ -375,7 +378,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.ApproverID}
+                                        >{row.ApproverName}
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
@@ -395,7 +398,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.AdminID}
+                                        >{row.AdminName}
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
@@ -415,7 +418,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                                        >{row.StoreApproverID}
+                                        >{row.StoreApproverName}
                                         </td>
                                         <td
                                             className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"

@@ -13,6 +13,10 @@ type AuctionList = {
   AuctionDate: string;
   WCID: string;
   WasteCategory: string;
+  Waste: string
+  RemainingQuantity: string
+  TotalQty: string
+  MUnit: string
   Remarks: string;
   CrBy: string;
   CrDt: string;
@@ -93,7 +97,7 @@ export default function DisposalListPage() {
 
       {!loading && !error && currentRows.length > 0 && (
         <>
-          <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
+          <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 max-w-4xl">
             <table className="min-w-full divide-y divide-slate-200">
               <thead className="bg-slate-50">
                 <tr>
@@ -105,6 +109,12 @@ export default function DisposalListPage() {
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                     Waste Category
+                  </th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                    Waste
+                  </th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                    Remaining Qty
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                     Remarks
@@ -158,7 +168,17 @@ export default function DisposalListPage() {
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.ID}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.DisType}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.WasteCategory}</td>
-                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.Remarks}</td>
+                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.Waste}</td>
+                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.RemainingQuantity}{" "}{row.MUnit}</td>
+                    <td
+                      className="whitespace-nowrap px-2 py-1 text-xs text-slate-700 min-w-[150px]"
+                    >
+                      <div className="max-h-[150px] overflow-auto whitespace-pre-wrap"
+                      >
+                        {row.Remarks ?? "-"}
+                      </div>
+                    </td>
+                    {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.Remarks}</td> */}
                     {/* <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                       {row.AuctionDate}
                     </td> */}

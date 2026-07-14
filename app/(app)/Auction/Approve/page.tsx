@@ -87,6 +87,10 @@ export default function WasteApprove() {
     CrBy: string
     CrDt: string
     IsActive: string
+    Waste: string
+    TotalQty: string
+    MUID: string
+    MUnit: string
   }
 
   const [allauctionList, setAllauctionList] = useState<AuctionList[]>([])
@@ -366,10 +370,13 @@ export default function WasteApprove() {
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Waste Category</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                  >Remarks</th>
+                  >Waste</th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                  >Total Qty</th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                   >Posted On</th>
-
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
+                  >Remarks</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
@@ -395,12 +402,25 @@ export default function WasteApprove() {
                     </td>
                     <td
                       className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
-                    >{row.Remarks}
+                    >{row.Waste}
+                    </td>
+                    <td
+                      className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
+                    >{row.TotalQty}{" "} {row.MUnit}
                     </td>
                     <td
                       className="whitespace-nowrap px-2 py-1 text-xs text-slate-700"
                     >{row.CrDt?.split("T")[0]}
                     </td>
+                    <td
+                      className="whitespace-nowrap px-2 py-1 text-xs text-slate-700 min-w-[150px]"
+                    >
+                      <div className="max-h-[150px] overflow-auto whitespace-pre-wrap"
+                      >
+                        {row.Remarks ?? "-"}
+                      </div>
+                    </td>
+
                   </tr>
                 ))}
                 {/* {pagedRows.map((row, index) => (

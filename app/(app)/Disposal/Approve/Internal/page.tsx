@@ -272,9 +272,9 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
 
 
 
-        if (stsCode == 3) {
-            UpdateDisposedWaste()
-        }
+        // if (stsCode == 3) {
+        //     UpdateDisposedWaste()
+        // }
 
         try {
             const res = await fetch("/api/SetData/SetDisposalApproval", {

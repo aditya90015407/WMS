@@ -22,6 +22,7 @@ export async function POST(req: Request) {
       throw new Error("DB Not Connected");
     }
 
+    const UID = body.UID
     const wcid = String(body.WCID ?? "").trim();
     const wid = String(body.WID ?? "").trim();
     const totalQty = Number(body.TotalQty ?? 0);
@@ -37,6 +38,7 @@ export async function POST(req: Request) {
     const result = await pool
       .request()
       .input("FLAG", sql.NVarChar(50), "InitiateDisposal")
+      .input("UID", UID)
       .input("WCID", sql.NVarChar(50), wcid)
       .input("WID", sql.NVarChar(50), wid)
       .input("TotalQty", sql.Decimal(18, 3), totalQty)

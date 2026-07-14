@@ -222,9 +222,9 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
         setSaving(true);
 
 
-        if (stsCode == 3) {
-            UpdateDisposedWaste()
-        }
+        // if (stsCode == 3) {
+        //     UpdateDisposedWaste()
+        // }
 
         try {
             // console.log("Saving:", {
