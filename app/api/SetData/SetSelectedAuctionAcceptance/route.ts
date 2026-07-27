@@ -7,12 +7,17 @@ import { authOptions } from "../../auth/[...nextauth]/options";
 export async function POST(req: Request) {
 
     try {
+        const session = await getServerSession(authOptions);
+
+        if (!session) {
+            return NextResponse.json("Invalid Request")
+        }
+
         const pool = await getConnection()
         if (!pool || !pool.connected) {
             throw new Error("Could Not Connect to DataBase")
         }
 
-        const session = await getServerSession(authOptions)
         const EmpCode = session?.user.id
 
         const {

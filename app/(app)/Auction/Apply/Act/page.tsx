@@ -33,6 +33,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
 
   const { data: session } = useSession();
   const empCode = session?.user?.id ?? "";
+  const empName = session?.user?.username ?? "";
 
   const [ctoFile, setCtoFile] = useState<File | null>(null);
   const [hwAuthFile, setHwAuthFile] = useState<File | null>(null);
@@ -45,6 +46,8 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
 
   const [auctionWaste, setAuctionWaste] = useState("");
   const [auctionWasteQty, setAuctionWasteQty] = useState("");
+
+  // const [VID, setVID] = useState("")
 
 
   useEffect(() => {
@@ -61,6 +64,7 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
       });
 
       const data = await res.json();
+      // setVID(data[0].VID)
       // console.log("Auction details response:", data);
     };
 
@@ -238,6 +242,9 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
 
     // console.log(auctionId)
 
+    const id = await params.id
+    const IDDID = await decrypt(id!)
+
     const headerRes = await fetch("/api/SetData/InsertAuctionParticipantsHeader", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -283,6 +290,19 @@ export default function AuctionApply({ searchParams }: { searchParams: Promise<{
     //   setShowTransportForm(true);
     //   setTransportForm((prev) => ({ ...prev, APID: apid }));
     // }
+
+
+    const resEmail = await fetch("/api/SendMail/Auction/Apply", {
+      method: "POST",
+      body: JSON.stringify({
+        IDDID: IDDID,
+        VendorCode: empCode,
+        VendorName: empName,
+        Waste: auctionDetails?.Waste,
+        TotalQty: auctionDetails?.TotalQty,
+        MUnit: auctionDetails?.MUnit
+      })
+    })
 
     if (headerRes.ok && lineRes.ok) {
       toast.success("Saved successfully!");

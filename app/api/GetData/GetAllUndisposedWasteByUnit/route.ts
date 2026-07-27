@@ -6,8 +6,17 @@ import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function POST(req: Request) {
   try {
+    const session = await getServerSession(authOptions);
 
-    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json("Invalid Request")
+    }
+
+    var EmpCode = "", EmpName = ""
+    if (session) {
+      EmpCode = session?.user?.id || "";
+      EmpName = session?.user?.username || "";
+    }
     const DeptID = session?.user.deptId
 
     const body = await req.json();

@@ -262,6 +262,17 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
         // console.log(data)
 
 
+        const resEmail = await fetch("/api/SendMail/RevertedWasteUpdated", {
+            method: "POST",
+            body: JSON.stringify({
+                "WRID": wasteData?.ID,
+                "DID": wasteData?.DID,
+                "WasteQty": wasteData?.WasteQty,
+                "MUnit": wasteData?.MUnit,
+                "Waste": wasteData?.Waste,
+            })
+        })
+
 
         if (data.STATUS == 'Updated Successfully !') {
             toast.success("Updated Successfully !")
@@ -590,7 +601,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                     submitClicked && <div
                         className="text-sm cursor-pointer px-4 py-1.5 w-fit rounded-md bg-green-700 text-white hover:bg-green-800"
                     >
-                        Submitting
+                        Submitting ...
                     </div>
                 }
             </form>

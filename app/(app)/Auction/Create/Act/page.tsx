@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import decrypt from "@/components/Decrypt";
+import { rows } from "mssql";
 
 
 
@@ -440,27 +441,40 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
                 return;
             }
 
-            const vendorInsertResults = await Promise.all(
-                selectedVendorIds.map(async (vendorId) => {
-                    const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            IDDID: iddid,
-                            VID: vendorId,
-                        }),
-                    });
+            for (const VendorId of selectedVendorIds) {
+                const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        IDDID: iddid,
+                        VID: VendorId,
+                    }),
+                });
 
-                    const vendorData = await vendorRes.json();
-                    // console.log("InsertAuctionVendorDetails response:", vendorData);
+                const vendorData = await vendorRes.json();
+                // console.log("InsertAuctionVendorDetails response:", vendorData);
 
-                    if (!vendorRes.ok || !vendorData.success) {
-                        throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
-                    }
+                if (!vendorRes.ok || !vendorData.success) {
+                    throw new Error(vendorData.message || `Failed to insert vendor ${VendorId}`);
+                }
 
-                    return vendorData;
-                }),
-            );
+                const resEmail = await fetch("/api/SendMail/Auction/Create", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        IDDID: iddid,
+                        VID: VendorId,
+                        AuctionDate: auctionDate,
+                        Waste: disposalDetails?.Waste,
+                        TotalQty: disposalDetails?.TotalQty,
+                        MUnit: disposalDetails?.MUnit,
+                    })
+                })
+                // const data = await resEmail.json()
+
+                // console.log(data)
+
+            }
+
 
             // console.log("Vendor insert results:", vendorInsertResults);
             alert(data.message || "Saved Successfully");

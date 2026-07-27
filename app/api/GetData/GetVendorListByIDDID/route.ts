@@ -1,8 +1,16 @@
 import { getConnection } from "@/lib/dbConnect";
 import { NextRequest, NextResponse } from "next/server";
 import sql from "mssql";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 export async function POST(req: Request) {
     try {
+        const session = await getServerSession(authOptions);
+
+        if (!session) {
+            return NextResponse.json("Invalid Request")
+        }
+
         const pool = await getConnection();
         const { id } = await req.json();
         // console.log(id)

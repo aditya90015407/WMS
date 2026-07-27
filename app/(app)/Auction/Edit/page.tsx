@@ -15,6 +15,7 @@ type DisposalRow = {
   Status?: string;
   CrDt?: string;
   MUnit: string
+  AuctionDate: string
 };
 
 function normalizeData<T extends Record<string, unknown>>(row: T) {
@@ -159,8 +160,11 @@ export default function DisposalEditPage() {
                   {/* <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
                     Original ID
                   </th> */}
-                  <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                  {/* <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
                     Disposal Type
+                  </th> */}
+                  <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
+                    Auction Date
                   </th>
                   <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-700">
                     Waste Category
@@ -190,8 +194,11 @@ export default function DisposalEditPage() {
                     {/* <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.IDDID ?? "")}
                     </td> */}
-                    <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
+                    {/* <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.DisType ?? "")}
+                    </td> */}
+                    <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
+                      {String(row.AuctionDate ?? "")}
                     </td>
                     <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-700">
                       {String(row.WasteCategory ?? "")}

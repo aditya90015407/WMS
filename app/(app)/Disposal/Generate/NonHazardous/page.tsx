@@ -74,7 +74,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     { key: "salePoSoDoc", field: "Document for Sale PO/SO to be uploaded for external disposal", type: "file" },
     ...(session?.user.roleId != '7' ? [{
       key: "finalPartyDoc",
-      field: "Final party document intact as provided prior for verification",
+      field: "Final party document intact as provided prior for verification *",
       type: "file" as FieldType,
     }] : []),
     // {
@@ -172,6 +172,19 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     void loadUnits();
   }, []);
 
+
+
+  type SelectedVendorDetails = {
+    VendorCode: string
+    VendorName: string
+    EMAIL: string
+    VendorContact: string
+  }
+
+  const [selectedVendorDetails, setSelectedVendorDetails] = useState<SelectedVendorDetails>()
+
+
+
   useEffect(() => {
     const loadDetails = async () => {
       if (!iddid) return;
@@ -218,7 +231,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           receiverName: String(row?.ReceiverName ?? ""),
           receiverAddress: String(row?.ReceiverAddress ?? ""),
           receiverAuthNo: String(row?.ReceiverAuthNo ?? " "),
-          vehicleType: String(row?.VTID ?? ""),
+          vehicleType: '',
           physicalForm: String(row?.PSID ?? ""),
           wasteDescription: String(row?.Waste ?? ""),
           totalQty: '',
@@ -226,6 +239,11 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           unit: String(row?.MUnit ?? ""),
           // dateOfDisposal: String(row?.AuctionDate ?? "")
         }));
+
+
+
+        setSelectedVendorDetails(row)
+
       } catch (err) {
         console.error("Failed to load non-hazardous form details", err);
       }
@@ -251,6 +269,12 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       values.totalQty == "" || values.physicalForm == ""
     ) {
       alert("Please fill all required fields (marked with *) ")
+      setSubmitClicked(false)
+      return
+    }
+
+    if (isNaN(Number(values.totalQty))) {
+      alert("Please fill valid quantity")
       setSubmitClicked(false)
       return
     }
@@ -335,7 +359,8 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
     // console.log(result);
     const statusText = String(result?.data?.[0]?.STATUS ?? "").trim();
-    const fddid = statusText.split("-").pop()?.trim() ?? "";
+    const fddid = statusText.split("-")[1].split(",")[0]?.trim() ?? "";
+    const refNo = statusText.split(":").pop()?.trim() ?? "";
 
     alert("Saved successfully");
 
@@ -380,6 +405,20 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
         return;
       }
     }
+
+
+    const resEmail = await fetch("/api/SendMail/GenerateFinalDisposal", {
+      method: "POST",
+      body: JSON.stringify({
+        FDDID: fddid,
+        RefNo: refNo,
+        IDDID: iddid,
+        Waste: String(values.wasteDescription),
+        TotalQty: String(values.totalQty),
+        MUnit: String(values.unit),
+      })
+    })
+
     redirect("./")
 
     setSubmitClicked(false)
@@ -650,6 +689,19 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
             </tbody>
           </table>
         </div>
+
+
+        {session && session.user.roleId == '7' &&
+          <div className="border border-gray-100 my-3 text-sm p-2">
+            <div className="text-center font-semibold text-pink-600 ">Selected Vendor Details</div>
+            <div className="p-2 grid grid-cols-3 gap-y-3 mt-1">
+              <div className="font-semibold text-slate-500 text-xs">Name: <span className="text-slate-700 font-normal text-sm px-2">{selectedVendorDetails?.VendorName}</span></div>
+              <div className="font-semibold text-slate-500 text-xs">Vendor Code: <span className="text-slate-700 font-normal text-sm px-2">{selectedVendorDetails?.VendorCode}</span></div>
+              <div className="font-semibold text-slate-500 text-xs">Email: <span className="text-slate-700 font-normal text-sm px-2">{selectedVendorDetails?.EMAIL}</span></div>
+              <div className="font-semibold text-slate-500 text-xs col-span-3">Contact Details: <span className="text-slate-700 font-normal text-sm px-2">{selectedVendorDetails?.VendorContact}</span></div>
+            </div>
+          </div>
+        }
 
         {
           !submitClicked &&

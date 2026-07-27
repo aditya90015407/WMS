@@ -312,6 +312,7 @@ export default function AuctionablePage() {
       selectedUndisposedIds.length === 0 || physicalForm == '' || !physicalForm
     ) {
       alert("Please fill all required fields and select at least one waste item and vendor.");
+      setSubmitClicked(false)
       return;
     }
 
@@ -336,12 +337,14 @@ export default function AuctionablePage() {
 
       if (!res.ok || !data.success) {
         alert(data.message || "Save Failed");
+        setSubmitClicked(false)
         return;
       }
 
       const iddid = data?.data?.WRID;
       if (!iddid) {
         alert("IDDID missing in InitiateDisposal response");
+        setSubmitClicked(false)
         return;
       }
 
@@ -359,6 +362,7 @@ export default function AuctionablePage() {
 
       if (!res2.ok || !data2.success) {
         alert(data2.message || "InsertAuctionWasteDetails failed");
+        setSubmitClicked(false)
         return;
       }
 
@@ -385,6 +389,17 @@ export default function AuctionablePage() {
       // );
 
       // console.log("Vendor insert results:", vendorInsertResults);
+
+      const resEmail = await fetch("/api/SendMail/InitiateDisposal/Auctionable", {
+        method: "POST",
+        body: JSON.stringify({
+          IDDID: iddid,
+          Waste: waste,
+          TotalQty: totalSelectedQty,
+          MUID: undisposedOptions[0].muid,
+        })
+      })
+
       alert(data.message || "Saved Successfully");
 
       router.back()
@@ -575,6 +590,7 @@ export default function AuctionablePage() {
           <div className="text-sm">
             <label className="block text-xs font-semibold text-slate-700">Physical Form</label>
             <select
+              required
               value={physicalForm}
               onChange={(e) => setPhysicalForm(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"

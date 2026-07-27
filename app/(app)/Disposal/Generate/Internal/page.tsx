@@ -231,8 +231,13 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
     setSubmitClicked(true)
 
+    if (isNaN(Number(form.totalQuantity))) {
+      alert("Please fill valid quantity")
+      setSubmitClicked(false)
+      return
+    }
 
-    console.log(form.remainingQuantity, ",", form.totalQuantity)
+    // console.log(form.remainingQuantity, ",", form.totalQuantity)
     if (Number(form?.totalQuantity!) > Number(form?.remainingQuantity!)) {
       alert("Quantity to be disposed is more than the available quantity")
       setSubmitClicked(false)
@@ -283,7 +288,8 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
 
 
     const statusText = String(result?.data?.[0]?.STATUS ?? "").trim();
-    const fddid = statusText.split("-").pop()?.trim() ?? "";
+    const fddid = statusText.split("-")[1].split(",")[0]?.trim() ?? "";
+    const refNo = statusText.split(":").pop()?.trim() ?? "";
 
 
 
@@ -314,6 +320,20 @@ export default function InternalDisposalGeneratePage({ searchParams }: { searchP
       redirect("./")
       return;
     }
+
+    const resEmail = await fetch("/api/SendMail/GenerateFinalDisposal", {
+      method: "POST",
+      body: JSON.stringify({
+        FDDID: fddid,
+        RefNo: refNo,
+        IDDID: iddid,
+        DisposalType: "Internal",
+        AID: form.disposedTo,
+        Waste: form.wasteDescription,
+        TotalQty: form.totalQuantity,
+        MUnit: form.munit,
+      })
+    })
 
     alert("Saved successfully");
     redirect("./")

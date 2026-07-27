@@ -1,11 +1,25 @@
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export async function POST(req: NextRequest) {
     try {
+        const session = await getServerSession(authOptions);
+
+        if (!session) {
+            return NextResponse.json("Invalid Request")
+        }
+
+        var EmpCode = "", EmpName = ""
+        if (session) {
+            EmpCode = session?.user?.id || "";
+            EmpName = session?.user?.username || "";
+        }
+
         const body = await req.json()
         const Attachments = body.Attachments
 

@@ -96,6 +96,7 @@ export default function GenerateForm({
   const [form3Search, setForm3Search] = useState("");
 
   const [selectedWID, setSelectedWID] = useState("")
+  const [selectedWaste, setSelectedWaste] = useState("")
 
   const [physicalStates, setPhysicalStates] = useState<Option[]>([]);
   const [storageMethods, setStorageMethods] = useState<Option[]>([]);
@@ -581,6 +582,7 @@ export default function GenerateForm({
 
   const onWasteChange = async (value: string) => {
     const selectedWaste = availableWaste.find((item) => item.id === value);
+    setSelectedWaste(selectedWaste?.name!)
     const quickReceiverId = String(selectedWaste?.receiverId ?? "").trim();
     // const quickDisposerId = String(selectedWaste?.disposerId ?? "").trim();
     // const hasQuickMapping =
@@ -778,6 +780,15 @@ export default function GenerateForm({
         setMessage(payload.message || payload.error || "Failed to save");
         return;
       }
+
+      const mailPayload = {
+        ...form, selectedWaste
+      }
+
+      const responseMail = await fetch("/api/SendMail/WasteGeneration", {
+        method: "POST",
+        body: JSON.stringify(mailPayload)
+      })
 
       setShowReview(false);
       setMessage(
@@ -1010,6 +1021,7 @@ export default function GenerateForm({
           type="number"
           min="0"
           step="0.01"
+          onWheel={(e) => e.currentTarget.blur()}
           value={form.quantity}
           onChange={(e) => updateField("quantity", e.target.value)}
           className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"

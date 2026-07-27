@@ -7,6 +7,7 @@ import decrypt from "@/components/Decrypt";
 import React from "react";
 type FinalDisposalRow = {
     ID: string | number;
+    DisposalRefNo: string;
     IDDID?: string | number;
     WCID?: string | number;
     DisType?: string;
@@ -133,7 +134,7 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                             <thead className="bg-slate-50">
                                 <tr>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
-                                        Final Disposal ID
+                                        Final Ref No.
                                     </th>
                                     <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                                         Disposal ID
@@ -190,7 +191,7 @@ export default function DisposalApprovePage({ searchParams }: { searchParams: Pr
                                         }}
                                     >
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
-                                            {String(row.ID ?? "")}
+                                            {String(row.DisposalRefNo ?? "")}
                                         </td>
                                         <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">
                                             {String(row.IDDID ?? "")}

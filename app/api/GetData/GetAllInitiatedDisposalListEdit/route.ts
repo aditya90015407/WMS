@@ -5,7 +5,12 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function GET() {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json("Invalid Request")
+    }
+
     const EmpCode = await session?.user?.id
 
     try {

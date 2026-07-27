@@ -248,6 +248,7 @@ export default function NonAuctionablePage() {
 
     if (!wasteCategory || !selectedWasteId) {
       alert("Please select waste category and waste item.");
+      setSubmitClicked(false)
       return;
     }
 
@@ -270,12 +271,14 @@ export default function NonAuctionablePage() {
 
       const data = await res.json();
       if (!res.ok || !data.success) {
+        setSubmitClicked(false)
         return alert(data.message || "Save Failed");
       }
 
-      const wrid = data?.data?.WRID;
-      if (!wrid) {
-        alert("WRID missing from InitiateDisposal response");
+      const IDDID = data?.data?.WRID;
+      if (!IDDID) {
+        alert("IDDID missing from InitiateDisposal response");
+        setSubmitClicked(false)
         return;
       }
 
@@ -283,15 +286,26 @@ export default function NonAuctionablePage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          IDDID: wrid,
+          IDDID: IDDID,
           WRID: selectedUndisposedIds,
         }),
       });
 
       const data2 = await res2.json();
       if (!res2.ok || !data2.success) {
+        setSubmitClicked(false)
         return alert(data2.message || "InsertAuctionWasteDetails failed");
       }
+
+      const resEmail = await fetch("/api/SendMail/InitiateDisposal/NonAuctionable", {
+        method: "POST",
+        body: JSON.stringify({
+          IDDID: IDDID,
+          Waste: waste,
+          TotalQty: totalSelectedQty,
+          MUID: undisposedOptions[0].muid,
+        })
+      })
 
       alert("Saved Successfully");
       router.back()
@@ -443,6 +457,7 @@ export default function NonAuctionablePage() {
             <label className="block text-sm font-semibold text-slate-700">Physical Form</label>
 
             <select
+              required
               value={physicalForm}
               onChange={(e) => setPhysicalForm(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"

@@ -12,7 +12,8 @@ type Field =
 type FinalDisposalRow = Record<string, string | number | boolean | null>;
 
 const fields: Field[] = [
-    ["ID", "Final Disposal Ref No."],
+    ["ID", "Final Disposal ID"],
+    ["DisposalRefNo", "Final Ref No."],
     ["IDDID", "Original Disposal ID"],
     ["IRName", "Disposed To"],
     ["WasteCategory", "Waste Category"],
@@ -271,10 +272,22 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
         // console.log("I am here with row ID", row.ID)
 
 
+        if (remarks == "") {
+            alert("Please fill in the remarks.")
+            setSaving(false)
+            return
+        }
 
         // if (stsCode == 3) {
         //     UpdateDisposedWaste()
         // }
+
+
+        const userResponse = confirm(`Are you sure you want to ${stsCode == 3 ? "Approve" : "Revert"} this disposal?`)
+        if (!userResponse) {
+            setSaving(false)
+            return
+        }
 
         try {
             const res = await fetch("/api/SetData/SetDisposalApproval", {
@@ -294,6 +307,38 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
             if (!res.ok || !payload.success) {
                 setDecision(payload.message || "Failed to save disposal approval")
                 return;
+            }
+
+
+            if (stsCode == 3) {
+                const resEmail = await fetch("/api/SendMail/FinalDisposalApproved", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        FDDID: Number(row.ID),
+                        RefNo: row.DisposalRefNo,
+                        IDDID: row.IDDID,
+                        Waste: row.Waste,
+                        TotalQty: row.TotalQty,
+                        MUnit: row.MUnit,
+                        GeneratedBy: row.CrBy,
+                        Remarks: remarks
+                    })
+                })
+            }
+            else if (stsCode == 5) {
+                const resEmail = await fetch("/api/SendMail/FinalDisposalReverted", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        FDDID: Number(row.ID),
+                        RefNo: row.DisposalRefNo,
+                        IDDID: row.IDDID,
+                        Waste: row.Waste,
+                        TotalQty: row.TotalQty,
+                        MUnit: row.MUnit,
+                        GeneratedBy: row.CrBy,
+                        Remarks: remarks
+                    })
+                })
             }
 
             setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`)

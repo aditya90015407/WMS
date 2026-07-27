@@ -1,9 +1,24 @@
 import { getConnection } from "@/lib/dbConnect";
 import { NextRequest, NextResponse } from "next/server";
 import * as sql from "mssql";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function POST(req: Request) {
     try {
+
+        const session = await getServerSession(authOptions);
+
+        if (!session) {
+            return NextResponse.json("Invalid Request")
+        }
+
+        var EmpCode = "", EmpName = ""
+        if (session) {
+            EmpCode = session?.user?.id || "";
+            EmpName = session?.user?.username || "";
+        }
+
         const body = await req.json();
         const iddid = Number(body?.IDDID ?? 0);
         const vid = Number(body?.VID ?? 0);

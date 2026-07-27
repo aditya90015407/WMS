@@ -857,6 +857,7 @@ export default function WasteEditPage() {
                 type="number"
                 step="0.01"
                 min="0"
+                onWheel={(e) => e.currentTarget.blur()}
                 required
                 value={editState.quantity}
                 onChange={(e) =>

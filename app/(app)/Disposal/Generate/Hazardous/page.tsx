@@ -112,7 +112,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     { key: "salePoSoDoc", field: "Document for Sale PO/SO for external disposal", type: "file" },
     ...(session?.user.roleId != '7' ? [{
       key: "finalPartyDoc",
-      field: "Final party document intact as provided prior for verification",
+      field: "Final party document intact as provided prior for verification *",
       type: "file" as FieldType,
     }] : []),
   ];
@@ -215,6 +215,15 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
   }, [values.manifestNo]);
 
 
+  type SelectedVendorDetails = {
+    VendorCode: string
+    VendorName: string
+    EMAIL: string
+    VendorContact: string
+  }
+
+  const [selectedVendorDetails, setSelectedVendorDetails] = useState<SelectedVendorDetails>()
+
 
   useEffect(() => {
     const loadDetails = async () => {
@@ -265,7 +274,6 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           wasteIds: [String(iddid)],
           senderNameAddress: String(row?.UID ?? prev.senderNameAddress ?? ""),
           manifestNo,
-
           transporterName: `${row?.TransporterName ?? ""}`.trim(),
           transporterAddress: `${row?.TransporterAddress ?? ""}`.trim(),
           transporterPhone: `${row?.TransporterPhone ?? ""}`.trim(),
@@ -276,14 +284,17 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           receiverAddress: String(row?.ReceiverAddress ?? ""),
           receiverAuthNo: String(row?.ReceiverAuthNo ?? ""),
           // wasteDescription: String(row?.WasteCategory ?? ""),
-          vehicleType: String(row?.VTID ?? ""),
+          vehicleType: '',
           physicalForm: String(row?.PSID ?? ""),
           Waste: String(row?.Waste ?? ""),
           totalQty: '',
           remainingQty: String(row.RemainingQuantity),
           unit: String(row?.MUnit ?? ""),
           // dateOfDisposal: String(row?.AuctionDate ?? "")
+          vendorName: String(row.VendorName),
         }));
+
+        setSelectedVendorDetails(row)
 
       }
       catch (err) {
@@ -328,8 +339,13 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     }
 
     // console.log(values.totalQty, values.remainingQty)
+    if (isNaN(Number(values.totalQty))) {
+      alert("Please fill valid quantity")
+      setSubmitClicked(false)
+      return
+    }
 
-    if ((values?.totalQty!) > values?.remainingQty!) {
+    if (Number(values?.totalQty!) > Number(values?.remainingQty!)) {
       alert("Quantity to be disposed is more than the available quantity")
       setSubmitClicked(false)
       return
@@ -407,12 +423,13 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     const result = await res.json();
     // console.log(result);
     const statusText = String(result?.data?.[0]?.STATUS ?? "").trim();
-    const fddid = statusText.split("-").pop()?.trim() ?? "";
+    const fddid = statusText.split("-")[1].split(",")[0]?.trim() ?? "";
+    const refNo = statusText.split(":").pop()?.trim() ?? "";
 
     // // const fddid = result.fddid;
     // console.log(statusText);
     // console.log(fddid);
-    // console.log(result);
+    // console.log(refNo);
     if (!res.ok || !result.success) {
       alert(result.message || "Save failed");
       redirect("./")
@@ -460,7 +477,23 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       }
       // console.log(attachmentResult);
     }
+
+
+    const resEmail = await fetch("/api/SendMail/GenerateFinalDisposal", {
+      method: "POST",
+      body: JSON.stringify({
+        FDDID: fddid,
+        RefNo: refNo,
+        IDDID: iddid,
+        Waste: String(values.Waste),
+        TotalQty: String(values.totalQty),
+        MUnit: String(values.unit),
+      })
+    })
+
     toast.success("Disposal Generated successfully")
+
+
     redirect("./")
 
     setSubmitClicked(false)
@@ -502,9 +535,8 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     if (row.type === "number") {
       return (
         <input
-
-
           type="number"
+          onWheel={(e) => e.currentTarget.blur()}
           value={(v as string) ?? ""}
           placeholder={row.hint ?? ""}
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"
@@ -718,6 +750,8 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           <img src="/goback.png" alt="" className="h-4.5 absolute top-0 right-6" />
         </Link>
       </div>
+
+
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table className="min-w-full border-collapse text-sm">
@@ -737,6 +771,19 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
             </tbody>
           </table>
         </div>
+
+
+        {session && session.user.roleId == '7' &&
+          <div className="border border-gray-100 my-3 text-sm p-2">
+            <div className="text-center font-semibold text-pink-600 ">Selected Vendor Details</div>
+            <div className="p-2 grid grid-cols-3 gap-y-3">
+              <div className="font-semibold text-slate-500">Name: <span className="text-slate-700 font-normal">{selectedVendorDetails?.VendorName}</span></div>
+              <div className="font-semibold text-slate-500">Vendor Code: <span className="text-slate-700 font-normal">{selectedVendorDetails?.VendorCode}</span></div>
+              <div className="font-semibold text-slate-500">Email: <span className="text-slate-700 font-normal">{selectedVendorDetails?.EMAIL}</span></div>
+              <div className="font-semibold text-slate-500 col-span-3">Contact Details: <span className="text-slate-700 font-normal">{selectedVendorDetails?.VendorContact}</span></div>
+            </div>
+          </div>
+        }
 
         {
           !submitClicked &&

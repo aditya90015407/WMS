@@ -2,6 +2,7 @@
 
 import encrypt from "@/components/Encrypt";
 import { log } from "console";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -18,6 +19,8 @@ type AuctionList = {
   TotalQty: string
   MUnit: string
   Remarks: string;
+  VID: string
+  VendorName: string
   CrBy: string;
   CrDt: string;
   IsActive: string;
@@ -47,6 +50,8 @@ export default function DisposalListPage() {
   const currentPage = Math.min(page, totalPages);
   const start = (currentPage - 1) * pageSize;
   const currentRows = allDisposalList.slice(start, start + pageSize);
+
+  const { data: session } = useSession()
 
   useEffect(() => {
     const loadDisposals = async () => {
@@ -104,9 +109,9 @@ export default function DisposalListPage() {
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                     ID
                   </th>
-                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                  {session?.user.roleId != '7' && <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                     DisType
-                  </th>
+                  </th>}
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                     Waste Category
                   </th>
@@ -114,7 +119,13 @@ export default function DisposalListPage() {
                     Waste
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                    Total Qty
+                  </th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                     Remaining Qty
+                  </th>
+                  <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
+                    Selected Vendor
                   </th>
                   <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700">
                     Remarks
@@ -166,10 +177,12 @@ export default function DisposalListPage() {
                     }}
                   >
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.ID}</td>
-                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.DisType}</td>
+                    {session?.user.roleId != '7' && <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.DisType}</td>}
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.WasteCategory}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.Waste}</td>
+                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.TotalQty}{" "}{row.MUnit}</td>
                     <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.RemainingQuantity}{" "}{row.MUnit}</td>
+                    <td className="whitespace-nowrap px-2 py-1 text-xs text-slate-700">{row.VendorName}</td>
                     <td
                       className="whitespace-nowrap px-2 py-1 text-xs text-slate-700 min-w-[150px]"
                     >

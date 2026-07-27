@@ -5,6 +5,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { redirect, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import decrypt from "@/components/Decrypt";
+import { useSession } from "next-auth/react";
 
 
 type FieldType =
@@ -38,6 +39,7 @@ type RowDef = {
 
 const rows: RowDef[] = [
   { key: "ID", field: "Final Disposal ID", type: "auto", hint: "Comma separated IDs", required: true },
+  { key: "DisposalRefNo", field: "Final Ref No.", type: "auto", hint: "Comma separated IDs", required: true },
   { key: "IDDID", field: "Initiated Disposal ID", type: "auto", hint: "Comma separated IDs", required: true },
   // { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal", required: true },
   {
@@ -115,6 +117,8 @@ type Option = { id: string; name: string };
 
 export default function DisposalGeneratePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const router = useRouter();
+
+  const { data: session } = useSession()
 
 
   const [values, setValues] = useState<Record<string, string | string[] | boolean | File | null>>({
@@ -203,6 +207,16 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
 
 
+  type SelectedVendorDetails = {
+    VendorCode: string
+    VendorName: string
+    EMAIL: string
+    VendorContact: string
+  }
+
+  const [selectedVendorDetails, setSelectedVendorDetails] = useState<SelectedVendorDetails>()
+
+
   useEffect(() => {
     const loadDetails = async () => {
       if (!fddid) return;
@@ -234,7 +248,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
         // console.log("Hazardous manifest row:", row);
         // // console.log("Hazardous manifest being set:", manifestNo);
-        //  console.log("Frontend API response:", data);
+        // console.log("Frontend API response:", data);
         setValues((prev) => ({
           ...prev,
           ID: [String(fddid)],
@@ -264,9 +278,11 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           NoOfContainers: String(row?.NoOfContainers),
           SpecialHandlingInstructions: row?.SpecialHandlingInstructions,
           ApproverRemarks: row?.ApproverRemarks,
-          Status: row?.Status
+          Status: row?.Status,
+          DisposalRefNo: row.DisposalRefNo
         }));
 
+        setSelectedVendorDetails(row)
       }
       catch (err) {
 
@@ -363,6 +379,13 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     const maxAllowedQuantity = Number(values.remainingQty!) + Number(values.previousQty!);
 
     // console.log(maxAllowedQuantity, values.remainingQty, values.previousQty, values.totalQty)
+
+    if (isNaN(Number(values.totalQty))) {
+      alert("Please fill valid quantity")
+      setSubmitClicked(false)
+      return
+    }
+
 
     if (Number(values?.totalQty!) > maxAllowedQuantity!) {
       alert("Quantity to be disposed is more than the available quantity")
@@ -467,6 +490,19 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       }
       // console.log(attachmentResult);
     }
+
+    const resEmail = await fetch("/api/SendMail/RevertedDisposalUpdated", {
+      method: "POST",
+      body: JSON.stringify({
+        FDDID: fddid,
+        RefNo: values.DisposalRefNo,
+        IDDID: values.IDDID,
+        Waste: String(values.Waste),
+        TotalQty: String(values.totalQty),
+        MUnit: String(values.unit),
+      })
+    })
+
     redirect("./")
     setSubmitClicked(false)
 
@@ -822,6 +858,21 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           </div>
 
         </div>
+
+
+        {session && session.user.roleId == '7' &&
+          <div className="border border-gray-100 my-3 text-sm p-2">
+            <div className="text-center font-semibold text-pink-600 ">Selected Vendor Details</div>
+            <div className="p-2 grid grid-cols-3 gap-y-3">
+              <div className="font-semibold text-slate-500">Name: <span className="text-slate-700 font-normal">{selectedVendorDetails?.VendorName}</span></div>
+              <div className="font-semibold text-slate-500">Vendor Code: <span className="text-slate-700 font-normal">{selectedVendorDetails?.VendorCode}</span></div>
+              <div className="font-semibold text-slate-500">Email: <span className="text-slate-700 font-normal">{selectedVendorDetails?.EMAIL}</span></div>
+              <div className="font-semibold text-slate-500 col-span-3">Contact Details: <span className="text-slate-700 font-normal">{selectedVendorDetails?.VendorContact}</span></div>
+            </div>
+          </div>
+        }
+
+
         {
           !submitClicked &&
           <button

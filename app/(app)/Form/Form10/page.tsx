@@ -14,6 +14,7 @@ type Form10Row = {
   ReceiverName?: string | null;
   TransporterName?: string | null;
   MUnit: string
+  DisposalRefNo: string
 };
 
 type ApiResponse = {
@@ -279,6 +280,7 @@ export default function Form10Page() {
               <thead>
                 <tr className="bg-slate-100">
                   <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">ID</th>
+                  <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Ref No.</th>
                   <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">IDDID</th>
                   <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Waste Category</th>
                   <th className="border border-slate-300 px-2 py-2 text-left font-semibold text-slate-900">Waste</th>
@@ -300,6 +302,9 @@ export default function Form10Page() {
                   <tr key={`form10-${currentPage}-${index}`} className="hover:bg-slate-50">
                     <td className="border border-slate-300 px-2 py-2 text-slate-800">
                       {toText(row.ID)}
+                    </td>
+                    <td className="border border-slate-300 px-2 py-2 text-slate-800">
+                      {toText(row.DisposalRefNo)}
                     </td>
                     <td className="border border-slate-300 px-2 py-2 text-slate-800">
                       {toText(row.IDDID)}

@@ -8,6 +8,7 @@ type FinalDisposalRow = Record<string, string | number | boolean | null>;
 
 const fields = [
     ["ID", "Final Disposal ID"],
+    ["DisposalRefNo", "Final Ref No."],
     ["IDDID", "Initiated Disposal ID"],
     // ["DateOfDisposal", "Date of Disposal"],
     ["SenderInfo", "Senders's Name and Mailing Address"],
@@ -221,10 +222,23 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
 
         setSaving(true);
 
+        if (remarks == "") {
+            alert("Please fill in the remarks.")
+            setSaving(false)
+            return
+        }
 
         // if (stsCode == 3) {
         //     UpdateDisposedWaste()
         // }
+
+
+
+        const userResponse = confirm(`Are you sure you want to ${stsCode == 3 ? "Approve" : "Revert"} this disposal?`)
+        if (!userResponse) {
+            setSaving(false)
+            return
+        }
 
         try {
             // console.log("Saving:", {
@@ -251,6 +265,36 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
                 return;
             }
 
+
+            if (stsCode == 3) {
+                const resEmail = await fetch("/api/SendMail/FinalDisposalApproved", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        FDDID: Number(row.ID),
+                        RefNo: row.DisposalRefNo,
+                        IDDID: row.IDDID,
+                        Waste: row.Waste,
+                        TotalQty: row.TotalQty,
+                        MUnit: row.MUnit,
+                        GeneratedBy: row.CrBy,
+                        Remarks: remarks
+                    })
+                })
+            }
+            else if (stsCode == 5) {
+                const resEmail = await fetch("/api/SendMail/FinalDisposalReverted", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        FDDID: Number(row.ID),
+                        RefNo: row.DisposalRefNo,
+                        IDDID: row.IDDID,
+                        Waste: row.Waste,
+                        TotalQty: row.TotalQty,
+                        MUnit: row.MUnit,
+                        GeneratedBy: row.CrBy
+                    })
+                })
+            }
             setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`);
 
             // if (stsCode === 3) {

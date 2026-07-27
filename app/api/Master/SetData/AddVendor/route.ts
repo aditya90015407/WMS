@@ -8,10 +8,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
 
-    const session = await getServerSession(authOptions)
 
-    if (!session) return NextResponse.json("Invalid Session");
+    const session = await getServerSession(authOptions);
 
+    if (!session) {
+        return NextResponse.json("Invalid Request")
+    }
     const CrBy = session.user.id
 
     const pool = await getConnection();
@@ -38,6 +40,13 @@ export async function POST(req: NextRequest) {
         .input("Pwd", Password)
         .execute("PRO-WMS_SET");
 
-    // console.log(result.recordset[0])
+    // console.log(result.recordset)
+    if (result.recordset[0].ErrorMessage) {
+        return NextResponse.json(
+            { error: "Email already in use" },
+            { status: 409 }
+        )
+    }
+
     return NextResponse.json(result.recordset[0])
 }

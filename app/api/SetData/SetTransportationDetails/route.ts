@@ -7,12 +7,17 @@ import { authOptions } from "../../auth/[...nextauth]/options";
 export async function POST(req: Request) {
 
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json("Invalid Request")
+    }
+
     const pool = await getConnection()
     if (!pool || !pool.connected) {
       throw new Error("Could Not Connect to DataBase")
     }
 
-    const session = await getServerSession(authOptions)
     const EmpCode = session?.user.id
 
     const {
@@ -27,7 +32,8 @@ export async function POST(req: Request) {
       ReceiverName,
       ReceiverAddress,
       ReceiverAuthNo,
-      VendorSelfTransport
+      VendorSelfTransport,
+      VendorContact
     } = await req.json();
 
     // console.log(VendorSelfTransport)
@@ -54,6 +60,7 @@ export async function POST(req: Request) {
       .input("ReceiverName", sql.VarChar, ReceiverName ?? "")
       .input("ReceiverAddress", sql.VarChar, ReceiverAddress ?? "")
       .input("ReceiverAuthNo", sql.VarChar, ReceiverAuthNo ?? "")
+      .input("VendorContact", sql.VarChar, VendorContact ?? "")
       .input("EmpCode", EmpCode)
       .execute("PRO-WMS_SET");
     // console.log(result)

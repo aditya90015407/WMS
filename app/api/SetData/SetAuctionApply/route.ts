@@ -13,6 +13,11 @@ const fileToBase64 = async (file: File | null): Promise<string> => {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json("Invalid Request")
+    }
+
     const createdBy = String(session?.user?.id ?? "").trim();
 
     if (!createdBy) {

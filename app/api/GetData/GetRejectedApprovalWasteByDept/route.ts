@@ -6,12 +6,23 @@ import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function POST(req: NextRequest) {
 
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json("Invalid Request")
+    }
+
+    var EmpCode = "", EmpName = ""
+    if (session) {
+        EmpCode = session?.user?.id || "";
+        EmpName = session?.user?.username || "";
+    }
+
     const pool = await getConnection();
     if (!pool || !pool.connected) {
         throw new Error("Couldn't connect to Database");
     }
 
-    const session = await getServerSession(authOptions)
     const UID = session?.user.uid
     const DeptID = session?.user.deptId
     // console.log(UID)

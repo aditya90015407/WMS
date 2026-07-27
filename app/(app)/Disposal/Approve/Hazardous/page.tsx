@@ -4,12 +4,14 @@ import { POST } from "@/app/api/GetData/DownloadFinalDisposalAttachments/route";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo, useState } from "react";
 import decrypt from "@/components/Decrypt";
+import toast from "react-hot-toast";
 // type FinalDisposalRow = Record<string, unknown>;
 type FinalDisposalRow = Record<string, string | number | boolean | null>;
 
 
 const fields = [
     ["ID", "Final Disposal ID"],
+    ["DisposalRefNo", "Final Ref No."],
     ["IDDID", "Initiated Disposal ID"],
     // ["DateOfDisposal", "Date of Disposal"],
     ["SenderInfo", "Senders's Name and Mailing Address"],
@@ -269,11 +271,26 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
         if (!row?.ID) return;
 
         setSaving(true);
+        // console.log(remarks, "remarks")
 
+        // console.log(row.DisposalRefNo)
+
+        // return
+        if (remarks == "") {
+            alert("Please fill in the remarks.")
+            setSaving(false)
+            return
+        }
 
         // if (stsCode == 3) {
         //     UpdateDisposedWaste()
         // }
+
+        const userResponse = confirm(`Are you sure you want to ${stsCode == 3 ? "Approve" : "Revert"} this disposal?`)
+        if (!userResponse) {
+            setSaving(false)
+            return
+        }
 
         try {
             const res = await fetch("/api/SetData/SetDisposalApproval", {
@@ -293,6 +310,41 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                 setDecision(payload.message || "Failed to save disposal approval");
                 return;
             }
+
+            if (stsCode == 3) {
+                const resEmail = await fetch("/api/SendMail/FinalDisposalApproved", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        FDDID: Number(row.ID),
+                        RefNo: row.DisposalRefNo,
+                        IDDID: row.IDDID,
+                        Waste: row.Waste,
+                        TotalQty: row.TotalQty,
+                        MUnit: row.MUnit,
+                        GeneratedBy: row.CrBy
+                    })
+                })
+                const data = await resEmail.json()
+                // console.log(data)
+            }
+            else if (stsCode == 5) {
+                const resEmail = await fetch("/api/SendMail/FinalDisposalReverted", {
+                    method: "POST",
+                    body: JSON.stringify({
+                        FDDID: Number(row.ID),
+                        RefNo: row.DisposalRefNo,
+                        IDDID: row.IDDID,
+                        Waste: row.Waste,
+                        TotalQty: row.TotalQty,
+                        MUnit: row.MUnit,
+                        GeneratedBy: row.CrBy,
+                        Remarks: remarks
+                    })
+                })
+                const data = await resEmail.json()
+                // console.log(data)
+            }
+
 
             setDecision(`${label}${remarks.trim() ? ` with remarks: ${remarks.trim()}` : ""}`);
 
@@ -322,7 +374,6 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
             }
 
             try {
-
                 const res = await fetch("/api/GetData/GetFinalDisposalDetails", {
                     method: "POST",
                     body: JSON.stringify({ ID: id }),

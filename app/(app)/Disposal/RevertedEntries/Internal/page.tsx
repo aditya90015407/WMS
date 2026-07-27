@@ -38,6 +38,7 @@ type RowDef = {
 
 const rows: RowDef[] = [
   { key: "ID", field: "Final Disposal ID", type: "auto", hint: "Comma separated IDs", required: true },
+  { key: "DisposalRefNo", field: "Final Ref No.", type: "auto", hint: "Comma separated IDs", required: true },
   { key: "IDDID", field: "Initiated Disposal ID", type: "auto", hint: "Comma separated IDs", required: true },
   // { key: "dateOfDisposal", field: "Date of Disposal", type: "auto", hint: "Date Of Disposal", required: true },
   {
@@ -269,6 +270,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
           ApproverRemarks: row?.ApproverRemarks,
           Status: row?.Status,
           AID: String(row?.AID ?? ""),
+          DisposalRefNo: row.DisposalRefNo
         }));
 
       }
@@ -369,6 +371,13 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     const maxAllowedQuantity = Number(values.remainingQty!) + Number(values.previousQty!);
 
     // console.log(maxAllowedQuantity, values.remainingQty, values.previousQty, values.totalQty)
+
+    if (isNaN(Number(values.totalQty))) {
+      alert("Please fill valid quantity")
+      setSubmitClicked(false)
+      return
+    }
+
 
     if (Number(values?.totalQty!) > maxAllowedQuantity!) {
       alert("Quantity to be disposed is more than the available quantity")
@@ -481,6 +490,20 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       }
       // console.log(attachmentResult);
     }
+
+    const resEmail = await fetch("/api/SendMail/RevertedDisposalUpdated", {
+      method: "POST",
+      body: JSON.stringify({
+        FDDID: fddid,
+        RefNo: values.DisposalRefNo,
+        IDDID: values.IDDID,
+        Waste: String(values.Waste),
+        TotalQty: String(values.totalQty),
+        MUnit: String(values.unit),
+        AID: values.AID
+      })
+    })
+
     redirect("./")
     setSubmitClicked(false)
 

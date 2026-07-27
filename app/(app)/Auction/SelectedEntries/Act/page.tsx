@@ -67,7 +67,8 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
     ReceiverName: "",
     ReceiverAddress: "",
     ReceiverAuthNo: "",
-    MUnit: ""
+    MUnit: "",
+    VendorContact: ""
   });
 
   const [acceptance, setAcceptance] = useState("")
@@ -187,6 +188,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
           ReceiverName: transportForm.ReceiverName,
           ReceiverAddress: transportForm.ReceiverAddress,
           ReceiverAuthNo: transportForm.ReceiverAuthNo,
+          VendorContact: transportForm.VendorContact
         }),
       });
 
@@ -201,6 +203,33 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
         toast.error(data.message || "Failed to record response");
         return;
       }
+
+
+      const encIddid = params.iddid
+
+      const IDDID = await decrypt(encIddid!)
+
+      if (acceptance == '1') {
+        const resEmail = await fetch("/api/SendMail/Auction/AcceptAwardedAuction", {
+          method: "POST",
+          body: JSON.stringify({
+            IDDID: IDDID,
+            Waste: auctionDetails?.Waste,
+            Quantity: auctionDetails?.TotalQty,
+            MUnit: auctionDetails?.MUnit
+          })
+        })
+      }
+      else if (acceptance == '0') {
+
+        const resEmail = await fetch("/api/SendMail/Auction/RejectAwardedAuction", {
+          method: "POST",
+          body: JSON.stringify({
+            IDDID: IDDID
+          })
+        })
+      }
+
 
       toast.success("Response recorded successfully");
       router.back()
@@ -247,7 +276,8 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
 
       <div className="relative">
         <div className="text-center text-teal-600 mt-2 mb-2 text-sm font-bold">
-          Fill Transporter and Receiver Details
+          {/* Fill Transporter and Receiver Details */}
+          Kindly share your acceptance.
         </div>
 
         <img src="/goback.png" alt="" className="h-5 cursor-pointer absolute top-0 right-12"
@@ -384,18 +414,33 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
         <div>
 
           {acceptance == '1' &&
-            <div className="mt-2">
-              <label className="inline-flex items-center cursor-pointer font-semibold text-slate-500 text-sm">
-                I acknowledge and agree that I am responsible for arranging my own transportation.
-                {/* <div className="relative mx-4"> */}
-                <input
-                  type="checkbox"
-                  required
-                  onChange={() => setTransportFacilities(!transportFacilities)}
-                  className="ms-5"
-                />
+            <>
 
-                {/* <div className="w-20 h-8 bg-gray-500 rounded-full peer-checked:bg-emerald-600 transition-colors"></div>
+              <div className="mt-2">
+                <label className=" text-slate-700 text-sm">Contact Details</label>
+                <input
+                  type="text"
+                  placeholder="Enter your contact details (e.g., Phone No.)"
+                  value={transportForm.VendorContact}
+                  onChange={(e) =>
+                    setTransportForm((p) => ({ ...p, VendorContact: e.target.value }))
+                  }
+                  className="border border-gray-300 p-2 mt-1 ms-5 rounded-lg w-[80%] text-sm"
+                />
+              </div>
+
+              <div className="mt-5">
+                <label className="inline-flex items-center cursor-pointer font-semibold text-slate-500 text-sm">
+                  I acknowledge and agree that I am responsible for arranging my own transportation.
+                  {/* <div className="relative mx-4"> */}
+                  <input
+                    type="checkbox"
+                    required
+                    onChange={() => setTransportFacilities(!transportFacilities)}
+                    className="ms-5"
+                  />
+
+                  {/* <div className="w-20 h-8 bg-gray-500 rounded-full peer-checked:bg-emerald-600 transition-colors"></div>
 
               <div className="absolute left-1 top-1 w-8 h-6 bg-white rounded-full transition-transform peer-checked:translate-x-10"></div>
 
@@ -403,9 +448,13 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
                 <span>Yes</span>
                 <span>No</span>
               </span> */}
-                {/* </div> */}
-              </label>
-            </div>
+                  {/* </div> */}
+                </label>
+              </div>
+
+
+            </>
+
           }
 
           {/* {transportFacilities &&

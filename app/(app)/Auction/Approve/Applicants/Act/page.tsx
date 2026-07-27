@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 
-export default function AuctionApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
+export default function AuctionApproval({ searchParams }: { searchParams: Promise<{ id?: string, iddid?: string }> }) {
     const params = React.use(searchParams);
     const router = useRouter()
 
@@ -41,6 +41,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         UpDt: string
         IsActive: string
         VendorCode: string
+        RevertedByEnvCount: string
     }
 
 
@@ -201,6 +202,23 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
 
         const data = await res.json()
         // console.log(data)
+
+        const encIddid = params.iddid
+
+        const IDDID = await decrypt(encIddid!)
+
+        const resEmail = await fetch("/api/SendMail/Auction/ApprovalLevel1", {
+            method: "POST",
+            body: JSON.stringify({
+                IDDID: IDDID,
+                VendorCode: auctionParticipant?.VendorCode,
+                VendorName: auctionParticipant?.NAME,
+                Acceptance: acceptance,
+                RevertedByEnvCount: auctionParticipant?.RevertedByEnvCount,
+                Remarks: remarks
+            })
+        })
+
 
         if (data.STATUS == 'Response Recorded Successfully!') {
             toast.success("Response Recorded Successfully!")

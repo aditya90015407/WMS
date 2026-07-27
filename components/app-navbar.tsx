@@ -127,7 +127,7 @@ export default function AppNavbar() {
 
           {isOpen && (
             <div className="absolute right-0 mt-2 w-80 rounded-xl bg-white pb-3 px-6 shadow-lg">
-              <p className="text-sm font-semibold tracking-wide text-[#2563EB] text-center font-[cursive] mt-2">
+              <p className="text-sm font-semibold tracking-wide text-pink-600 text-center font-[cursive] mt-2">
                 My Profile
               </p>
               <div className="mt-3 space-y-2 text-sm">

@@ -49,6 +49,7 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
     UpDt: string
     IsActive: string
     VendorCode: string
+    RevertedByEnvCount: string
   }
 
   type AuctionParticipantLine = {
@@ -304,6 +305,16 @@ export default function AuctionsReverted({ searchParams }: { searchParams: Promi
         setError(payload.message || "Failed to save reapply documents.");
         return;
       }
+
+      const resEmail = await fetch("/api/SendMail/Auction/ReApply", {
+        method: "POST",
+        body: JSON.stringify({
+          IDDID: auction?.ID,
+          Waste: auction?.Waste,
+          TotalQty: auction?.TotalQty,
+          MUnit: auction?.MUnit
+        })
+      })
 
       alert("Documents re-uploaded successfully.");
       router.push("/Auction/RevertedEntries");

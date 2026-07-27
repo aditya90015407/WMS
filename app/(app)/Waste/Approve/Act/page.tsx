@@ -56,6 +56,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
         GenDeptID: string
         MUnit: string
         MUID: string
+        CrBy: string
     }
 
     type ApprovalRejectionHistory = {
@@ -142,6 +143,32 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
 
         const data = await res.json()
         // console.log(data)
+
+        if (acceptance == '1') {
+            const resMail = await fetch("/api/SendMail/WasteApproved", {
+                method: "POST",
+                body: JSON.stringify({
+                    "ID": wasteData?.ID,
+                    "Waste": wasteData?.Waste,
+                    "Quantity": wasteData?.WasteQty,
+                    "MUnit": wasteData?.MUnit,
+                    "GeneratedBy": wasteData?.CrBy
+                })
+            })
+        }
+        else if (acceptance == '2') {
+            const resMail = await fetch("/api/SendMail/WasteReverted", {
+                method: "POST",
+                body: JSON.stringify({
+                    "ID": wasteData?.ID,
+                    "Waste": wasteData?.Waste,
+                    "Quantity": wasteData?.WasteQty,
+                    "MUnit": wasteData?.MUnit,
+                    "GeneratedBy": wasteData?.CrBy,
+                    "Remarks": remarks
+                })
+            })
+        }
 
         if (data.STATUS == 'Approved Successfully !') {
             toast.success("Approved Successfully !")

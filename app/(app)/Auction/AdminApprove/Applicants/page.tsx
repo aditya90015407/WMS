@@ -363,7 +363,7 @@ export default function AuctionApprove({ searchParams }: { searchParams: Promise
                                     <tr key={index}
                                         onClick={async () => {
                                             const encryptedID = await encrypt(row.ID!.toString());
-                                            router.push(`./Applicants/Act?id=${encryptedID}`);
+                                            router.push(`./Applicants/Act?id=${encryptedID}&iddid=${params.id}`);
                                         }}
                                         className="cursor-pointer"
                                     >

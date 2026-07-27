@@ -157,7 +157,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
     setSubmitClicked(true)
     try {
       if (!encoded || !String(selectedVid).trim()) {
-        toast.error("Please enter VID.");
+        toast.error("Please select a Vendor.");
         setSubmitClicked(false)
         return;
       }
@@ -180,6 +180,19 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
         setSubmitClicked(false)
         return;
       }
+
+
+      const encIddid = params.id
+
+      const IDDID = await decrypt(encIddid!)
+
+      const resEmail = await fetch("/api/SendMail/Auction/SelectVendor", {
+        method: "POST",
+        body: JSON.stringify({
+          IDDID: IDDID,
+          VID: String(selectedVid).trim()
+        })
+      })
 
       toast.success("Selected vendor saved!");
       router.back()
@@ -290,20 +303,20 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
             currentRows.length > 0 &&
             <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate-700">
               <button type="button" onClick={() => setPage(1)} disabled={currentPage === 1}
-                className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
+                className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
                 First
               </button>
               <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))} disabled={currentPage === 1}
-                className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
+                className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
                 Prev
               </button>
               <span>Page {currentPage} of {totalPages}</span>
               <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}
-                className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
+                className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
                 Next
               </button>
               <button type="button" onClick={() => setPage(totalPages)} disabled={currentPage === totalPages}
-                className="rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
+                className="cursor-pointer rounded-lg border border-slate-300 px-3 py-1 disabled:opacity-50">
                 Last
               </button>
             </div>

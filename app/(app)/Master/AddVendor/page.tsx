@@ -193,13 +193,25 @@ export default function Vendor() {
                 body: JSON.stringify(payload)
             });
 
+            const data = await res.json()
+
+            // console.log(data)
+            // console.log(data.error)
+
+
             if (res.status === 200) {
+                const resEmail = await fetch("/api/SendMail/Master/AddVendor", {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                })
+
                 toast.success("Vendor Added Succesfully")
-                window.location.reload()
                 return;
             }
 
-            toast.error("Failed to add vendor");
+            toast.error(`Failed to Add Vendor: ${data.error}`);
+            window.location.reload()
+
             setSubmitClicked(false)
         } catch {
             toast.error("Unable to validate Vendor ID");

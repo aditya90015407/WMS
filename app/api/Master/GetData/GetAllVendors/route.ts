@@ -1,9 +1,16 @@
+import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { getConnection } from "@/lib/dbConnect";
 import { NVarChar } from "mssql";
+import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST() {
 
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json("Invalid Request")
+    }
 
     try {
         const pool = await getConnection();

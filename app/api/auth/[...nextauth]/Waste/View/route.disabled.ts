@@ -20,6 +20,11 @@ export async function handleViewGet(request: Request) {
     const generationDate = (searchParams.get("GenerationDate") ?? "").trim();
 
     const session = await getServerSession(authOptions)
+
+    if (!session) {
+      return NextResponse.json("Invalid Request")
+    }
+
     const uid = session?.user.uid
     const deptId = session?.user.deptId
 

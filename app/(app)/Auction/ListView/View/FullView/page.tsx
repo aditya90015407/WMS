@@ -42,6 +42,7 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
         IsActive: string
         VendorCode: string
         Status: string
+        RevertedByEnvCount: string
     }
 
     type AuctionParticipantLine = {

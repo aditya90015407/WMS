@@ -10,6 +10,12 @@ export async function POST(req: Request) {
 
     try {
 
+        const session = await getServerSession(authOptions);
+
+        if (!session) {
+            return NextResponse.json("Invalid Request")
+        }
+
         const pool = await getConnection();
 
         if (!pool || !pool.connected) {
@@ -23,8 +29,6 @@ export async function POST(req: Request) {
             );
         }
 
-        const session =
-            await getServerSession(authOptions);
 
         const empCode = String(
             session?.user?.id ?? ""

@@ -509,6 +509,11 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
 
 
   async function CancelDisposal() {
+    const userResponse = confirm(`Are you sure you want to withdraw this disposal?`)
+    if (!userResponse) {
+      return
+    }
+
     const res = await fetch("/api/SetData/CancelDisposal", {
       method: "POST",
       body: JSON.stringify({ "IDDID": iddid })
@@ -700,7 +705,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
 
           <hr className="col-span-2 mt-4 mb-3 border border-gray-200 w-[97%] mx-auto" />
 
-          <div className="grid grid-cols-2 ">
+          <div className="grid grid-cols-2 gapy-y-1 mb-2">
             <div className="relative px-4 py-1">
               <label className="mb-1 block text-xs font-semibold text-slate-700">
                 Undisposed Waste (Dept - Quantity - Days Left)
@@ -886,12 +891,12 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
       <hr className="col-span-2 mt-4 mb-1 border border-gray-100 w-[97%] mx-auto" />
 
       <div className="text-sm text-slate-700 mt-8">
-        Do you want to cancel this disposal and revert the status of the included waste items?
+        Do you want to withdraw this disposal and revert the status of the included waste items?
         <span
           className="ms-5 place-self-center cursor-pointer rounded bg-rose-700 px-3 py-2 text-md text-white hover:bg-red-800"
           onClick={CancelDisposal}
         >
-          Yes, Cancel Disposal
+          Yes, Withdraw Disposal
         </span>
       </div>
     </section >

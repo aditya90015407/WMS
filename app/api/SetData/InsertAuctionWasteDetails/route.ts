@@ -6,9 +6,13 @@ import { authOptions } from "../../auth/[...nextauth]/options";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
+
     const session = await getServerSession(authOptions);
-    const pool = await getConnection();
+
+    if (!session) {
+      return NextResponse.json("Invalid Request")
+    }
+
 
     const empCode = String(session?.user?.id ?? "").trim();
     if (!empCode) {
@@ -18,6 +22,9 @@ export async function POST(req: Request) {
       );
     }
 
+    const body = await req.json();
+    const pool = await getConnection();
+
     if (!pool || !pool.connected) {
       throw new Error("DB Not Connected");
     }
@@ -26,9 +33,9 @@ export async function POST(req: Request) {
     const wrids = Array.isArray(body.WRID)
       ? body.WRID
       : String(body.WRID ?? "")
-          .split(",")
-          .map((x) => x.trim())
-          .filter(Boolean);
+        .split(",")
+        .map((x) => x.trim())
+        .filter(Boolean);
 
     if (!iddid || wrids.length === 0) {
       return NextResponse.json(
@@ -46,7 +53,7 @@ export async function POST(req: Request) {
         .input("WRID", sql.NVarChar(50), String(wrid))
         .input("EmpCode", sql.Int, Number(empCode))
         .execute("PRO-WMS_SET");
-       
+
       results.push(result.recordset?.[0] ?? null);
     }
 

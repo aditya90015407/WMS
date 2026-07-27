@@ -25,6 +25,7 @@ export default function DisposalRecycleForm() {
   const [categoryOptions, setCategoryOptions] = useState<Option[]>([]);
   const [wasteOptions, setWasteOptions] = useState<Option[]>([]);
   const [selectedWasteId, setSelectedWasteId] = useState("");
+  const [selectedWaste, setSelectedWaste] = useState("");
   const [undisposedOptions, setUndisposedOptions] = useState<
     Array<{
       id: string;
@@ -250,6 +251,7 @@ export default function DisposalRecycleForm() {
 
     if (!wasteCategory || !selectedWasteId) {
       alert("Please fill Date, Waste Category and Waste.");
+      setSubmitClicked(false)
       return;
     }
 
@@ -274,12 +276,16 @@ export default function DisposalRecycleForm() {
       const data = await res.json();
       if (!res.ok || !data.success) {
         alert(data.message || "Save Failed");
+        setSubmitClicked(false)
         return;
       }
 
-      const wrid = data?.data?.WRID;
-      if (!wrid) {
-        alert("WRID missing from InitiateDisposal response");
+      // console.log()
+
+      const IDDID = data?.data?.WRID;
+      if (!IDDID) {
+        alert("IDDID missing from InitiateDisposal response");
+        setSubmitClicked(false)
         return;
       }
 
@@ -287,7 +293,7 @@ export default function DisposalRecycleForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          IDDID: wrid,
+          IDDID: IDDID,
           WRID: selectedUndisposedIds,
         }),
       });
@@ -295,8 +301,19 @@ export default function DisposalRecycleForm() {
       const data2 = await res2.json();
       if (!res2.ok || !data2.success) {
         alert(data2.message || "InsertAuctionWasteDetails failed");
+        setSubmitClicked(false)
         return;
       }
+
+      const resEmail = await fetch("/api/SendMail/InitiateDisposal/Internal", {
+        method: "POST",
+        body: JSON.stringify({
+          IDDID: IDDID,
+          Waste: selectedWaste,
+          TotalQty: totalQty,
+          MUID: undisposedOptions[0].muid,
+        })
+      })
 
       alert("Saved Successfully");
       router.back();
@@ -378,7 +395,12 @@ export default function DisposalRecycleForm() {
             <label className="block text-xs font-semibold text-slate-700">Waste List</label>
             <select
               value={selectedWasteId}
-              onChange={(e) => setSelectedWasteId(e.target.value)}
+              onChange={(e) => {
+                setSelectedWasteId(e.target.value);
+                const temp = wasteOptions.find((el) => el.id == e.target.value)?.name
+                console.log(temp)
+                setSelectedWaste(temp!)
+              }}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               disabled={!wasteCategory || loadingWaste}
             >
@@ -462,6 +484,7 @@ export default function DisposalRecycleForm() {
           <div>
             <label className="block text-xs font-semibold text-slate-700">Physical Form</label>
             <select
+              required
               value={physicalForm}
               onChange={(e) => setPhysicalForm(e.target.value)}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"

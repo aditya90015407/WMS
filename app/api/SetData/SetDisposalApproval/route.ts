@@ -7,6 +7,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
+
         if (!session?.user?.id) {
             return NextResponse.json(
                 { success: false, message: "Invalid session" },

@@ -83,6 +83,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
 
     type FinalDisposalList = {
         ID: string
+        DisposalRefNo: string
         IDDID: string
         DateOfDisposal: string
         UID: string
@@ -372,7 +373,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                             <thead className="bg-emerald-600">
                                 <tr>
                                     <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
-                                        ID
+                                        Ref No.
                                     </th>
                                     <th className="whitespace-nowrap px-3 py-2 text-left text-xs font-semibold text-slate-50">
                                         Unit
@@ -449,7 +450,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                                 {finalDisposals.map((w, i) => (
                                     <tr key={String(i)}>
                                         <td className="whitespace-nowrap px-3 py-2 text-slate-700">
-                                            {w.ID}
+                                            {w.DisposalRefNo}
                                         </td>
                                         <td className="whitespace-nowrap px-3 py-2 text-slate-700">
                                             {w.Unit}

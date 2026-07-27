@@ -7,8 +7,13 @@ import { request } from "https";
 
 export async function POST(req: Request) {
   try {
-    const form = await req.formData();
     const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json("Invalid Request")
+    }
+
+    const form = await req.formData();
     const empCode = String(session?.user?.id ?? "").trim();
 
     if (!empCode) {

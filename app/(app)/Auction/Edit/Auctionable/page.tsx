@@ -530,26 +530,38 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
       );
 
       if (newVendorIds.length > 0) {
-        await Promise.all(
-          newVendorIds.map(async (vendorId) => {
-            const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                IDDID: iddid,
-                VID: vendorId,
-              }),
-            });
 
-            const vendorData = await vendorRes.json();
+        for (const VendorId of newVendorIds) {
+          const vendorRes = await fetch("/api/SetData/InsertAuctionVendorDetails", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              IDDID: iddid,
+              VID: VendorId,
+            }),
+          });
 
-            if (!vendorRes.ok || !vendorData.success) {
-              throw new Error(vendorData.message || `Failed to insert vendor ${vendorId}`);
-            }
+          const vendorData = await vendorRes.json();
 
-            return vendorData;
-          }),
-        );
+          if (!vendorRes.ok || !vendorData.success) {
+            throw new Error(vendorData.message || `Failed to insert vendor ${VendorId}`);
+          }
+
+
+          const resEmail = await fetch("/api/SendMail/Auction/Create", {
+            method: "POST",
+            body: JSON.stringify({
+              IDDID: iddid,
+              VID: VendorId,
+              AuctionDate: auctionDate,
+              Waste: waste,
+              TotalQty: totalSelectedQty,
+              MUnit: sortedUndisposedOptions[0]?.unit,
+            })
+          })
+
+        }
+
       }
 
       alert("Saved Successfully");
@@ -579,10 +591,22 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           <div className=" grid grid-cols-2">
 
             <div className="px-4 py-1">
-              <label className="mb-1 block text-xs font-semibold text-slate-700">Disposal ID</label>
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Auction ID</label>
               <input
                 // type="date"
                 value={iddid}
+                // onChange={(e) => setDisposalDate(e.target.value)}
+                className="w-full rounded border border-slate-300 px-3 py-2"
+                disabled
+              />
+            </div>
+
+
+            <div className="px-4 py-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Auction Date</label>
+              <input
+                // type="date"
+                value={auctionDate}
                 // onChange={(e) => setDisposalDate(e.target.value)}
                 className="w-full rounded border border-slate-300 px-3 py-2"
                 disabled
@@ -733,7 +757,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
               </select>
             </div>
 
-            <div className="px-4 py-1">
+            <div className="px-4 py-1 col-span-2">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Initiator Remarks</label>
               <textarea
                 disabled
@@ -747,9 +771,9 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
 
             {/* </div> */}
 
-            <hr className="col-span-2 mt-4 mb-3 border border-gray-200 w-[97%] mx-auto" />
+            <hr className="col-span-2 mt-2 mb-5 border border-gray-400 border-dashed w-[97%] mx-auto" />
 
-            <div className="relative">
+            <div className="relative mb-5">
               <label className="mb-1 block text-xs font-semibold text-slate-700">Vendor List</label>
               <button
                 type="button"

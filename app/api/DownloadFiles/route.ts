@@ -1,10 +1,26 @@
-import { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import fs from "fs"
 import path from "path"
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/options";
 
 export const runtime = "nodejs"
 
 export async function GET(req: NextRequest) {
+
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json("Invalid Request")
+    }
+
+    var EmpCode = "", EmpName = ""
+    if (session) {
+        EmpCode = session?.user?.id || "";
+        EmpName = session?.user?.username || "";
+    }
+
+
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
 

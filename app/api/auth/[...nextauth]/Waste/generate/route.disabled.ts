@@ -112,7 +112,12 @@ export async function handleGenerateGet(request: Request) {
     const optionId = (searchParams.get("ID") ?? searchParams.get("id") ?? "").trim();
     const plantunitid = (searchParams.get("plantunitid") ?? "").trim();
 
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json("Invalid Request")
+    }
+
     const uid = session?.user.uid
     const deptId = session?.user.deptId
 

@@ -9,6 +9,7 @@ type RejectedRow = {
   WCID?: String
   ID?: String
   IDDID?: String
+  DisposalRefNo: string
   AuctionID: String
   DateOfDisposal: String
   DisType: String
@@ -116,13 +117,13 @@ export default function RevertedDisposalList() {
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Final Disposal ID</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Final Ref No.</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Initiated Disposal ID</th>
                 {/* <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Date of Disposal</th> */}
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Disposal Type</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste Category</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Waste</th>
-                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Total Quantity</th>
+                <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Quantity</th>
                 <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Created On</th>
 
                 {/* <th className="px-3 py-2 text-left text-xs font-semibold text-slate-700">Total Qty</th> */}
@@ -184,7 +185,7 @@ export default function RevertedDisposalList() {
 
                     }
                   >
-                    <td className="px-3 py-2 text-xs text-slate-700">{row.ID}</td>
+                    <td className="px-3 py-2 text-xs text-slate-700">{row.DisposalRefNo}</td>
                     <td className="px-3 py-2 text-xs text-slate-700">{row.IDDID}</td>
                     {/* <td className="px-3 py-2 text-xs text-slate-700">{row.DateOfDisposal}</td> */}
                     <td className="px-3 py-2 text-xs text-slate-700">{row.DisType}</td>

@@ -9,11 +9,15 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 export async function POST(req: Request) {
 
     try {
+        const session = await getServerSession(authOptions);
+
+        if (!session) {
+            return NextResponse.json("Invalid Request")
+        }
 
         const pool = await getConnection();
 
         if (!pool || !pool.connected) {
-
             return NextResponse.json(
                 {
                     success: false,
@@ -22,9 +26,6 @@ export async function POST(req: Request) {
                 { status: 500 }
             );
         }
-
-        const session =
-            await getServerSession(authOptions);
 
         const empCode = String(
             session?.user?.id ?? ""
