@@ -306,6 +306,7 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
 
             if (!res.ok || !payload.success) {
                 setDecision(payload.message || "Failed to save disposal approval")
+                setSaving(false)
                 return;
             }
 
@@ -349,7 +350,7 @@ export default function DisposalApproveInternalPage({ searchParams }: { searchPa
             console.error("Failed to save disposal approval", err);
             setDecision("Failed to save disposal approval");
         } finally {
-            setSaving(false);
+            // setSaving(false);
         }
 
     }

@@ -308,6 +308,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
 
             if (!res.ok || !payload.success) {
                 setDecision(payload.message || "Failed to save disposal approval");
+                setSaving(false)
                 return;
             }
 
@@ -350,7 +351,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
 
 
             if (stsCode == 3 && row?.ID) {
-                router.push(`/Form/Form10?fddid=${row.ID}&iddid=${row.IDDID}`)
+                router.push(`/Form/Form10`)
             }
             else {
                 router.back()
@@ -359,7 +360,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
             console.error("Failed to save disposal approval", err);
             setDecision("Failed to save disposal approval");
         } finally {
-            setSaving(false);
+            // setSaving(false);
         }
     };
 

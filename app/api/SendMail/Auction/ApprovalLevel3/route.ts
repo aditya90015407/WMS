@@ -178,7 +178,7 @@ export async function POST(req: NextRequest) {
         const mailBodyonApprovaltoAuctioneer = `
         <p>Dear ${auctioneerName},</p>
 
-        <p>A vendor application submitted for the Auction ${IDDID} has been approved.</p>
+        <p>An application submitted by ${VendorName} for the Auction ${IDDID} has been approved.</p>
 
         <p><strong>Auction Details:</strong></p>
         <ul>
@@ -211,9 +211,9 @@ export async function POST(req: NextRequest) {
                     "emailBody": mailBodyonApprovaltoAuctioneer,
                     "fromEmail": "no-reply@jindalstainless.com",
                     "fromName": "WMS",
-                    "toEmail": "abhishek.silawat@jindalstainless.com",
-                    "ccEmail": "aditya_mishra@jindalstainless.com",
-                    "bccEmail": "aditya_mishra@jindalstainless.com"
+                    "toEmail": toEmail,
+                    "ccEmail": toEmail,
+                    "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
                 })
             });
 
@@ -233,9 +233,9 @@ export async function POST(req: NextRequest) {
                     "emailBody": mailBodyonApprovaltoVendor,
                     "fromEmail": "no-reply@jindalstainless.com",
                     "fromName": "WMS",
-                    "toEmail": "abhishek.silawat@jindalstainless.com",
-                    "ccEmail": "aditya_mishra@jindalstainless.com",
-                    "bccEmail": "aditya_mishra@jindalstainless.com"
+                    "toEmail": vendorEmail,
+                    "ccEmail": vendorEmail,
+                    "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
                 })
             });
 
@@ -259,9 +259,9 @@ export async function POST(req: NextRequest) {
                     "emailBody": mailBodyonRejection,
                     "fromEmail": "no-reply@jindalstainless.com",
                     "fromName": "WMS",
-                    "toEmail": "abhishek.silawat@jindalstainless.com",
-                    "ccEmail": "aditya_mishra@jindalstainless.com",
-                    "bccEmail": "aditya_mishra@jindalstainless.com"
+                    "toEmail": vendorEmail,
+                    "ccEmail": vendorEmail,
+                    "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
                 })
             });
 

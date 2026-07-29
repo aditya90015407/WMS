@@ -110,10 +110,10 @@ export async function POST(req: NextRequest) {
             .input("FLAG", "GetMailofEnvironmentApprovers")
             .execute("PRO-WMS_GET")
 
-        const disposers = await getEnvApproversRes.recordset
+        const EnvApprovers = await getEnvApproversRes.recordset
 
-        const disposerMails = disposers.map((el) => el.EMAIL).join(",")
-        const toEmail = disposerMails
+        const EnvApproversEmails = EnvApprovers.map((el) => el.EMAIL).join(",")
+        const toEmail = EnvApproversEmails
 
         // console.log(disposers, disposerMails, toEmail)
 
@@ -190,8 +190,8 @@ export async function POST(req: NextRequest) {
                 "emailBody": AID ? mailBodyforInternal : mailBody,
                 "fromEmail": "no-reply@jindalstainless.com",
                 "fromName": "WMS",
-                "toEmail": "abhishek.silawat@jindalstainless.com",
-                "ccEmail": "aditya_mishra@jindalstainless.com",
+                "toEmail": toEmail,
+                "ccEmail": CCEmails,
                 "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
             })
         });

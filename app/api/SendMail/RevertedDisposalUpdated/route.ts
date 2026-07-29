@@ -100,10 +100,10 @@ export async function POST(req: NextRequest) {
             .input("FLAG", "GetMailofEnvironmentApprovers")
             .execute("PRO-WMS_GET")
 
-        const disposers = await getEnvApproversRes.recordset
+        const EnvApprovers = await getEnvApproversRes.recordset
 
-        const disposerMails = disposers.map((el) => el.EMAIL).join(",")
-        const toEmail = disposerMails
+        const EnvApproversEmails = EnvApprovers.map((el) => el.EMAIL).join(",")
+        const toEmail = EnvApproversEmails
 
         // console.log(disposers, disposerMails, toEmail)
 
@@ -151,12 +151,12 @@ export async function POST(req: NextRequest) {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                "subject": `WMS : Reverted Disposal Updated_Action Required_${Waste}`,
+                "subject": `WMS : Reverted Disposal Entry Updated_Action Required_${Waste}`,
                 "emailBody": mailBody,
                 "fromEmail": "no-reply@jindalstainless.com",
                 "fromName": "WMS",
-                "toEmail": "abhishek.silawat@jindalstainless.com",
-                "ccEmail": "aditya_mishra@jindalstainless.com",
+                "toEmail": toEmail,
+                "ccEmail": CCEmails,
                 "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
             })
         });

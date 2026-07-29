@@ -112,6 +112,19 @@ export async function POST(req: NextRequest) {
         // console.log(generator)
 
 
+        const getEnvApproversRes = await pool
+            .request()
+            .input("FLAG", "GetMailofEnvironmentApprovers")
+            .execute("PRO-WMS_GET")
+
+        const EnvApprovers = await getEnvApproversRes.recordset
+
+        const approvedCCEmails = EnvApprovers.map((el) => el.EMAIL).join(",")
+
+        // console.log(EnvApprovers, approvedCCEmails)
+
+
+
 
 
         const now = new Date();
@@ -189,13 +202,14 @@ export async function POST(req: NextRequest) {
                 "emailBody": mailBodyforGenerator,
                 "fromEmail": "no-reply@jindalstainless.com",
                 "fromName": "WMS",
-                "toEmail": "abhishek.silawat@jindalstainless.com",
-                "ccEmail": "aditya_mishra@jindalstainless.com",
+                "toEmail": toEmail,
+                "ccEmail": CCEmails,
                 "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
             })
         });
         // console.log(await response)
         const mailSenttoGenerator = await sendMailtoGenerator.json()
+
 
         const sendMailtoApprover = await fetch(`https://jajitapps.jindalstainless.com:9234/api/AutoEmail/InstantEmailSend`, {
             method: "POST",
@@ -208,14 +222,15 @@ export async function POST(req: NextRequest) {
                 "emailBody": mailBodyforApprover,
                 "fromEmail": "no-reply@jindalstainless.com",
                 "fromName": "WMS",
-                "toEmail": "abhishek.silawat@jindalstainless.com",
-                "ccEmail": "aditya_mishra@jindalstainless.com",
-                "bccEmail": "abhishek.silawat@jindalstainless.com"
+                "toEmail": toEmail,
+                "ccEmail": approvedCCEmails,
+                "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
             })
         });
         // console.log(await response)
+
         const mailSenttoApprover = await sendMailtoApprover.json()
-        // console.log(mailSent)
+        // console.log(mailSenttoApprover, mailSenttoGenerator)
         return NextResponse.json({ mailSenttoApprover, mailSenttoGenerator })
         // return NextResponse.json("Ok")
 

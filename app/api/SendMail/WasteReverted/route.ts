@@ -161,8 +161,8 @@ export async function POST(req: NextRequest) {
                 "emailBody": mailBody,
                 "fromEmail": "no-reply@jindalstainless.com",
                 "fromName": "WMS",
-                "toEmail": "abhishek.silawat@jindalstainless.com",
-                "ccEmail": "aditya_mishra@jindalstainless.com",
+                "toEmail": toEmail,
+                "ccEmail": CCEmails,
                 "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
             })
         });

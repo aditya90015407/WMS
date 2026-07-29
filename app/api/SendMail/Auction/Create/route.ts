@@ -85,10 +85,10 @@ export async function POST(req: NextRequest) {
             .input("FLAG", "GetMailofAuctioneer")
             .execute("PRO-WMS_GET")
 
-        const disposers = await getAuctioneerRes.recordset
+        const auctioneer = await getAuctioneerRes.recordset
 
-        const disposerMails = disposers.map((el) => el.EMAIL).join(",")
-        const ccEmail = disposerMails
+        const auctioneerMail = auctioneer.map((el) => el.EMAIL).join(",")
+        const ccEmail = auctioneerMail
 
         // console.log(disposers, disposerMails, toEmail)
 
@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
         const vendorData = await getVendorRes.recordset
         const vendorName = vendorData[0].NAME
         const vendorEmail = vendorData[0].EMAIL
+        const toEmail = vendorEmail
 
         // console.log(vendorData)
 
@@ -150,9 +151,9 @@ export async function POST(req: NextRequest) {
                 "emailBody": mailBody,
                 "fromEmail": "no-reply@jindalstainless.com",
                 "fromName": "WMS",
-                "toEmail": "abhishek.silawat@jindalstainless.com",
-                "ccEmail": "aditya_mishra@jindalstainless.com",
-                "bccEmail": "aditya_mishra@jindalstainless.com"
+                "toEmail": toEmail,
+                "ccEmail": ccEmail,
+                "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
             })
         });
         // console.log(await response)

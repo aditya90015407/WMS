@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
         const CCMails = [senderMail];
         const CCEmails = CCMails.join(",")
 
+
         const getVendorRes = await pool
             .request()
             .input("FLAG", "GetVendorDetailsByVendorCode")
@@ -111,10 +112,10 @@ export async function POST(req: NextRequest) {
             .input("FLAG", "GetMailofStoreAdmin")
             .execute("PRO-WMS_GET")
 
-        const disposers = await getStoreAdminRes.recordset
+        const storeAdmin = await getStoreAdminRes.recordset
 
-        const disposerMails = disposers.map((el) => el.EMAIL).join(",")
-        const toEmail = disposerMails
+        const storeAdminEmail = storeAdmin.map((el) => el.EMAIL).join(",")
+        const toEmail = storeAdminEmail
 
         // console.log(disposers, disposerMails, toEmail)
 
@@ -218,9 +219,9 @@ export async function POST(req: NextRequest) {
                     "emailBody": mailBodyonApproval,
                     "fromEmail": "no-reply@jindalstainless.com",
                     "fromName": "WMS",
-                    "toEmail": "abhishek.silawat@jindalstainless.com",
-                    "ccEmail": "aditya_mishra@jindalstainless.com",
-                    "bccEmail": "aditya_mishra@jindalstainless.com"
+                    "toEmail": toEmail,
+                    "ccEmail": CCEmails,
+                    "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
                 })
             });
 
@@ -245,9 +246,9 @@ export async function POST(req: NextRequest) {
                         "emailBody": mailBodyonRejection,
                         "fromEmail": "no-reply@jindalstainless.com",
                         "fromName": "WMS",
-                        "toEmail": "abhishek.silawat@jindalstainless.com",
-                        "ccEmail": "aditya_mishra@jindalstainless.com",
-                        "bccEmail": "aditya_mishra@jindalstainless.com"
+                        "toEmail": vendorEmail,
+                        "ccEmail": vendorEmail,
+                        "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
                     })
                 });
 
@@ -269,9 +270,9 @@ export async function POST(req: NextRequest) {
                         "emailBody": mailBodyonRejection,
                         "fromEmail": "no-reply@jindalstainless.com",
                         "fromName": "WMS",
-                        "toEmail": "abhishek.silawat@jindalstainless.com",
-                        "ccEmail": "aditya_mishra@jindalstainless.com",
-                        "bccEmail": "aditya_mishra@jindalstainless.com"
+                        "toEmail": vendorEmail,
+                        "ccEmail": vendorEmail,
+                        "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
                     })
                 });
 

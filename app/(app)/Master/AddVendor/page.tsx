@@ -206,10 +206,11 @@ export default function Vendor() {
                 })
 
                 toast.success("Vendor Added Succesfully")
-                return;
+                // return;
             }
-
-            toast.error(`Failed to Add Vendor: ${data.error}`);
+            else {
+                toast.error(`Failed to Add Vendor: ${data.error}`);
+            }
             window.location.reload()
 
             setSubmitClicked(false)

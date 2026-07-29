@@ -262,6 +262,7 @@ export default function DisposalApproveNonHazardousPage({ searchParams }: { sear
 
             if (!res.ok) {
                 setDecision(payload.message || "Failed to save disposal approval");
+                setSaving(false)
                 return;
             }
 
