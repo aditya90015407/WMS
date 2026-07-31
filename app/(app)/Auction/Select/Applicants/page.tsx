@@ -112,7 +112,7 @@ export default function AuctionSelect({ searchParams }: { searchParams: Promise<
         });
 
         const rawData = await res2.json();
-        console.log("Approved participants payload:", rawData);
+        // console.log("Approved participants payload:", rawData);
 
         if (!res2.ok || !rawData.success) {
           throw new Error(rawData.message || "API failed");

@@ -1,15 +1,12 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(request: NextRequest) {
-    const nonce = btoa(
-        String.fromCharCode(...crypto.getRandomValues(new Uint8Array(16)))
-    );
+export function middleware(req: NextRequest) {
+    const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
 
     const csp = `
     default-src 'self';
     script-src 'self' 'nonce-${nonce}';
-    style-src 'self' 'nonce-${nonce}';
+    style-src 'self' 'unsafe-inline';
     img-src 'self' data: https:;
     font-src 'self';
     connect-src 'self' https:;
@@ -21,18 +18,16 @@ export function middleware(request: NextRequest) {
         .replace(/\s{2,}/g, " ")
         .trim();
 
-    const response = NextResponse.next();
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set("x-nonce", nonce);
 
-    response.headers.set(
-        "Content-Security-Policy",
-        csp
-    );
+    const response = NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    });
+
+    response.headers.set("Content-Security-Policy", csp);
 
     return response;
 }
-
-export const config = {
-    matcher: [
-        "/((?!_next/static|_next/image|favicon.ico).*)",
-    ],
-};

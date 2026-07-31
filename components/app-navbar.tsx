@@ -152,15 +152,17 @@ export default function AppNavbar() {
                   <span className="font-semibold">Dept Id:</span>{" "}
                   {deptId}
                 </p> */}
-                <p className="text-slate-800">
+                {wmsUnit != 'Not available' && <p className="text-slate-800">
                   <span className="font-semibold">Unit :</span>{" "}
                   {wmsUnit}
                 </p>
-                <p className="text-slate-800">
+                }
+
+                {wmsDept != 'Not available' && < p className="text-slate-800">
                   <span className="font-semibold">Department :</span>{" "}
                   {wmsDept}
                 </p>
-
+                }
                 <p className="text-slate-800">
                   <span className="font-semibold">Assigned Role :</span>{" "}
                   {assignedRole}
@@ -210,7 +212,7 @@ export default function AppNavbar() {
           </div>
         </div>
       </div>
-    </header>
+    </header >
   );
 }
 
