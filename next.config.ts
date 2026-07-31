@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval';
+  script-src 'self' 'unsafe-inline';
   style-src 'self' 'unsafe-inline';
   img-src 'self' data: https:;
   font-src 'self';
@@ -13,10 +13,10 @@ const ContentSecurityPolicy = `
   frame-ancestors 'none';
 `;
 const securityHeaders = [
-  {
-    key: "Content-Security-Policy",
-    value: ContentSecurityPolicy.replace(/\n/g, "").trim(),
-  },
+  // {
+  //   key: "Content-Security-Policy",
+  //   value: ContentSecurityPolicy.replace(/\n/g, "").trim(),
+  // },
   {
     key: "Strict-Transport-Security",
     value: "max-age=63072000; includeSubDomains; preload", // 2 years
