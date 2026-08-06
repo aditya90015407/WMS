@@ -33,10 +33,11 @@ export async function POST(req: NextRequest) {
     }
 
     const session = await getServerSession(authOptions);
-    var EmpCode = "", EmpName = "";
+    var EmpCode = "", EmpName = "", WMSDept = '';
     if (session) {
         EmpCode = session?.user?.id || "";
         EmpName = session?.user?.username || "";
+        WMSDept = session.user.WMSDept || ""
     }
     if (!session) {
         return NextResponse.json("Invalid Request")
@@ -132,7 +133,7 @@ export async function POST(req: NextRequest) {
           <li>Initiated Disposal ID : ${IDDID}</li>
           <li>Waste : ${Waste}</li>
           <li>Quantity : ${Quantity} ${MUnit}</li>
-          <li>Reverted By : ${EmpName}</li>
+          <li>Reverted By : ${EmpName} (${WMSDept})</li>
           <li>Reverted On : ${approvedOn}</li>
           <li>Remarks : ${Remarks}</li>
         </ul>

@@ -376,6 +376,17 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     e.preventDefault();
     setSubmitClicked(true)
 
+    if (values.senderNameAddress == "" || values.transporterName == "" || values.transporterAddress == "" ||
+      values.transporterEmail == "" || values.transporterPhone == "" || values.vehicleType == "" || values.transporterRegNo == "" ||
+      values.vehicleRegNo == "" || values.receiverName == "" || values.receiverAddress == "" ||
+      values.receiverAuthNo == "" || values.totalQty == "" || values.containers == "" || !values.containers ||
+      values.physicalForm == ""
+    ) {
+      alert("Please fill all required fields (marked with *) ")
+      setSubmitClicked(false)
+      return
+    }
+
     const maxAllowedQuantity = Number(values.remainingQty!) + Number(values.previousQty!);
 
     // console.log(maxAllowedQuantity, values.remainingQty, values.previousQty, values.totalQty)
@@ -389,6 +400,29 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
     if (Number(values?.totalQty!) > maxAllowedQuantity!) {
       alert("Quantity to be disposed is more than the available quantity")
+      setSubmitClicked(false)
+      return
+    }
+
+
+    const emailRegex = /^(?=.{12,})[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+    async function isValidEmail(email: any) {
+      // console.log(username, password)
+      // const pass = await decryptPassword(password);
+      // console.log(pass)
+      return emailRegex.test(email);
+      // return usernameRegex.test(username);
+    }
+
+    if (!await isValidEmail(values.transporterEmail)) {
+      alert("Please Enter a valid Email")
+      setSubmitClicked(false)
+      return
+    }
+
+    if (String(values.transporterPhone).replace(/\D/g, "")?.length != 10) {
+      alert("Please Enter a valid Phone No. with 10 digits")
       setSubmitClicked(false)
       return
     }
@@ -557,6 +591,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     if (row.type === "phone") {
       return (
         <input
+          maxLength={10}
           value={(v as string) ?? ""}
           placeholder={row.hint ?? "Phone"}
           className="w-full rounded border border-slate-300 px-2 py-1 text-sm"

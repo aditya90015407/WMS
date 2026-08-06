@@ -274,29 +274,29 @@ export default function AuctionApproval({ searchParams }: { searchParams: Promis
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                     >Uploaded On</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Approver Acceptance</th>
+                                    >L1 Env. Approver Acceptance</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Approver Remarks</th>
+                                    >L1 Env. Approver Remarks</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Approver Name</th>
+                                    >L1 Env. Approver Name</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Approver Action Date</th>
+                                    >L1 Env. Approver Action Date</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Admin Acceptance</th>
+                                    >L2 Env. Approver Acceptance</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Admin Remarks</th>
+                                    >L2 Env. Approver Remarks</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Admin Name</th>
+                                    >L2 Env. Approver Name</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Admin Action Date</th>
+                                    >L2 Env. Approver Action Date</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Store Acceptance</th>
+                                    >L3 Store Approver Acceptance</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Store Remarks</th>
+                                    >L3 Store Approver Remarks</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Store Approver Name</th>
+                                    >L3 Store Approver Name</th>
                                     <th className=" px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
-                                    >Store Action Date</th>
+                                    >L3 Store Approver Action Date</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 bg-white">

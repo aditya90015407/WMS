@@ -30,7 +30,7 @@ export default async function AppLayout({ children }: AppLayoutProps) {
     try {
         const session = await getServerSession(authOptions);
         // console.log(session)
-        if (!session || (session.user.roleId != "9" && session.user.roleId != "10" && session.user.roleId != "11")) {
+        if (!session || (session.user.roleId != "9" && session.user.roleId != "10" && session.user.roleId != "11" && session.user.roleId != "12")) {
             await signOut({ callbackUrl: '/sign-in', redirect: true })
             redirect("/sign-in");
         }

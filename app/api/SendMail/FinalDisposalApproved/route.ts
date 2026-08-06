@@ -33,10 +33,11 @@ export async function POST(req: NextRequest) {
     }
 
     const session = await getServerSession(authOptions);
-    var EmpCode = "", EmpName = "";
+    var EmpCode = "", EmpName = "", WMSDept = '';
     if (session) {
         EmpCode = session?.user?.id || "";
         EmpName = session?.user?.username || "";
+        WMSDept = session.user.WMSDept || ""
     }
     if (!session) {
         return NextResponse.json("Invalid Request")
@@ -76,7 +77,7 @@ export async function POST(req: NextRequest) {
         const MUnit = body.MUnit
         const GeneratedBy = body.GeneratedBy
 
-        console.log(body)
+        // console.log(body)
         // console.log(EmpCode, EmpName)
         // if (SegLeadEmpCode) return NextResponse.json("No Employee Code")
 
@@ -131,7 +132,7 @@ export async function POST(req: NextRequest) {
           <li>Initiated Disposal ID : ${IDDID}</li>
           <li>Waste : ${Waste}</li>
           <li>Quantity : ${Quantity} ${MUnit}</li>
-          <li>Approved By : ${EmpName}</li>
+          <li>Approved By : ${EmpName} (${WMSDept})</li>
           <li>Approved On : ${approvedOn}</li>
         </ul>
 
