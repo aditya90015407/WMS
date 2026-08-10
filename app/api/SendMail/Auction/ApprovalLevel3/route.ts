@@ -240,7 +240,7 @@ export async function POST(req: NextRequest) {
             });
 
             // console.log(await response)
-            const mailSenttpVendor = await sendMailtoVendor.json()
+            const mailSenttoVendor = await sendMailtoVendor.json()
 
             return NextResponse.json(mailSenttoAuctioneer)
         }

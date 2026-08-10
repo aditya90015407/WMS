@@ -222,7 +222,7 @@ export async function POST(req: NextRequest) {
                 "emailBody": mailBodyforApprover,
                 "fromEmail": "no-reply@jindalstainless.com",
                 "fromName": "WMS",
-                "toEmail": toEmail,
+                "toEmail": CCEmails,
                 "ccEmail": approvedCCEmails,
                 "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
             })
