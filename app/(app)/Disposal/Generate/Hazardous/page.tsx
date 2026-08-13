@@ -109,7 +109,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     // { key: "receiverCert", field: "Receiver certification for receipt of hazardous and other waste", type: "checkbox" },
     // { key: "receiverSignDate", field: "Name and Stamp (Receiver)", type: "signature-date" },
     { key: "form8form9", field: "Hard copy of Form-8 and Form-9 submitted to transporter", type: "checkbox" },
-    { key: "salePoSoDoc", field: "Document for Sale PO/SO for external disposal", type: "file" },
+    { key: "salePoSoDoc", field: "Document for Sale PO/SO for external disposal *", type: "file" },
     ...(session?.user.roleId != '7' ? [{
       key: "finalPartyDoc",
       field: "Final party document intact as provided prior for verification *",

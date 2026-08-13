@@ -71,7 +71,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
       key: "physicalForm", field: "Physical Form *", type: "select",
       options: ["1|Solid", "2|Liquid", "3|Sludge", "4|Semisolid", "5|Oily", "6|Tarry", "7|Slurry", "9|Fines"]
     },
-    { key: "salePoSoDoc", field: "Document for Sale PO/SO to be uploaded for external disposal", type: "file" },
+    { key: "salePoSoDoc", field: "Document for Sale PO/SO to be uploaded for external disposal *", type: "file" },
     ...(session?.user.roleId != '7' ? [{
       key: "finalPartyDoc",
       field: "Final party document intact as provided prior for verification *",
