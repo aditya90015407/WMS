@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server"
 import path from "path"
 import { authOptions } from "../../auth/[...nextauth]/options";
+import { signOut } from "next-auth/react";
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -11,6 +12,7 @@ export async function POST(req: NextRequest) {
         const session = await getServerSession(authOptions);
 
         if (!session) {
+            await signOut({ callbackUrl: '/sign-in', redirect: true })
             return NextResponse.json("Invalid Request")
         }
 

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import * as sql from "mssql";
 import { getConnection } from "@/lib/dbConnect";
 import { authOptions } from "../../options";
+import { signOut } from "next-auth/react";
 
 type EditPayload = {
   id?: string;
@@ -27,6 +28,8 @@ export async function handleEditPost(request: Request) {
     const createdBy = String(authSession?.user?.id ?? "").trim();
 
     if (!createdBy) {
+      await signOut({ callbackUrl: '/sign-in', redirect: true })
+
       return NextResponse.json(
         {
           success: false,

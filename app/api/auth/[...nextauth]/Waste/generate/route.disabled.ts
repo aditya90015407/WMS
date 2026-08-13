@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import * as sql from "mssql";
 import { getConnection } from "@/lib/dbConnect";
 import { authOptions } from "../../options";
+import { signOut } from "next-auth/react";
 
 type MasterOptionRow = {
   ID?: string | number;
@@ -115,9 +116,9 @@ export async function handleGenerateGet(request: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
+      await signOut({ callbackUrl: '/sign-in', redirect: true })
       return NextResponse.json("Invalid Request")
     }
-
     const uid = session?.user.uid
     const deptId = session?.user.deptId
 

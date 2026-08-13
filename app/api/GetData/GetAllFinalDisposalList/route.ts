@@ -2,6 +2,7 @@ import { getConnection } from "@/lib/dbConnect";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../../auth/[...nextauth]/options";
+import { signOut } from "next-auth/react";
 
 export async function GET(req: NextRequest) {
     try {
@@ -9,6 +10,7 @@ export async function GET(req: NextRequest) {
         const session = await getServerSession(authOptions);
 
         if (!session) {
+            await signOut({ callbackUrl: '/sign-in', redirect: true })
             return NextResponse.json("Invalid Request")
         }
 

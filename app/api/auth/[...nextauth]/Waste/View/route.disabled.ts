@@ -2,7 +2,7 @@ export { };
 import { NextResponse } from "next/server";
 import * as sql from "mssql";
 import { getConnection } from "@/lib/dbConnect";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../options";
 
@@ -22,6 +22,7 @@ export async function handleViewGet(request: Request) {
     const session = await getServerSession(authOptions)
 
     if (!session) {
+      await signOut({ callbackUrl: '/sign-in', redirect: true })
       return NextResponse.json("Invalid Request")
     }
 

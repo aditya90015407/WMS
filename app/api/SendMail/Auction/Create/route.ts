@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import { DateTime } from 'luxon';
 import { getConnection } from "@/lib/dbConnect";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { signOut } from "next-auth/react";
 
 function sanitizeInput(obj: any) {
     if (typeof obj !== "object" || obj === null) return obj;
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
         EmpName = session?.user?.username || "";
     }
     if (!session) {
+        await signOut({ callbackUrl: '/sign-in', redirect: true })
         return NextResponse.json("Invalid Request")
     }
 

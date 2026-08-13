@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
 import { request } from "https";
 import { Form } from "lucide-react";
+import { signOut } from "next-auth/react";
 
 export async function POST(req: Request) {
   try {
@@ -12,6 +13,7 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
+      await signOut({ callbackUrl: '/sign-in', redirect: true })
       return NextResponse.json("Invalid Request")
     }
 

@@ -3,12 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import * as sql from "mssql";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/options";
+import { signOut } from "next-auth/react";
 
 export async function GET() {
 
   const session = await getServerSession(authOptions);
 
   if (!session) {
+    await signOut({ callbackUrl: '/sign-in', redirect: true })
     return NextResponse.json("Invalid Request")
   }
 

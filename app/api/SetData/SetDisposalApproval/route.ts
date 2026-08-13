@@ -3,12 +3,15 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import sql from "mssql";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { signOut } from "next-auth/react";
 
 export async function POST(req: NextRequest) {
     try {
         const session = await getServerSession(authOptions);
 
         if (!session?.user?.id) {
+            await signOut({ callbackUrl: '/sign-in', redirect: true })
+
             return NextResponse.json(
                 { success: false, message: "Invalid session" },
                 { status: 401 },

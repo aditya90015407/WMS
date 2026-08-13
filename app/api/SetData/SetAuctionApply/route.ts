@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import * as sql from "mssql";
 import { getConnection } from "@/lib/dbConnect";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { signOut } from "next-auth/react";
 
 const fileToBase64 = async (file: File | null): Promise<string> => {
   if (!file) return "";
@@ -15,6 +16,7 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
+      await signOut({ callbackUrl: '/sign-in', redirect: true })
       return NextResponse.json("Invalid Request")
     }
 

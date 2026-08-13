@@ -5,6 +5,7 @@ import fs from "fs";
 import path from "path";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/options";
+import { signOut } from "next-auth/react";
 
 export async function POST(req: Request) {
 
@@ -13,6 +14,7 @@ export async function POST(req: Request) {
         const session = await getServerSession(authOptions);
 
         if (!session) {
+            await signOut({ callbackUrl: '/sign-in', redirect: true })
             return NextResponse.json("Invalid Request")
         }
 
