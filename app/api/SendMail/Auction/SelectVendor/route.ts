@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
         EmpName = session?.user?.username || "";
     }
     if (!session) {
-        await signOut({ callbackUrl: '/sign-in', redirect: true })
+        await signOut({ callbackUrl: '/', redirect: true })
         return NextResponse.json("Invalid Request")
     }
 
@@ -80,11 +80,13 @@ export async function POST(req: NextRequest) {
         const getAuctioneerRes = await pool
             .request()
             .input("FLAG", "GetMailofAuctioneer")
+            .input("EmpCode", EmpCode)
             .execute("PRO-WMS_GET")
 
         const auctioneer = await getAuctioneerRes.recordset
 
         const auctioneerMails = auctioneer[0].EMAIL
+        const auctioneerName = auctioneer[0].NAME
         const ccEmail = auctioneerMails
 
         // console.log(auctioneer, auctioneerMails)
@@ -124,10 +126,10 @@ export async function POST(req: NextRequest) {
 
        
         <p>Please log in to the Waste Management System and take necessary action.</p>
-        <a href="https://jslaisrv01.jindalstainless.com:4433"> WMS </a> 
+        <a href="https://jajitapps.jindalstainless.com:5005"> WMS </a> 
 
 
-        <p>If you need any clarification, feel free to reach out to the Auctioneer.</p>
+        <p>If you need any clarification, feel free to reach out to the Auctioneer : ${auctioneerName}.</p>
 
         <p>Thank you for your prompt attention.</p>
 

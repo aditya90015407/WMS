@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-        await signOut({ callbackUrl: '/sign-in', redirect: true })
+        await signOut({ callbackUrl: '/', redirect: true })
         return NextResponse.json("Invalid Request")
     }
 
@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
         const WasteGenUnit = body.WasteGenUnit
         const Quantity = body.TotalQty
         const MUID = body.MUID
+        const AuctioneerID = body.AuctioneerID
 
         // console.log(body)
         // console.log(EmpCode, EmpName)
@@ -99,6 +100,7 @@ export async function POST(req: NextRequest) {
         const getAuctioneerRes = await pool
             .request()
             .input("FLAG", "GetMailofAuctioneer")
+            .input("ID", AuctioneerID)
             .execute("PRO-WMS_GET")
 
         const auctioneer = await getAuctioneerRes.recordset
@@ -107,7 +109,7 @@ export async function POST(req: NextRequest) {
         const auctioneerName = auctioneer[0].NAME
         const toEmail = auctioneerMail
 
-        // console.log(disposers, disposerMails, toEmail)
+        // console.log(auctioneerMail, auctioneerName, toEmail)
 
 
         const now = new Date();
@@ -130,7 +132,7 @@ export async function POST(req: NextRequest) {
         </ul>
 
         <p>Please log in to the Waste Management System and create an Auction for the initiated disposal to proceed further.</p>
-        <a href="https://jslaisrv01.jindalstainless.com:4433"> WMS </a>
+        <a href="https://jajitapps.jindalstainless.com:5005"> WMS </a>
 
 
 
@@ -155,7 +157,7 @@ export async function POST(req: NextRequest) {
                 "emailBody": mailBody,
                 "fromEmail": "no-reply@jindalstainless.com",
                 "fromName": "WMS",
-                "toEmail": toEmail,
+                "toEmail": toEmail,//"abhishek.silawat@jindalstainless.com",//toEmail
                 "ccEmail": CCEmails,
                 "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
             })

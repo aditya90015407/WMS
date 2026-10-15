@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      await signOut({ callbackUrl: '/sign-in', redirect: true })
+      await signOut({ callbackUrl: '/', redirect: true })
       return NextResponse.json("Invalid Request")
     }
 
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
     const physicalForm = String(body.PSID ?? "").trim();
     const disposedTo = String(body.AID ?? "").trim();
     const iddid = body.IDDID
+    const AuctioneerID = body.AuctioneerID ?? -1
 
     // console.log(body)
 
@@ -51,6 +52,7 @@ export async function POST(req: Request) {
       .input("TotalQty", sql.Decimal(18, 3), totalQty)
       .input("Auctionable", sql.Int, auctionable)
       .input("AuctionDate", auctionDate)
+      .input("AucID", AuctioneerID)
       .input("PSID", sql.NVarChar(30), physicalForm)
       .input("AID", sql.NVarChar(30), disposedTo)
       .input("Remarks", sql.NVarChar(sql.MAX), remarks)

@@ -10,6 +10,7 @@ import { toForm3Entry, type FormEntry as Form3Entry } from "@/lib/form3-columns"
 import { it } from "node:test";
 import { spawn } from "child_process";
 import { set } from "react-hook-form";
+import toast from "react-hot-toast";
 
 
 
@@ -458,7 +459,6 @@ export default function WasteViewPage() {
         body: JSON.stringify({ "ID": selectedEntry.code })
       })
 
-
       const data = await res.json()
       // console.log(data)
       setApprover(data)
@@ -472,17 +472,17 @@ export default function WasteViewPage() {
   const [dateOfDisposal, setDateOfDisposal] = useState("")
 
 
-  async function GetActualDateofDisposalofWaste(ID: any) {
-    // console.log(ID)
-    const res = await fetch("/api/GetData/GetActualDateofDisposalofWaste", {
-      method: "POST",
-      body: JSON.stringify({ ID: ID })
-    })
-    const data = await res.json()
-    const disposalDate = await data.data.ActualDateofDisposal
-    setDateOfDisposal(disposalDate)
-    // console.log(data, disposalDate)
-  }
+  // async function GetActualDateofDisposalofWaste(ID: any) {
+  //   // console.log(ID)
+  //   const res = await fetch("/api/GetData/GetActualDateofDisposalofWaste", {
+  //     method: "POST",
+  //     body: JSON.stringify({ ID: ID })
+  //   })
+  //   const data = await res.json()
+  //   const disposalDate = await data.data.ActualDateofDisposal
+  //   setDateOfDisposal(disposalDate)
+  //   // console.log(data, disposalDate)
+  // }
 
 
   useEffect(() => {
@@ -598,6 +598,63 @@ export default function WasteViewPage() {
     setPage(1);
   }, [rows.length, searchTerm]);
 
+  async function GetLabReport(selectedEntry: any) {
+
+    const res = await fetch("/api/GetData/GetLabReport", {
+      method: "POST",
+      body: JSON.stringify({ WRID: selectedEntry })
+    })
+    const data = await res.json()
+    // console.log(data)
+    if (data.length == 0) {
+      // toast.error("Lab Report Missing")
+      return ""
+    }
+    const attachPath = data[0].AttachPath
+    // console.log(data, selectedEntry, "hi")
+    return attachPath
+  }
+
+
+  async function DownloadLabReport(selectedEntry: any) {
+    // console.log(attachPath, "ap", attachPath)
+    // console.log(id)
+    const attachPath = await GetLabReport(selectedEntry)
+    // console.log(attachPath, "attacjpath")
+    const ext = attachPath.split('.')[1]
+
+    const payload = {
+      AttachPath: attachPath
+    }
+
+    const res = await fetch(`/api/DownloadAttachments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+
+    if (!res.ok) {
+      alert("File Not Found")
+      return
+    }
+
+    const blob = await res.blob()
+
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement("a")
+
+    a.href = url
+    a.download = `Lab Report Waste ID ${selectedEntry}.${ext}`
+    document.body.appendChild(a)
+    a.click()
+
+    a.remove()
+    window.URL.revokeObjectURL(url)
+
+    // setDownloading(false)
+  }
+
+
   const onDownload = (entry: FormEntry) => {
     const formHtml = createForm3Html(entry);
     // console.log(entry.Schedule)
@@ -684,6 +741,8 @@ export default function WasteViewPage() {
       }, 500);
     };
   };
+
+
 
 
 
@@ -817,7 +876,8 @@ export default function WasteViewPage() {
                   <tr
                     key={`waste-entry-${(currentPage - 1) * PAGE_SIZE + index}`}
                     className={getApprovalRowClass(item.stsCode) + " cursor-pointer"}
-                    onClick={() => { setSelectedEntry(item); GetActualDateofDisposalofWaste(item.code) }}
+                    onClick={() => { setSelectedEntry(item); }}
+                  // onClick={() => { setSelectedEntry(item); GetActualDateofDisposalofWaste(item.code) }}
                   >
                     <td className="border border-slate-300 px-2 py-1 text-slate-50">{item.code}</td>
                     <td className="border border-slate-300 px-2 py-1 text-slate-50">{item.date}</td>
@@ -873,12 +933,22 @@ export default function WasteViewPage() {
                         onClick={() => onDownload(selectedEntry)}
                         className="cursor-pointer inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
                       >
-                        <Download className="h-4 w-4" />
+                        <Download className="h-6 w-6" />
                         Form 3 PDF
                       </button>
                     </>
 
                   ) : null}
+                  {(selectedEntry.WID == '1' || selectedEntry.WID == '3') &&
+                    < button
+                      type="button"
+                      onClick={() => DownloadLabReport(selectedEntry.code)}
+                      className="cursor-pointer inline-flex items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-50"
+                    >
+                      <Download className="h-6 w-6" />
+                      Lab Report
+                    </button>
+                  }
                   <button
                     type="button"
                     onClick={() => setSelectedEntry(null)}

@@ -2,8 +2,9 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { createCipheriv, pbkdf2Sync } from "crypto";
 import { getConnection } from "@/lib/dbConnect";
-import decrypt from "@/components/Decrypt";
+import decryptInternal from "@/components/Decrypt";
 import { getUserRole } from "@/lib/get-user-role";
+import { decrypt } from "@/lib/decryptVendorCode";
 
 type AppRole = "Admin" | "Departments";
 
@@ -54,9 +55,10 @@ const toErrorMessage = (value: unknown): string => {
   return "Authentication failed";
 };
 
+
 const decryptCredential = async (value: string): Promise<string> => {
   try {
-    const decrypted = await decrypt(value);
+    const decrypted = await decryptInternal(value);
     return typeof decrypted === "string" ? decrypted : value;
   } catch {
     return value;
@@ -128,101 +130,204 @@ export const authOptions: NextAuthOptions = {
       credentials: {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
+        querystring: { label: "QueryString", type: "text" }
       },
       async authorize(credentials) {
-        if (!credentials?.username || !credentials?.password) {
-          throw new Error("Missing username or password");
-        }
-
-        try {
-          const username = (await decryptCredential(credentials.username)).trim();
-          const password = await decryptCredential(credentials.password);
-
-          if (!username || !password) {
+        if (!credentials?.querystring) {
+          if (!credentials?.username || !credentials?.password) {
             throw new Error("Missing username or password");
           }
+          try {
+            const username = (await decryptCredential(credentials.username)).trim();
+            const password = await decryptCredential(credentials.password);
 
-          const pool = await getConnection();
+            if (!username || !password) {
+              throw new Error("Missing username or password");
+            }
 
-          const loginResult = await pool
-            .request()
-            .input("FLAG", "APP-IN")
-            .input("EmpCode", username)
-            .input("Pwd", encryptPasswordForSp(password))
-            .execute("PRO-WMS_GET");
+            const pool = await getConnection();
 
-          const firstRow = loginResult.recordset?.[0] as
-            | SpAuthRow
-            | Record<string, unknown>
-            | undefined;
+            const loginResult = await pool
+              .request()
+              .input("FLAG", "APP-IN")
+              .input("EmpCode", username)
+              .input("Pwd", encryptPasswordForSp(password))
+              .execute("PRO-WMS_GET");
 
-          if (!firstRow) {
-            throw new Error("Invalid credentials");
+            const firstRow = loginResult.recordset?.[0] as
+              | SpAuthRow
+              | Record<string, unknown>
+              | undefined;
+
+            if (!firstRow) {
+              throw new Error("Invalid credentials");
+            }
+
+            const firstValue = Object.values(firstRow)[0];
+            if (
+              typeof firstValue === "string" &&
+              firstValue.toLowerCase().includes("unauthorised")
+            ) {
+              throw new Error("Unauthorised User !");
+            }
+
+            const user = firstRow as SpAuthRow;
+            const employeeCode = user["USER ID"];
+            const displayName = user.NAME;
+            const email = user.EMAIL;
+            const { role: defaultRole, roles } = resolveAppRole(user.Desg);
+
+            if (employeeCode === undefined || employeeCode === null) {
+              throw new Error("Unauthorised Login Attempt");
+            }
+
+            return {
+              id: String(employeeCode),
+              username:
+                typeof displayName === "string" && displayName.trim().length > 0
+                  ? displayName
+                  : username,
+              email: typeof email === "string" ? email : null,
+              department:
+                typeof user.DEPT === "string" && user.DEPT.trim().length > 0
+                  ? user.DEPT
+                  : undefined,
+              deptId:
+                user.DEPTID !== null && user.DEPTID !== undefined
+                  ? String(user.DEPTID)
+                  : undefined,
+              uid:
+                user.UID !== null && user.UID !== undefined
+                  ? String(user.UID)
+                  : undefined,
+              unit:
+                user.UNIT !== null && user.UNIT !== undefined
+                  ? String(user.UNIT)
+                  : undefined,
+              WMSDept:
+                user.WMSDept !== null && user.WMSDept !== undefined
+                  ? String(user.WMSDept)
+                  : undefined,
+              WMSUnit:
+                user.WMSUnit !== null && user.WMSUnit !== undefined
+                  ? String(user.WMSUnit)
+                  : undefined,
+              role: defaultRole,
+              roles: roles,
+              roleId:
+                user.RoleID !== null && user.RoleID !== undefined
+                  ? String(user.RoleID)
+                  : undefined,
+              roleName:
+                typeof user.Role === "string" && user.Role.trim().length > 0
+                  ? user.Role
+                  : undefined,
+            };
+          } catch (error: unknown) {
+            console.error("Auth Error:", error);
+            throw new Error(toErrorMessage(error));
           }
-
-          const firstValue = Object.values(firstRow)[0];
-          if (
-            typeof firstValue === "string" &&
-            firstValue.toLowerCase().includes("unauthorised")
-          ) {
-            throw new Error("Unauthorised User !");
+        }
+        else {
+          if (!credentials?.querystring) {
+            throw new Error("Missing SSO Credentials");
           }
+          try {
+            const decryptedQueryString = (await decrypt(credentials.querystring))
 
-          const user = firstRow as SpAuthRow;
-          const employeeCode = user["USER ID"];
-          const displayName = user.NAME;
-          const email = user.EMAIL;
-          const { role: defaultRole, roles } = resolveAppRole(user.Desg);
+            if (!decryptedQueryString) {
+              throw new Error("Missing SSO Credentials");
+            }
 
-          if (employeeCode === undefined || employeeCode === null) {
-            throw new Error("Invalid login response");
+            const userEmailQS = decryptedQueryString.split(",")[0]
+            const userIDQS = decryptedQueryString.split(",")[1]
+            const userEmail = userEmailQS.split("=")[1]
+            const userID = userIDQS.split("=")[1]
+
+            const pool = await getConnection();
+
+            const loginResult = await pool
+              .request()
+              .input("FLAG", "SSO_Login")
+              .input("QueryString", credentials.querystring)
+              .input("Email", userEmail)
+              .execute("PRO-WMS_GET");
+
+            console.log(loginResult)
+
+            const firstRow = loginResult.recordset?.[0] as
+              | SpAuthRow
+              | Record<string, unknown>
+              | undefined;
+
+            if (!firstRow) {
+              throw new Error("Invalid credentials");
+            }
+
+            const firstValue = Object.values(firstRow)[0];
+            if (
+              typeof firstValue === "string" &&
+              firstValue.toLowerCase().includes("unauthorised")
+            ) {
+              throw new Error("Unauthorised User !");
+            }
+
+            const user = firstRow as SpAuthRow;
+            const employeeCode = user["USER ID"];
+            const displayName = user.NAME;
+            const email = user.EMAIL;
+            const { role: defaultRole, roles } = resolveAppRole(user.Desg);
+
+            if (employeeCode === undefined || employeeCode === null) {
+              throw new Error("Invalid login response");
+            }
+
+            return {
+              id: String(employeeCode),
+              username:
+                typeof displayName === "string" && displayName.trim().length > 0
+                  ? displayName
+                  : undefined,
+              email: typeof email === "string" ? email : null,
+              department:
+                typeof user.DEPT === "string" && user.DEPT.trim().length > 0
+                  ? user.DEPT
+                  : undefined,
+              deptId:
+                user.DEPTID !== null && user.DEPTID !== undefined
+                  ? String(user.DEPTID)
+                  : undefined,
+              uid:
+                user.UID !== null && user.UID !== undefined
+                  ? String(user.UID)
+                  : undefined,
+              unit:
+                user.UNIT !== null && user.UNIT !== undefined
+                  ? String(user.UNIT)
+                  : undefined,
+              WMSDept:
+                user.WMSDept !== null && user.WMSDept !== undefined
+                  ? String(user.WMSDept)
+                  : undefined,
+              WMSUnit:
+                user.WMSUnit !== null && user.WMSUnit !== undefined
+                  ? String(user.WMSUnit)
+                  : undefined,
+              role: defaultRole,
+              roles: roles,
+              roleId:
+                user.RoleID !== null && user.RoleID !== undefined
+                  ? String(user.RoleID)
+                  : undefined,
+              roleName:
+                typeof user.Role === "string" && user.Role.trim().length > 0
+                  ? user.Role
+                  : undefined,
+            };
+          } catch (error: unknown) {
+            console.error("Auth Error:", error);
+            throw new Error(toErrorMessage(error));
           }
-
-          return {
-            id: String(employeeCode),
-            username:
-              typeof displayName === "string" && displayName.trim().length > 0
-                ? displayName
-                : username,
-            email: typeof email === "string" ? email : null,
-            department:
-              typeof user.DEPT === "string" && user.DEPT.trim().length > 0
-                ? user.DEPT
-                : undefined,
-            deptId:
-              user.DEPTID !== null && user.DEPTID !== undefined
-                ? String(user.DEPTID)
-                : undefined,
-            uid:
-              user.UID !== null && user.UID !== undefined
-                ? String(user.UID)
-                : undefined,
-            unit:
-              user.UNIT !== null && user.UNIT !== undefined
-                ? String(user.UNIT)
-                : undefined,
-            WMSDept:
-              user.WMSDept !== null && user.WMSDept !== undefined
-                ? String(user.WMSDept)
-                : undefined,
-            WMSUnit:
-              user.WMSUnit !== null && user.WMSUnit !== undefined
-                ? String(user.WMSUnit)
-                : undefined,
-            role: defaultRole,
-            roles: roles,
-            roleId:
-              user.RoleID !== null && user.RoleID !== undefined
-                ? String(user.RoleID)
-                : undefined,
-            roleName:
-              typeof user.Role === "string" && user.Role.trim().length > 0
-                ? user.Role
-                : undefined,
-          };
-        } catch (error: unknown) {
-          console.error("Auth Error:", error);
-          throw new Error(toErrorMessage(error));
         }
       },
     }),
@@ -347,7 +452,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: "/sign-in",
+    signIn: "/login",
   },
   session: {
     strategy: "jwt",

@@ -87,7 +87,9 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     { key: "transporterRegNo", field: "Transporter Registration No. *", type: "text", hint: "Transporter registration number", required: true },
     { key: "vehicleRegNo", field: "Vehicle Registration No. *", type: "text", hint: "Enter vehicle number", required: true },
     { key: "receiverName", field: "Receiver Name *", type: "text", hint: "Enter receiver name", required: true },
-    { key: "receiverAddress", field: "Address *", type: "textarea", hint: "Enter receiver address", required: true },
+    { key: "receiverAddress", field: "Receiver Address *", type: "textarea", hint: "Enter receiver address", required: true },
+    { key: "receiverPhone", field: "Receiver Phone No. *", type: "phone", hint: "Receiver Phone ", required: true },
+    { key: "receiverEmail", field: "Receiver Email *", type: "email", hint: "Receiver Email", required: true },
     { key: "receiverAuthNo", field: "Receiver Authorization No. *", type: "text", hint: "Enter receiver authorization number", required: true },
     { key: "Waste", field: "Waste Description", type: "auto", required: true },
     { key: "remainingQty", field: "Remaining Quantity", type: "auto", required: true },
@@ -328,7 +330,7 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
 
     if (values.senderNameAddress == "" || values.transporterName == "" || values.transporterAddress == "" ||
       values.transporterEmail == "" || values.transporterPhone == "" || values.vehicleType == "" || values.transporterRegNo == "" ||
-      values.vehicleRegNo == "" || values.receiverName == "" || values.receiverAddress == "" ||
+      values.vehicleRegNo == "" || values.receiverName == "" || values.receiverAddress == "" || values.receiverPhone == "" || values.receiverEmail == "" ||
       values.receiverAuthNo == "" || values.totalQty == "" || values.containers == "" || !values.containers ||
       values.physicalForm == ""
     ) {
@@ -380,13 +382,25 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     }
 
     if (!await isValidEmail(values.transporterEmail)) {
-      alert("Please Enter a valid Email")
+      alert("Please Enter a valid Transporter Email")
+      setSubmitClicked(false)
+      return
+    }
+
+    if (!await isValidEmail(values.receiverEmail)) {
+      alert("Please Enter a valid Receiver Email")
       setSubmitClicked(false)
       return
     }
 
     if (String(values.transporterPhone).replace(/\D/g, "")?.length != 10) {
-      alert("Please Enter a valid Phone No. with 10 digits")
+      alert("Please Enter a valid Transporter Phone No. with 10 digits")
+      setSubmitClicked(false)
+      return
+    }
+
+    if (String(values.receiverPhone).replace(/\D/g, "")?.length != 10) {
+      alert("Please Enter a valid Receiver Phone No. with 10 digits")
       setSubmitClicked(false)
       return
     }
@@ -409,6 +423,8 @@ export default function DisposalGeneratePage({ searchParams }: { searchParams: P
     formData.append("VehicleRegNo", String(values.vehicleRegNo ?? ""));
     formData.append("ReceiverName", String(values.receiverName ?? ""));
     formData.append("ReceiverAddress", String(values.receiverAddress ?? ""));
+    formData.append("ReceiverPhone", String(values.receiverPhone ?? ""));
+    formData.append("ReceiverEmail", String(values.receiverEmail ?? ""));
     formData.append("ReceiverAuthNo", String(values.receiverAuthNo ?? ""));
     formData.append("TotalQty", String((values.totalQty ?? 0)).split(" ")[0]);
     formData.append("Waste", String(values.Waste ?? ""));

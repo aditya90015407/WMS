@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-        await signOut({ callbackUrl: '/sign-in', redirect: true })
+        await signOut({ callbackUrl: '/', redirect: true })
         return NextResponse.json("Invalid Request")
     }
 
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
         </ul>
 
         <p>Please log in to the Waste Management System to review the generated waste and take necessary action.</p>
-        <a href="https://jslaisrv01.jindalstainless.com:4433"> WMS </a>
+        <a href="https://jajitapps.jindalstainless.com:5005"> WMS </a>
 
 
 

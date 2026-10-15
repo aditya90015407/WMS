@@ -77,6 +77,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
         IsActive: string
         CreatedBy: string
         ActualDateofDisposal: string
+        AuctioneerName: string
     }
     const [disposalDetails, setDisposalDetails] = useState<DisposalDetails>()
 
@@ -233,6 +234,7 @@ export default function DisposalApproveHazardousPage({ searchParams }: { searchP
                 <div className=""> <span className="text-xs mr-1 font-semibold ">ID  : </span> {disposalDetails?.ID}</div>
                 <div className=""><span className="text-xs mr-1 font-semibold ">Disposal Type : </span> {disposalDetails?.DisType}</div>
                 {disposalDetails?.DisposalType == '1' && <div className=""><span className="text-xs mr-1 font-semibold ">Auction Date : </span> {disposalDetails?.AuctionDate}</div>}
+                {disposalDetails?.DisposalType == '1' && <div className=""><span className="text-xs mr-1 font-semibold ">Auctioneer : </span> {disposalDetails?.AuctioneerName}</div>}
                 {disposalDetails?.DisposalType == '1' && <div className=""><span className="text-xs mr-1 font-semibold ">Selected Vendor: </span>
                     {disposalDetails?.VendorName && <>{disposalDetails?.VendorName} ({disposalDetails.VendorCode}) </>}
                     {!disposalDetails?.VendorName && <>N/A </>}

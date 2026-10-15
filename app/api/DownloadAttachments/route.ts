@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
         const session = await getServerSession(authOptions);
 
         if (!session) {
-            await signOut({ callbackUrl: '/sign-in', redirect: true })
+            await signOut({ callbackUrl: '/', redirect: true })
             return NextResponse.json("Invalid Request")
         }
 
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
         if (filePath == "") return NextResponse.json({ error: "Invalid file path " }, { status: 400 })
 
         const fullPath = path.join(process.cwd(), "Attachments", filePath)
+        // console.log(fullPath)
 
         if (!fs.existsSync(fullPath)) {
             return NextResponse.json({ error: "File not found" }, { status: 404 })

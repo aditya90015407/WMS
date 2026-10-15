@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-        await signOut({ callbackUrl: '/sign-in', redirect: true })
+        await signOut({ callbackUrl: '/', redirect: true })
         return NextResponse.json("Invalid Request")
     }
 
@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
         
 
         <p>Please log in to the Waste Management System and navigate to <strong> Dispose </strong> menu . Complete the required details before each dispatch.</p>
-        <a href="https://jslaisrv01.jindalstainless.com:4433"> WMS </a>
+        <a href="https://jajitapps.jindalstainless.com:5005"> WMS </a>
 
 
 
@@ -157,8 +157,8 @@ export async function POST(req: NextRequest) {
                 "emailBody": mailBody,
                 "fromEmail": "no-reply@jindalstainless.com",
                 "fromName": "WMS",
-                "toEmail": CCEmails, // because here sending to disposal initiator only
-                "ccEmail": toEmail,  // sending to env 
+                "toEmail": CCEmails, // because here sending to disposal initiator itself, environment can see this only when final disposal is initiated 
+                "ccEmail": toEmail,  // sending to env just for info
                 "bccEmail": "aditya_mishra@jindalstainless.com,abhishek.silawat@jindalstainless.com"
             })
         });

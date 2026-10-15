@@ -28,7 +28,7 @@ export async function handleEditPost(request: Request) {
     const createdBy = String(authSession?.user?.id ?? "").trim();
 
     if (!createdBy) {
-      await signOut({ callbackUrl: '/sign-in', redirect: true })
+      await signOut({ callbackUrl: '/', redirect: true })
 
       return NextResponse.json(
         {

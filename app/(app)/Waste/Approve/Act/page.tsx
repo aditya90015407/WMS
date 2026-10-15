@@ -38,6 +38,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
         Dept: string
         WasteCategory: string
         WasteType: string
+        WID: string
         Waste: string
         StorageMethod: string
         PhysicalState: string
@@ -125,6 +126,71 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
         fetchDetails()
         fetchHistory()
     }, [])
+
+
+    const [attachPath, setAttachPath] = useState("")
+
+
+    async function GetLabReport() {
+
+        const encoded = params.id;
+        const id = await decrypt(encoded!)
+
+        const res = await fetch("/api/GetData/GetLabReport", {
+            method: "POST",
+            body: JSON.stringify({ WRID: id })
+        })
+        const data = await res.json()
+        setAttachPath(data[0].AttachPath)
+        // console.log(data)
+    }
+
+    useEffect(() => {
+        // console.log("i am here")
+        GetLabReport()
+    }, [params])
+
+
+    async function downloadAttachment() {
+        // console.log(attachPath, "ap", attachPath)
+
+        const encoded = params.id;
+        const id = await decrypt(encoded!)
+
+        // console.log(id)
+        const ext = attachPath.split('.')[1]
+
+        const payload = {
+            AttachPath: attachPath
+        }
+
+        const res = await fetch(`/api/DownloadAttachments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        })
+
+        if (!res.ok) {
+            alert("File Not Found")
+            return
+        }
+
+        const blob = await res.blob()
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
+
+        a.href = url
+        a.download = `Lab Report Waste ID ${id}.${ext}`
+        document.body.appendChild(a)
+        a.click()
+
+        a.remove()
+        window.URL.revokeObjectURL(url)
+
+        // setDownloading(false)
+    }
+
 
 
     async function handleSubmit(e: React.FormEvent) {
@@ -223,12 +289,20 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                     <div className="px-2 py-2 font-semibold text-xs">Waste Receiver : <span className="font-normal text-sm"> {wasteData?.Receiver}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Generation Date : <span className="font-normal text-sm"> {wasteData?.GenerationDate}</span></div>
                     <div className="px-2 py-2 font-semibold text-xs">Targetted Disposal Date : <span className="font-normal text-sm"> {wasteData?.TargetDate}</span></div>
+                    {(wasteData?.WID == '1' || wasteData?.WID == '3') && < div className="px-2 py-2 font-semibold text-xs">Lab Report :
+                        <span>
+                            <img src="/downloadcloudblue.png" alt="" className="cursor-pointer h-9 my-1"
+                                onClick={async () => await downloadAttachment()}
+                            />
+                        </span>
+                    </div>}
                     <div className="px-2 py-2 font-semibold text-xs">Status : <span className="font-normal text-sm"> {wasteData?.Status}</span></div>
                     {/* <div className="px-2 py-2 font-semibold text-xs">Approver : <span className="font-normal text-sm"> {wasteData?.Approver}</span></div> */}
                 </div>
 
 
-                {approvalRejectionHistory.length > 0 &&
+                {
+                    approvalRejectionHistory.length > 0 &&
                     <>
 
                         <hr className="border border-gray-200 my-4" />

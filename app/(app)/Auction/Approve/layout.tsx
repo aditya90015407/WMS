@@ -31,12 +31,12 @@ export default async function AppLayout({ children }: AppLayoutProps) {
         const session = await getServerSession(authOptions);
         // console.log(session)
         if (!session || session.user.roleId != "9") {
-            await signOut({ callbackUrl: '/sign-in', redirect: true })
-            redirect("/sign-in");
+            await signOut({ callbackUrl: '/', redirect: true })
+            redirect("/");
         }
     }
     catch {
-        redirect('/sign-in')
+        redirect("/")
     }
 
 

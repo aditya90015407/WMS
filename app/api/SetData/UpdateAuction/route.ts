@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      await signOut({ callbackUrl: '/sign-in', redirect: true })
+      await signOut({ callbackUrl: '/', redirect: true })
       return NextResponse.json("Invalid Request")
     }
 
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
       .input("FLAG", sql.NVarChar(50), "UpdateAuction")
       .input("IDDID", sql.NVarChar(20), iddid)
       .input("AuctionDate", sql.Date, auctionDate)
-      .input("EmpCode", sql.Int, Number(empCode))
+      .input("EmpCode", empCode)
       .execute("PRO-WMS_SET");
     // console.log(result.recordset)
     const status = String(result.recordset?.[0]?.STATUS ?? "");

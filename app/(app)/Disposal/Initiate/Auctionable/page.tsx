@@ -217,7 +217,7 @@ export default function AuctionablePage() {
         });
 
         const payload = await res.json();
-        console.log(payload);
+        // console.log(payload);
         const raw =
           (Array.isArray(payload?.data?.Rows) && payload.data.Rows) ||
           (Array.isArray(payload?.data) && payload.data) ||
@@ -295,6 +295,31 @@ export default function AuctionablePage() {
   );
   // console.log(totalSelectedQty)
 
+  type Auctioneer = {
+    ID: string
+    AuctioneerCode: string
+    Name: string
+    Email: string
+    Phone: string
+  }
+
+  const [auctioneer, setAuctioneer] = useState<Auctioneer[]>([])
+  const [selectedAuctioneer, setSelectedAuctioneer] = useState("")
+
+
+  async function GetAuctioneer() {
+    const res = await fetch("/api/GetData/GetAllAuctioneers", {
+      method: "POST"
+    })
+    const data = await res.json()
+    // console.log(data)
+    setAuctioneer(data)
+  }
+
+  useEffect(() => {
+    GetAuctioneer()
+  }, [])
+
 
 
   const [submitClicked, setSubmitClicked] = useState(false)
@@ -330,6 +355,7 @@ export default function AuctionablePage() {
           AuctionDate: auctionDate,
           PSID: physicalForm,
           Remarks: remarks,
+          AuctioneerID: selectedAuctioneer
         }),
       });
 
@@ -397,6 +423,7 @@ export default function AuctionablePage() {
           Waste: waste,
           TotalQty: totalSelectedQty,
           MUID: undisposedOptions[0].muid,
+          AuctioneerID: selectedAuctioneer
         })
       })
 
@@ -712,6 +739,30 @@ export default function AuctionablePage() {
               rows={1}
             />
           </div>
+
+
+
+          <div className="text-sm mb-5">
+            <label className="mb-1 block text-xs font-semibold text-slate-700">Auctioneer</label>
+            <select
+              value={selectedAuctioneer}
+              onChange={(e) => {
+                setSelectedAuctioneer(e.target.value);
+              }}
+              required
+              className="w-full rounded border border-slate-300 px-3 py-2"
+              disabled={loadingBase}
+            >
+              <option value="">{loadingBase ? "Loading..." : "Select  Auctioneer"}</option>
+              {auctioneer.map((item) => (
+                <option key={item.ID} value={item.ID}>
+                  {item.Name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+
         </div>
 
         {

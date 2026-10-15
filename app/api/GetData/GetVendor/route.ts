@@ -9,8 +9,14 @@ export async function POST() {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      await signOut({ callbackUrl: '/sign-in', redirect: true })
+      await signOut({ callbackUrl: '/', redirect: true })
       return NextResponse.json("Invalid Request")
+    }
+
+    var EmpCode = "", EmpName = "";
+    if (session) {
+      EmpCode = session?.user?.id || "";
+      EmpName = session?.user?.username || "";
     }
 
     const pool = await getConnection();
@@ -21,6 +27,7 @@ export async function POST() {
     const result = await pool
       .request()
       .input("FLAG", "GetVendor")
+      .input("EmpCode", EmpCode)
       .execute("PRO-WMS_GET");
 
     const rows =

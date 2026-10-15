@@ -116,7 +116,7 @@ export async function handleGenerateGet(request: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      await signOut({ callbackUrl: '/sign-in', redirect: true })
+      await signOut({ callbackUrl: '/', redirect: true })
       return NextResponse.json("Invalid Request")
     }
     const uid = session?.user.uid
@@ -447,13 +447,12 @@ export async function handleGeneratePost(request: Request) {
       .execute("PRO-WMS_SET");
 
     const firstRow = result.recordset?.[0] as Record<string, unknown> | undefined;
+    // console.log(firstRow)
     const values = firstRow ? Object.values(firstRow) : [];
     const responseMessage =
       typeof values[0] === "string" ? values[0] : "Waste generated successfully";
-    const referenceId =
-      values.length > 1 && values[1] !== null && values[1] !== undefined
-        ? String(values[1])
-        : "";
+    const referenceId = String(values).split("-")[1]
+    // console.log(referenceId)
 
     return NextResponse.json({
       success: true,

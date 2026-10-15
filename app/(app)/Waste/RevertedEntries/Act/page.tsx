@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { constants } from "buffer";
 
 
 export default function WasteApproval({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
@@ -236,6 +237,70 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
     }, [wasteData?.WCID])
 
 
+
+    const [attachPath, setAttachPath] = useState<File | null>(null)
+
+    async function GetLabReport() {
+
+        const encoded = params.id;
+        const id = await decrypt(encoded!)
+
+        const res = await fetch("/api/GetData/GetLabReport", {
+            method: "POST",
+            body: JSON.stringify({ WRID: id })
+        })
+        const data = await res.json()
+        if (data.length == 0) return ""
+        const attachPath = data[0].AttachPath
+        // console.log(data)
+
+        return attachPath
+    }
+
+    async function downloadAttachment() {
+        // console.log(attachPath, "ap", attachPath)
+        const attachPath = await GetLabReport()
+        // console.log(attachPath, "in down")
+
+        const encoded = params.id;
+        const id = await decrypt(encoded!)
+
+        // console.log(id)
+        const ext = attachPath.split('.')[1]
+
+        const payload = {
+            AttachPath: attachPath
+        }
+
+        const res = await fetch(`/api/DownloadAttachments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        })
+
+        if (!res.ok) {
+            alert("File Not Found")
+            return
+        }
+
+        const blob = await res.blob()
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement("a")
+
+        a.href = url
+        a.download = `Lab Report Waste ID ${id}.${ext}`
+        document.body.appendChild(a)
+        a.click()
+
+        a.remove()
+        window.URL.revokeObjectURL(url)
+
+        // setDownloading(false)
+    }
+
+
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault()
         setSubmitClicked(true)
@@ -260,6 +325,20 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
 
         const data = await res.json()
         // console.log(data)
+
+        const docsForm = new FormData();
+        docsForm.append("WRID", wasteData?.ID ?? "0");
+
+        if (attachPath) {
+            docsForm.append("AttachPath", attachPath);
+            // console.log("i am inside attachpath")
+
+
+            const lineRes = await fetch("/api/SetData/UpdateLabReport", {
+                method: "POST",
+                body: docsForm,
+            });
+        }
 
 
         const resEmail = await fetch("/api/SendMail/RevertedWasteUpdated", {
@@ -535,12 +614,38 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                             {wasteData?.MUnit}
                         </span>
                     </div>
+
+
+                    {(wasteData?.WID == '1' || wasteData?.WID == '3') &&
+                        <>
+                            <div className="px-2 py-2 font-semibold text-xs">Lab Report :
+                                <span>
+                                    <img src="/downloadcloudblue.png" alt="" className="cursor-pointer h-9 my-1"
+                                        onClick={async () => await downloadAttachment()}
+                                    />
+                                </span>
+                            </div>
+
+                            <div>
+                                <label className="mb-1 block text-sm font-bold text-slate-700">Update Lab Report</label>
+                                <input
+                                    type="file"
+                                    accept=".pdf,.png,.jpg,.jpeg"
+                                    onChange={(e) => setAttachPath(e.target.files?.[0] ?? null)}
+                                    className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
+                                />
+                                <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
+                            </div>
+                        </>}
+
+
                     {/* <div className="px-2 py-2 font-semibold text-xs">Approver : <span className="font-normal text-sm"> {wasteData?.Approver}</span></div> */}
                 </div>
 
                 <hr className="border border-gray-200 my-4" />
 
-                {approvalRejectionHistory.length > 0 &&
+                {
+                    approvalRejectionHistory.length > 0 &&
                     <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200">
                         <div className="py-1 text-center text-sm">Action History</div>
                         <table className="min-w-full divide-y divide-slate-200">
@@ -604,7 +709,7 @@ export default function WasteApproval({ searchParams }: { searchParams: Promise<
                         Submitting ...
                     </div>
                 }
-            </form>
-        </div>
+            </form >
+        </div >
     );
 }

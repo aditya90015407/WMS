@@ -419,6 +419,7 @@ export default function SelectedEntriesActPage({ searchParams }: { searchParams:
               <div className="mt-2">
                 <label className=" text-slate-700 text-sm">Contact Details</label>
                 <input
+                  required
                   type="text"
                   placeholder="Enter your contact details (e.g., Phone No.)"
                   value={transportForm.VendorContact}

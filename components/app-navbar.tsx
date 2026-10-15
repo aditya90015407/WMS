@@ -86,7 +86,7 @@ export default function AppNavbar() {
   const handleLogout = async () => {
     if (isLoggingOut) return;
     setIsLoggingOut(true);
-    await signOut({ callbackUrl: "/sign-in" });
+    await signOut({ callbackUrl: "/Login" });
   };
 
   return (

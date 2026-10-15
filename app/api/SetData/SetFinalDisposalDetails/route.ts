@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-      await signOut({ callbackUrl: '/sign-in', redirect: true })
+      await signOut({ callbackUrl: '/', redirect: true })
       return NextResponse.json("Invalid Request")
     }
 
@@ -63,6 +63,8 @@ export async function POST(req: Request) {
       .input("VehicleRegNo", sql.NVarChar(100), String(form.get("VehicleRegNo") ?? ""))
       .input("ReceiverName", sql.NVarChar(200), String(form.get("ReceiverName") ?? ""))
       .input("ReceiverAddress", sql.NVarChar(300), String(form.get("ReceiverAddress") ?? ""))
+      .input("ReceiverPhone", sql.NVarChar(300), String(form.get("ReceiverPhone") ?? ""))
+      .input("ReceiverEmail", sql.NVarChar(300), String(form.get("ReceiverEmail") ?? ""))
       .input("ReceiverAuthNo", sql.NVarChar(100), String(form.get("ReceiverAuthNo") ?? ""))
       .input("TotalQty", sql.Decimal(18, 3), Number(form.get("TotalQty") ?? 0))
       .input("NoOfContainers", sql.Int, Number(form.get("NoOfContainers") ?? 0))

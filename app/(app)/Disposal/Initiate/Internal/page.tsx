@@ -398,7 +398,7 @@ export default function DisposalRecycleForm() {
               onChange={(e) => {
                 setSelectedWasteId(e.target.value);
                 const temp = wasteOptions.find((el) => el.id == e.target.value)?.name
-                console.log(temp)
+                // console.log(temp)
                 setSelectedWaste(temp!)
               }}
               className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"

@@ -211,7 +211,7 @@ export default function Form10Page({ searchParams }: { searchParams: Promise<{ f
           vehicleType: mapVehicleType(getFirstValue(row, ["VehicleType", "VTID"])),
           transporterRegistrationNo: getFirstValue(row, ["TransporterRegNo", "TransporterRegistrationNo"]),
           vehicleRegistrationNo: getFirstValue(row, ["VehicleRegNo", "VehicleRegistrationNo"]),
-          receiverNameAddress: [receiverName, receiverAddress].filter(Boolean).join(" "),
+          receiverNameAddress: [receiverName, receiverAddress].filter(Boolean).join(" , "),
           receiverPhone: getFirstValue(row, ["ReceiverPhone"]),
           receiverEmail: getFirstValue(row, ["ReceiverEmail"]),
           receiverAuthorizationNo: getFirstValue(row, ["ReceiverAuthorizationNo", "ReceiverAuthNo"]),

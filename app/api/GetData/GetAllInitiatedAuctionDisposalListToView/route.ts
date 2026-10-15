@@ -12,7 +12,7 @@ export async function GET(req: Request) {
         const session = await getServerSession(authOptions);
 
         if (!session) {
-            await signOut({ callbackUrl: '/sign-in', redirect: true })
+            await signOut({ callbackUrl: '/', redirect: true })
             return NextResponse.json("Invalid Request")
         }
 
@@ -32,6 +32,7 @@ export async function GET(req: Request) {
         const result = await pool
             .request()
             .input("FLAG", sql.NVarChar, "GetAllInitiatedAuctionDisposalListToView")
+            .input("EmpCode", EmpCode)
             .execute("PRO-WMS_GET");
 
         // console.log(result);

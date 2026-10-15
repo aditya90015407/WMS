@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
         WMSDept = session.user.WMSDept || ""
     }
     if (!session) {
-        await signOut({ callbackUrl: '/sign-in', redirect: true })
+        await signOut({ callbackUrl: '/', redirect: true })
         return NextResponse.json("Invalid Request")
     }
 
@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
 
         
         <p>Please log in to the Waste Management System to review the reverted dispatch and take necessary action.</p>
-        <a href="https://jslaisrv01.jindalstainless.com:4433"> WMS </a>
+        <a href="https://jajitapps.jindalstainless.com:5005"> WMS </a>
 
 
 

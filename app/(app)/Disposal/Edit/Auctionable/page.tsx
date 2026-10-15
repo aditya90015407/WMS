@@ -173,6 +173,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
         setSelectedWasteId(String(detailRow.WID ?? ""));
         setPhysicalForm(String(detailRow.PSID ?? ""));
         setRemarks(String(detailRow.Remarks ?? ""));
+        setSelectedAuctioneer(String(detailRow.AucID ?? ""));
       } catch (error) {
         console.error("loadEditDetails failed", error);
       }
@@ -508,6 +509,33 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
   );
 
 
+  type Auctioneer = {
+    ID: string
+    AuctioneerCode: string
+    Name: string
+    Email: string
+    Phone: string
+  }
+
+  const [auctioneer, setAuctioneer] = useState<Auctioneer[]>([])
+  const [selectedAuctioneer, setSelectedAuctioneer] = useState("")
+
+
+  async function GetAuctioneer() {
+    const res = await fetch("/api/GetData/GetAllAuctioneers", {
+      method: "POST"
+    })
+    const data = await res.json()
+    // console.log(data)
+    setAuctioneer(data)
+  }
+
+  useEffect(() => {
+    GetAuctioneer()
+  }, [])
+
+
+
   async function CancelDisposal() {
     const userResponse = confirm(`Are you sure you want to withdraw this disposal?`)
     if (!userResponse) {
@@ -551,6 +579,7 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
           AuctionDate: auctionDate,
           PSID: physicalForm,
           Remarks: remarks,
+          AuctioneerID: selectedAuctioneer,
           IDDID: iddid,
         }),
       });
@@ -864,6 +893,28 @@ export default function AuctionablePage({ searchParams }: { searchParams: Promis
                 rows={1}
               />
             </div>
+
+
+            <div className="text-sm mb-5 px-4 py-1">
+              <label className="mb-1 block text-xs font-semibold text-slate-700">Auctioneer</label>
+              <select
+                value={selectedAuctioneer}
+                onChange={(e) => {
+                  setSelectedAuctioneer(e.target.value);
+                }}
+                required
+                className="w-full rounded border border-slate-300 px-3 py-2"
+                disabled={loadingBase}
+              >
+                <option value="">{loadingBase ? "Loading..." : "Select  Auctioneer"}</option>
+                {auctioneer.map((item) => (
+                  <option key={item.ID} value={item.ID}>
+                    {item.Name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
           </div>
 
 

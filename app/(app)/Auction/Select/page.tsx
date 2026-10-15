@@ -164,7 +164,7 @@ export default function WasteApprove() {
 
         setRows(payload.data);
 
-        const res2 = await fetch(`/api/GetData/GetAllAuctionList`, {
+        const res2 = await fetch(`/api/GetData/GetAuctionsListForSelectingVendor`, {
           method: "POST",
         });
 

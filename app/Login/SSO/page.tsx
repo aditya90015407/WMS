@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { encryptForLogin } from "@/lib/login-crypto-client";
 import encrypt from "@/components/Encrypt";
 import { decrypt } from "@/lib/decryptVendorCode";
+import { error } from "console";
 
 
 
@@ -69,18 +70,22 @@ export default function LoginPage() {
     setGlobalError(null);
   };
 
+
   // async function encryptpwd() {
   //   console.log(await encrypt("Jajpur#Jsl\$App@2026-04"))
-  //   console.log(await encrypt("JAJITAPPS"))
+  //   console.log(await encrypt("10.7.81.3"))
+  //   console.log(await decrypt("RofxGNweFBE7YwpoLdunbA"))
   //   console.log(await encrypt("WasteMgtSystem"))
   //   console.log(await encrypt("AppDbUser"))
-  //   console.log(await encrypt("MAKV2SPBNI99212"))
   //   console.log(await encrypt("1433"))
   // }
 
   // useEffect(() => {
   //   encryptpwd()
   // }, [])
+
+
+
 
 
   // **********************************   SSO Starts   ************************************
@@ -101,96 +106,106 @@ export default function LoginPage() {
 
   // const qs = new URL(window.location.href).searchParams.get("QS")
 
+  var currenturl;
+  try {
+    currenturl = new URL(window.location.href)
+    const params = currenturl.search
+    const QueryString = params.split("QS=")[1]
+  }
+  catch {
+    console.log("exception occured")
+  }
 
 
-  // async function ProcessQueryString() {
-  //     // console.log("hi i am entering processQueryString")
 
-  //     const decryptedQueryString = await decrypt(QueryString!)
-  //     // console.log(decryptedQueryString, "decrypytedquerystring")
+  async function ProcessQueryString() {
+    // console.log("hi i am entering processQueryString")
 
-  //     const userEmailQS = decryptedQueryString.split(",")[0]
-  //     const userIDQS = decryptedQueryString.split(",")[1]
-  //     const userEmail = userEmailQS.split("=")[1]
-  //     const userID = userIDQS.split("=")[1]
-  //     // console.log(userEmail, "UserEmail")
-  //     // console.log(userID, "UserID")
+    const currenturl = new URL(window.location.href)
+    const params = currenturl.search
+    const QueryString = params.split("QS=")[1]
 
-  //     // console.log("hi i am exiting processQueryString")
-
-  //     const res = await fetch(`/api/SSO_Login`, {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ "Email": userEmail }),
-  //     });
+    // console.log(currenturl)
+    // console.log(params)
+    // console.log(QueryString)
 
 
-  //     const data = await res.json();
-  //     // console.log(data)
-  //     // console.log(data.empName)
+    if (!QueryString || QueryString == "") {
+      window.location.href = "https://jslaisrv01.jindalstainless.com/login";
+      return
+    }
+
+    // console.log(QueryString, "before signin in main page.tsx")
 
 
-  //     const status = await res.status;
+    // await signIn("credentials", {
+    //   redirect: false,
+    //   qs: QueryString
+    // })
+    // console.log(QueryString, "after signin in main page.tsx")
+    try {
+      const decryptedQueryString = await decrypt(QueryString!)
+      const userEmailQS = decryptedQueryString.split(",")[0]
+      const userIDQS = decryptedQueryString.split(",")[1]
+      const userEmail = userEmailQS.split("=")[1]
+      const userID = userIDQS.split("=")[1]
+    }
+    catch {
+      // console.log("Unauthorised Login Attempt")
+      router.push("./")
+    }
+    // console.log(decryptedQueryString, "decrypytedquerystring")
 
-  //     await signIn("credentials", {
-  //         redirect: false,
-  //         userId: data.appUserID,
-  //         role: data.empRoll,
-  //         name: data.empName,
-  //         email: data.empEmail,
-  //         dept: data.empDept,
-  //         deptid: data.empDeptId,
-  //         desg: data.empDesg,
 
-  //     });
+    // console.log(userEmail, "UserEmail")
+    // console.log(userID, "UserID")
 
-  //     setTimeout(() => {
-  //         if (status == 200) {
-  //             // console.log(data.empRoll)
-  //             if (data.empRoll == "ADMIN") {
+    // console.log("hi i am exiting processQueryString")
 
-  //                 redirect("/Admin")
-  //             }
-  //             else if (data.empRoll == "SEGMENT LEAD") {
+    setIsLoading(true);
 
-  //                 redirect("/SegmentLead")
-  //             }
-  //             else if (data.empRoll == "AGENCY") {
-  //                 redirect("/Department")
-  //             }
-  //             else if (data.empRoll == "ZONAL REPRESENTATIVE") {
-  //                 redirect("/ZonalRepresentative")
-  //             }
-  //             else if (data.empRoll == "LAB") {
-  //                 redirect("/Lab")
-  //             }
-  //             else if (data.empRoll == "VIEWER") {
-  //                 redirect("/Viewer")
-  //             }
-  //             else if (data.empRoll == "Agency HOD") {
-  //                 redirect("/HOD")
-  //             }
-  //             else {
-  //                 toast.error("No Valid Role Assigned , Please Contact Administrator", {
-  //                     position: "top-right"
-  //                 })
-  //                 return
-  //             }
+    try {
+      const { signIn, getSession } = await import("next-auth/react");
+      // const encryptedEmployeeCode = await encrypt(employeeCode.trim());
+      // const encryptedPassword = await encrypt(password);
 
-  //         }
-  //         else {
-  //             toast.error("Kindly verify your credentials and try again !", {
-  //                 position: "top-right"
-  //             })
-  //             setSignClick(false)
-  //         }
 
-  //     }, 1000);
-  // }
+      const res = await signIn("credentials", {
+        // username: encryptedEmployeeCode,
+        // password: encryptedPassword,
+        querystring: QueryString,
+        redirect: false,
+      });
+      // console.log(res)
 
-  // useEffect(() => {
-  //     ProcessQueryString()
-  // }, [])
+      if (res?.error) {
+        setGlobalError(res.error);
+        setIsLoading(false);
+        router.push("./")
+        return;
+      }
+
+      if (res?.ok) {
+        // Fetch session for toast details, then always redirect to Home
+        const session = await getSession();
+        const role = getSessionRole(session);
+        const empCode = getSessionEmpCode(session) ?? employeeCode;
+        toast.success(
+          `Login successful `,
+        );
+        router.push("/Home");
+        return;
+      }
+    } catch (error) {
+      // console.log(error);
+      setGlobalError("Something went wrong. Please try again.");
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    ProcessQueryString()
+  }, [])
 
 
   // ********************************   SSO Ends   ****************************
@@ -242,9 +257,8 @@ export default function LoginPage() {
 
     try {
       const { signIn, getSession } = await import("next-auth/react");
-      const encryptedEmployeeCode = await encryptForLogin(employeeCode.trim());
-      const encryptedPassword = await encryptForLogin(password);
-
+      const encryptedEmployeeCode = await encrypt(employeeCode.trim());
+      const encryptedPassword = await encrypt(password);
 
 
       const res = await signIn("credentials", {
@@ -342,62 +356,6 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Employee Code */}
-            <div className="space-y-1 my-1 mt-2">
-              <label className="text-sm font-medium text-teal-600 block">
-                Employee Code
-              </label>
-              <Input
-                placeholder="Enter your code"
-                value={employeeCode}
-                onChange={(e) => {
-                  setEmployeeCode(e.target.value);
-                  setUsernameError(null);
-                }}
-                className={`h-12 rounded-xl border-green-100 focus:border-emerald-500 focus-visible:ring-offset-0 focus-visible:ring-0 ${usernameError ? "border-red-400" : ""
-                  }`}
-              />
-              {usernameError && (
-                <p className="text-sm text-red-600">{usernameError}</p>
-              )}
-            </div>
-
-            {/* Password */}
-            <div className="space-y-1 my-1 mt-2">
-              <label className="text-sm font-medium text-teal-600 block">
-                Password
-              </label>
-              <div className="relative">
-                <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    setPasswordError(null);
-                  }}
-                  className={`h-12 rounded-xl border-green-100 focus:border-emerald-500 focus-visible:ring-offset-0 focus-visible:ring-0 ${usernameError ? "border-red-400" : ""
-                    }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="cursor-pointer absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-700 transition-colors"
-                  aria-label={
-                    showPassword ? "Hide password" : "Show password"
-                  }
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
-                </button>
-              </div>
-              {passwordError && (
-                <p className="text-sm text-red-600">{passwordError}</p>
-              )}
-            </div>
 
             <Button
               type="button"
@@ -409,9 +367,9 @@ export default function LoginPage() {
                 className="w-fit bg-gradient-to-br from-[#1F6F5F] to-[#2E8B74] text-white px-10 py-2 
                 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.2)] hover:brightness-110 transition-all duration-300 
                 cursor-pointer"
-                onClick={onSubmit}
+              // onClick={onSubmit}
               // className="w-fit bg-[#1F6F5F] hover:bg-[#165346] text-[#FFFFFF] rounded-lg cursor-pointer py-2 px-10"
-              >{isLoading ? "Signing in..." : "Sign In"}
+              >Signing in...
               </span>
             </Button>
 

@@ -11,6 +11,26 @@ type VendorCodeRow = {
 }
 
 export default function Vendor() {
+
+
+    function normalizeData<T extends Record<string, any>>(row: T) {
+        return Object.fromEntries(
+            Object.entries(row).map(([key, value]) => {
+                if (value === null || value === undefined) {
+                    return [key, "NA"];
+                }
+
+                if (typeof value === "object") {
+                    // return [key, JSON.stringify(value)];
+                    return [key, "NA"];
+                }
+
+                return [key, value];
+            })
+        );
+    }
+
+
     const [vendorName, setVendorName] = useState("")
     const [vendorEmail, setVendorEmail] = useState("")
     const [vendorCode, setVendorCode] = useState("")
@@ -51,8 +71,9 @@ export default function Vendor() {
         const res = await fetch("/api/Master/GetData/GetAllVendors", {
             method: "POST"
         })
-        const data = await res.json()
-        // console.log(data)
+        const rawdata = await res.json()
+        // console.log(rawdata)
+        const data = rawdata.map(normalizeData)
         SetVendors(data)
         SetVendorsFiltered(data)
     }
@@ -64,8 +85,6 @@ export default function Vendor() {
     const handleFilter = async () => {
         var comp = vendors;
         // console.log(date)
-
-
 
         if (filter && filter.trim() !== "") {
             const f = filter.trim().toUpperCase();
@@ -302,15 +321,14 @@ export default function Vendor() {
                         </div>
                     </div>
 
-                    <div className="w-full mx-5 mt-2">
+                    <div className="w-full ms-5 mt-2">
                         <div className="text-cyan-700 font-semibold text-center w-full">
                             Vendors List
                         </div>
-                        <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 max-h-[320px] overflow-auto">
+                        <div className="px-1 mt-3 max-w-xl overflow-x-auto rounded-xl border border-slate-200 max-h-[300px] overflow-auto">
                             <table className="min-w-full divide-y divide-slate-200 ">
                                 <thead className="bg-slate-50 sticky top-0">
                                     <tr >
-
                                         <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
                                         >Vendor Code</th>
                                         <th className="whitespace-nowrap px-2 py-1 text-left text-[11px] font-semibold tracking-wide text-slate-700"
@@ -322,7 +340,7 @@ export default function Vendor() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 bg-white">
-                                    {vendorsFiltered?.map((row, index) => (
+                                    {vendorsFiltered.length > 0 && vendorsFiltered?.map((row, index) => (
                                         <tr key={index}
                                             // onClick={async () => {
                                             //     const encryptedID = await encrypt(row.ID!.toString());
@@ -345,7 +363,7 @@ export default function Vendor() {
                                             {
                                                 row.IsActive == true &&
                                                 <td
-                                                    className="whitespace-nowrap px-2 py-2 text-xs text-slate-50 bg-red-700 rounded-lg cursor-pointer"
+                                                    className="whitespace-nowrap px-2 py-2 text-center text-xs text-slate-50 bg-red-700 rounded-3xl cursor-pointer"
                                                     onClick={() => updateVendor(row.VID, 0, row.VendorCode)}
                                                 >Deactivate
                                                 </td>
@@ -353,7 +371,7 @@ export default function Vendor() {
                                             {
                                                 row.IsActive == false &&
                                                 <td
-                                                    className="whitespace-nowrap px-2 py-2 text-xs text-slate-50 bg-green-500 rounded-lg cursor-pointer"
+                                                    className="whitespace-nowrap px-2 py-2 text-center text-xs text-slate-50 bg-green-600 rounded-3xl cursor-pointer"
                                                     onClick={() => updateVendor(row.VID, 1, row.VendorCode)}
                                                 >Activate
                                                 </td>

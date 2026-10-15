@@ -1,0 +1,63 @@
+@page {
+    size: A4;
+    margin: 0;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    color: #111827;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+h1,
+h2,
+p {
+    margin: 0;
+}
+
+.center {
+    text-align: center;
+}
+
+.mt2 {
+    margin-top: 8px;
+}
+
+.mt4 {
+    margin-top: 16px;
+}
+
+.mt10 {
+    margin-top: 40px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+}
+
+th,
+td {
+    border: 1px solid #cbd5e1;
+    padding: 8px;
+    font-size: 13px;
+    text-align: left;
+    vertical-align: top;
+}
+
+th {
+    background: #f1f5f9;
+}
+
+.small {
+    font-size: 13px;
+}

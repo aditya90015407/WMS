@@ -10,7 +10,7 @@ export async function GET() {
   const session = await getServerSession(authOptions);
 
   if (!session) {
-    await signOut({ callbackUrl: '/sign-in', redirect: true })
+    await signOut({ callbackUrl: '/', redirect: true })
     return NextResponse.json("Invalid Request")
   }
 

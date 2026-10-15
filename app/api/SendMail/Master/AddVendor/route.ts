@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
     if (!session) {
-        await signOut({ callbackUrl: '/sign-in', redirect: true })
+        await signOut({ callbackUrl: '/', redirect: true })
         return NextResponse.json("Invalid Request")
     }
 
@@ -80,18 +80,19 @@ export async function POST(req: NextRequest) {
 
         const getVendorRes = await pool
             .request()
-            .input("FLAG", "GetVendorDetailsByVendorCode")
+            .input("FLAG", "GetMailofAuctioneer")
             .input("EmpCode", EmpCode)
             .execute("PRO-WMS_GET")
 
         const sender = await getVendorRes.recordset
-        const senderMail = sender[0].Email
-        // console.log(sender)
+        const senderMail = sender[0].EMAIL
+        // console.log(senderMail)
 
 
         const CCMails = [senderMail];
         const CCEmails = CCMails.join(",")
 
+        // console.log(CCEmails)
 
         const now = new Date();
         const generatedOn = DateTime.now()
@@ -113,7 +114,7 @@ export async function POST(req: NextRequest) {
 
 
         <p>Please log in to the portal using your vendor code and email as credentials.</p>
-        <a href="https://jslaisrv01.jindalstainless.com:4433"> WMS </a>
+        <a href="https://jajitapps.jindalstainless.com:5005"> WMS </a>
 
 
 

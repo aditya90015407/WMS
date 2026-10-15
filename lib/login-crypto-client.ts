@@ -1,6 +1,6 @@
-const LOGIN_ENCRYPTION_KEY_HEX =
-  "c7f4d493641e10500281260c6d6eb057599618d8844d94c9828b3e9e002859d9";
-const LOGIN_ENCRYPTION_IV_HEX = "d78c12a7f93158cab68aedfe4a05fdfb";
+const LOGIN_ENCRYPTION_KEY_HEX = process.env.NEXT_PUBLIC_Encryption_Keyy ?? "be78"
+const LOGIN_ENCRYPTION_IV_HEX = process.env.NEXT_PUBLIC_Encryption_Vector ?? "ac35"
+
 
 const hexToBytes = (hex: string): Uint8Array => {
   const pairs = hex.match(/.{1,2}/g) ?? [];

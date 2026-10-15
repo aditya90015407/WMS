@@ -754,6 +754,10 @@ export default function GenerateForm({
   const getOptionName = (options: Option[], id: string) =>
     options.find((item) => item.id === id)?.name ?? "";
 
+
+
+  const [attachPath, setAttachPath] = useState<File | null>(null);
+
   const confirmSave = async () => {
     setSaving(true);
     setMessage("");
@@ -780,6 +784,21 @@ export default function GenerateForm({
         setMessage(payload.message || payload.error || "Failed to save");
         return;
       }
+
+
+      const docsForm = new FormData();
+      docsForm.append("WRID", payload.refId ?? "0");
+
+      if (attachPath) {
+        docsForm.append("AttachPath", attachPath);
+
+
+        const lineRes = await fetch("/api/SetData/UploadLabReport", {
+          method: "POST",
+          body: docsForm,
+        });
+      }
+
 
       const mailPayload = {
         ...form, selectedWaste
@@ -1052,6 +1071,19 @@ export default function GenerateForm({
           <p className="mt-1 text-xs text-red-600">{unitError}</p>
         )}
       </div>
+
+      {(selectedWID == '1' || selectedWID == '3') &&
+        <div>
+          <label className="mb-1 block text-sm font-bold text-slate-700">Lab Report</label>
+          <input
+            type="file"
+            required
+            accept=".pdf,.png,.jpg,.jpeg"
+            onChange={(e) => setAttachPath(e.target.files?.[0] ?? null)}
+            className="w-[60%] rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs outline-none focus:border-slate-500"
+          />
+          <p className="text-xs text-slate-500">PDF/JPEG/PNG only</p>
+        </div>}
 
       <div className="md:col-span-2 flex items-center gap-3">
         {

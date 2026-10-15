@@ -12,14 +12,15 @@ export async function GET(req: Request) {
         const session = await getServerSession(authOptions);
 
         if (!session) {
-            await signOut({ callbackUrl: '/sign-in', redirect: true })
+            await signOut({ callbackUrl: '/', redirect: true })
             return NextResponse.json("Invalid Request")
         }
 
-        var EmpCode = "", EmpName = ""
+        var EmpCode = "", EmpName = "", RoleID = ""
         if (session) {
             EmpCode = session?.user?.id || "";
             EmpName = session?.user?.username || "";
+            RoleID = session?.user?.roleId || "";
         }
 
 
@@ -29,10 +30,23 @@ export async function GET(req: Request) {
             throw new Error("Couldn't connect to Database");
         }
 
-        const result = await pool
-            .request()
-            .input("FLAG", sql.NVarChar, "GetAllAuctionsListToView")
-            .execute("PRO-WMS_GET");
+
+        var result;
+        if (RoleID == '11') {
+            result = await pool
+                .request()
+                .input("FLAG", sql.NVarChar, "GetAllAuctionsListToViewForAuctioneer")
+                .input("EmpCode", EmpCode)
+                .execute("PRO-WMS_GET");
+        }
+        else {
+
+            result = await pool
+                .request()
+                .input("FLAG", sql.NVarChar, "GetAllAuctionsListToView")
+                .execute("PRO-WMS_GET");
+
+        }
 
         // console.log(result);
 
